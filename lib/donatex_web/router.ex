@@ -18,6 +18,16 @@ defmodule DonatexWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+
+    live "/donate", DonateLive
+    live "/overlay/:token", OverlayLive
+    live "/admin", AdminLive
+  end
+
+  scope "/", DonatexWeb do
+    pipe_through :api
+
+    post "/webhooks/mayar", MayarWebhookController, :create
   end
 
   # Other scopes may use custom stacks.
