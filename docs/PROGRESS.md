@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 1 implementation. The Phoenix application skeleton exists and runtime configuration is wired, but the donation system itself has not been implemented yet.
+Donatex is in Phase 1 implementation. Foundation Tasks 1-3 are complete (Phoenix app + SQLite + runtime config), but the donation system itself has not been implemented yet.
 
 ## Completed
 
@@ -20,6 +20,8 @@ Donatex is in Phase 1 implementation. The Phoenix application skeleton exists an
   - secrets should be env-driven via `.env` in local development
 - Fixed the Dialyzer/`mix precommit` issue by adding `:ex_unit` to the Dialyzer PLT config in [mix.exs](file:///Users/riza/code/donatex/mix.exs)
 - Verified `mix dialyzer`, `mix test`, and `mix precommit` pass on the current codebase
+- Completed Foundation Task 1 (Phoenix app bootstrap)
+- Completed Foundation Task 2 (SQLite repo wiring)
 - Implemented env-driven runtime configuration and `.env` workflow (Task 3), including a centralized config access module and tests
 - Hardened secrets hygiene by ignoring `.env` and common key/cert files in `.gitignore`
 
@@ -62,4 +64,4 @@ Donatex is in Phase 1 implementation. The Phoenix application skeleton exists an
 
 ## Recommended Next Step
 
-Start implementing Phase 1 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): foundation routes, runtime config, and persistence setup, then move into the donations data model before any overlay or webhook work.
+Implement Task 4 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): add route placeholders for `/donate`, `/overlay/:token`, `/admin`, and `POST /webhooks/mayar`.
