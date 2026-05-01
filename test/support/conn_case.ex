@@ -28,6 +28,8 @@ defmodule DonatexWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import DonatexWeb.ConnCase
+
+      import PhoenixTest
     end
   end
 

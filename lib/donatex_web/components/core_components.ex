@@ -199,6 +199,8 @@ defmodule DonatexWeb.CoreComponents do
   end
 
   def input(%{type: "checkbox"} = assigns) do
+    alias Phoenix.HTML.Form
+
     assigns =
       assign_new(assigns, :checked, fn ->
         Form.normalize_value("checkbox", assigns[:value])
