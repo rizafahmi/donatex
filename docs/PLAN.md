@@ -216,14 +216,14 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Create the core data API used by the donor flow, webhook ingestion, overlay recovery, and admin listing.
 
 **Acceptance criteria:**
-- [ ] Can create a pending donation at QR generation time.
-- [ ] Can mark a donation paid by Mayar transaction ID.
-- [ ] Can fetch paid/unalerted donations for overlay recovery.
-- [ ] Can mark a donation alerted.
-- [ ] Can list all donations for admin.
+- [x] Can create a pending donation at QR generation time.
+- [x] Can mark a donation paid by Mayar transaction ID.
+- [x] Can fetch paid/unalerted donations for overlay recovery.
+- [x] Can mark a donation alerted.
+- [x] Can list all donations for admin.
 
 **Verification:**
-- [ ] Run context tests for create, update, list, and recovery queries
+- [x] Run context tests for create, update, list, and recovery queries
 
 **Dependencies:** Task 6
 
@@ -238,13 +238,13 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Lock down the data behavior the rest of the app depends on, especially webhook idempotency and alert recovery.
 
 **Acceptance criteria:**
-- [ ] Duplicate `mayar_transaction_id` values are rejected.
-- [ ] Pending donations can become paid.
-- [ ] Paid donations can be marked alerted.
-- [ ] Recovery query only returns paid and unalerted donations.
+- [x] Duplicate `mayar_transaction_id` values are rejected.
+- [x] Pending donations can become paid.
+- [x] Paid donations can be marked alerted.
+- [x] Recovery query only returns paid and unalerted donations.
 
 **Verification:**
-- [ ] Run `mix test test/.../donations_test.exs`
+- [x] Run `mix test test/.../donations_test.exs`
 
 **Dependencies:** Task 7
 
@@ -255,9 +255,9 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 
 ### Checkpoint: Data Model
 
-- [ ] Persistence behavior is covered by tests
-- [ ] App still boots and migrations remain clean
-- [ ] `mix precommit` passed
+- [x] Persistence behavior is covered by tests
+- [x] App still boots and migrations remain clean
+- [x] `mix precommit` passed
 
 ### Phase 3: Mayar Integration Contract
 
