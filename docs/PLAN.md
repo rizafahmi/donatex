@@ -144,14 +144,14 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Create empty surfaces for donor, overlay, admin, and webhook endpoints so later slices plug into stable routes.
 
 **Acceptance criteria:**
-- [ ] `/donate` resolves.
-- [ ] `/overlay/:token` resolves.
-- [ ] `/admin` resolves.
-- [ ] `/webhooks/mayar` resolves for POST requests.
+- [x] `/donate` resolves.
+- [x] `/overlay/:token` resolves.
+- [x] `/admin` resolves.
+- [x] `/webhooks/mayar` resolves for POST requests.
 
 **Verification:**
-- [ ] Run `mix phx.routes`
-- [ ] Manual check: visit the LiveView routes and confirm they mount
+- [x] Run `mix phx.routes`
+- [x] Manual check: visit the LiveView routes and confirm they mount
 
 **Dependencies:** Task 1
 
@@ -164,9 +164,9 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 
 ### Checkpoint: Foundation
 
-- [ ] `mix precommit` passes
-- [ ] `mix ecto.create && mix ecto.migrate` succeeds
-- [ ] The app boots with all placeholder routes present
+- [x] `mix precommit` passes
+- [x] `mix ecto.create && mix ecto.migrate` succeeds
+- [x] The app boots with all placeholder routes present
 
 ### Phase 2: Data Model
 
