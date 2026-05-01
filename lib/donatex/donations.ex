@@ -54,18 +54,14 @@ defmodule Donatex.Donations do
     |> Repo.all()
   end
 
-  def mark_donation_alerted(%Donation{} = donation) do
-    case donation do
-      %Donation{status: "paid", alerted: true} ->
-        {:ok, donation}
+  def mark_donation_alerted(%Donation{status: "paid", alerted: true} = donation),
+    do: {:ok, donation}
 
-      %Donation{status: "paid"} ->
-        donation
-        |> Donation.changeset(%{alerted: true})
-        |> Repo.update()
-
-      _ ->
-        {:error, :invalid_state}
-    end
+  def mark_donation_alerted(%Donation{status: "paid"} = donation) do
+    donation
+    |> Donation.changeset(%{alerted: true})
+    |> Repo.update()
   end
+
+  def mark_donation_alerted(%Donation{}), do: {:error, :invalid_state}
 end
