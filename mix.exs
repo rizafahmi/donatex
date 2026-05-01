@@ -9,8 +9,10 @@ defmodule Donatex.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      dialyzer: [plt_add_apps: [:ex_unit]],
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
+      usage_rules: usage_rules(),
       listeners: [Phoenix.CodeReloader]
     ]
   end
@@ -40,11 +42,11 @@ defmodule Donatex.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:mix_test_interactive, "~> 5.0"},
+      {:phoenix_test, "~> 0.11", runtime: false},
+      {:mix_test_interactive, "~> 5.1", runtime: false},
       {:usage_rules, "~> 1.0", only: [:dev]},
-      {:dialyxir, "~> 1.0", runtime: false, only: [:dev]},
+      {:dialyxir, "~> 1.0", runtime: false, only: [:dev, :test]},
       {:credo, "~> 1.0", runtime: false, only: [:dev, :test]},
-      {:phoenix_test, "~> 0.11"},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},
@@ -93,7 +95,43 @@ defmodule Donatex.MixProject do
         "esbuild donatex --minify",
         "phx.digest"
       ],
-      precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
+      precommit: [
+        "format",
+        "credo --strict",
+        "dialyzer",
+        "compile --warnings-as-errors",
+        "deps.unlock --unused",
+        "test"
+      ]
+    ]
+  end
+
+  defp usage_rules do
+    [
+      file: "AGENTS.md",
+      usage_rules: [:igniter, :usage_rules],
+      skills: [
+        # location: ".cursor/skills",
+        location: ".agents/skills",
+        build: [
+          "phoenix-framework": [
+            description:
+              "Use this skill working with Phoenix Framework. Consult this when working with the web layer, controllers, views, liveviews etc.",
+            # Include all Phoenix dependencies
+            usage_rules: [:phoenix, ~r/^phoenix_/]
+          ],
+          "ecto-and-sqlite": [
+            description:
+              "Use this skill when working with Ecto schemas, queries, migrations, and SQLite persistence.",
+            usage_rules: [:ecto, :ecto_sql, :ecto_sqlite3]
+          ],
+          "testing-and-quality": [
+            description:
+              "Use this skill when working with testing, code quality, and static analysis tools.",
+            usage_rules: [:ex_unit, :credo, :dialyxir, :phoenix_test]
+          ]
+        ]
+      ]
     ]
   end
 end
