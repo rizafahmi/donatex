@@ -85,3 +85,15 @@ config :phoenix_live_view,
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :donatex, :mayar,
+  base_url: System.get_env("MAYAR_API_BASE_URL", "https://api.mayar.club/hl/v1"),
+  api_key: System.get_env("MAYAR_API_KEY")
+
+config :donatex, :overlay, token: System.get_env("OVERLAY_TOKEN", "dev-overlay-token")
+
+config :donatex, :admin,
+  username: System.get_env("ADMIN_USERNAME", "admin"),
+  password: System.get_env("ADMIN_PASSWORD", "admin")
+
+config :donatex, :app, base_url: System.get_env("DONATEX_BASE_URL", "http://localhost:4000")

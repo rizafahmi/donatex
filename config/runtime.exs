@@ -24,6 +24,13 @@ config :donatex, DonatexWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do
+  fetch_env! = fn var ->
+    System.get_env(var) ||
+      raise """
+      environment variable #{var} is missing.
+      """
+  end
+
   database_path =
     System.get_env("DATABASE_PATH") ||
       raise """
@@ -50,6 +57,18 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "example.com"
 
   config :donatex, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+
+  config :donatex, :mayar,
+    base_url: fetch_env!.("MAYAR_API_BASE_URL"),
+    api_key: fetch_env!.("MAYAR_API_KEY")
+
+  config :donatex, :overlay, token: fetch_env!.("OVERLAY_TOKEN")
+
+  config :donatex, :admin,
+    username: fetch_env!.("ADMIN_USERNAME"),
+    password: fetch_env!.("ADMIN_PASSWORD")
+
+  config :donatex, :app, base_url: fetch_env!.("DONATEX_BASE_URL")
 
   config :donatex, DonatexWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],

@@ -38,3 +38,15 @@ config :phoenix,
   sort_verified_routes_query_params: true
 
 config :phoenix_test, endpoint: DonatexWeb.Endpoint
+
+config :donatex, :mayar,
+  base_url: "https://api.example.test",
+  api_key: "mayar_test_key"
+
+config :donatex, :overlay, token: "overlay_test_token"
+
+config :donatex, :admin,
+  username: "admin_test",
+  password: "pass_test"
+
+config :donatex, :app, base_url: "http://localhost:4000"
