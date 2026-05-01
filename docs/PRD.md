@@ -91,7 +91,7 @@ All donations are persisted to SQLite. The host can replay missed alerts from a 
 
 - **Phoenix PubSub** for webhook → overlay communication. No external message broker needed for a single-node personal tool.
 - **SQLite via Ecto** with `exqlite` adapter. No Postgres overhead for a personal single-user tool.
-- **Mayar signature verification** on every webhook request before any processing. Reject and log anything that fails.
+- **Mayar webhook authenticity** is enforced via a tokenized callback URL (`/webhooks/mayar/:token`) because the reviewed Mayar docs do not describe a signature header or shared secret signing mechanism. Reject mismatched requests before any processing (see `docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md`).
 - **Deduplication** by `mayar_transaction_id` unique constraint — idempotent webhook handling, no double alerts on Mayar retries.
 - **Queue in LiveView state + DB flag** — on OBS overlay mount, load all donations where `alerted: false` and `status: paid` to recover from restarts.
 - **Cloudflare Tunnel or reverse proxy on VPS** to expose the app on a stable public URL for Mayar webhooks.

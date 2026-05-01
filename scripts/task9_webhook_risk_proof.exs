@@ -1,5 +1,6 @@
 Mix.Task.run("app.start")
 
+alias Donatex.Config
 alias DonatexWeb.Router
 
 build_json_conn = fn path, body ->
@@ -37,7 +38,7 @@ forged_event_2 = %{
   }
 }
 
-IO.puts("== Task 9 Risk Proof: Unsigned fixed webhook endpoint is forgeable ==")
+IO.puts("== Task 9 Proof: Webhook endpoint is protected by tokenized path ==")
 
 [forged_event_1, forged_event_2]
 |> Enum.with_index(1)
@@ -50,6 +51,8 @@ IO.puts("== Task 9 Risk Proof: Unsigned fixed webhook endpoint is forgeable ==")
 end)
 
 bogus_token_path_result = run.("/webhooks/mayar/not-a-real-token", forged_event_1)
+real_token_path_result = run.("/webhooks/mayar/#{Config.mayar_webhook_token()}", forged_event_1)
 
 IO.puts("\nControl check: tokenized-like path => #{bogus_token_path_result.status}")
-IO.puts("Interpretation: fixed public path accepts forged payloads; tokenized path can reject unknown URLs before controller logic.")
+IO.puts("Real token path => #{real_token_path_result.status}")
+IO.puts("Interpretation: the un-tokenized path is unreachable; only requests with the configured token reach the controller.")

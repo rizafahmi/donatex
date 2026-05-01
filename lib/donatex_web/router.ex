@@ -10,9 +10,21 @@ defmodule DonatexWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :admin do
+    plug DonatexWeb.Plugs.AdminBasicAuth
+  end
+
+  pipeline :overlay do
+    plug DonatexWeb.Plugs.OverlayToken
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :put_secure_browser_headers
+  end
+
+  pipeline :mayar_webhook do
+    plug DonatexWeb.Plugs.MayarWebhookAuth
   end
 
   scope "/", DonatexWeb do
@@ -21,14 +33,24 @@ defmodule DonatexWeb.Router do
     get "/", PageController, :home
 
     live "/donate", DonateLive
+  end
+
+  scope "/", DonatexWeb do
+    pipe_through [:browser, :overlay]
+
     live "/overlay/:token", OverlayLive
+  end
+
+  scope "/", DonatexWeb do
+    pipe_through [:browser, :admin]
+
     live "/admin", AdminLive
   end
 
   scope "/", DonatexWeb do
-    pipe_through :api
+    pipe_through [:api, :mayar_webhook]
 
-    post "/webhooks/mayar", MayarWebhookController, :create
+    post "/webhooks/mayar/:token", MayarWebhookController, :create
   end
 
   # Other scopes may use custom stacks.

@@ -225,7 +225,7 @@ The current router in [lib/donatex_web/router.ex](file:///Users/riza/code/donate
   - `/admin`
 
 - Webhook route
-  - `POST /webhooks/mayar`
+  - `POST /webhooks/mayar/:token`
 
 Admin should sit behind a browser pipeline plus `Plug.BasicAuth` or a small custom plug. The overlay token is not authentication in the full sense; it is route secrecy for MVP access control.
 
