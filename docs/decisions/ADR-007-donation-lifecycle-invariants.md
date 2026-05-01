@@ -28,7 +28,7 @@ Adopt these invariants and API semantics in the donations context:
 - `mark_paid_by_mayar_transaction_id/1` is idempotent (already paid returns `{:ok, donation}`)
 - `mark_donation_alerted/1` is idempotent for already alerted donations and rejects invalid states (`{:error, :invalid_state}`)
 - `mayar_transaction_id`, `donor_name`, and `message` are trimmed and constrained in length via the schema changeset
-- The overlay recovery query is supported by a composite index for `status`, `alerted`, and `inserted_at`
+- The overlay recovery query is supported by a composite index for `status`, `alerted`, `inserted_at`, and `id`
 
 ## Alternatives Considered
 

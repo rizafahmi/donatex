@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Task 9 is complete. Next is Task 10: define the Mayar client interface.
+Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Tasks 9-10 are complete. Next is Task 11: implement the Mayar API client.
 
 ## Completed
 
@@ -32,6 +32,7 @@ Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Mo
 - Completed Mayar Integration Task 9 (validated that Mayar docs do not publish webhook signing details and chose the MVP fallback trust model)
 - Extended the env/config contract with `MAYAR_WEBHOOK_TOKEN` so webhook auth can be enforced without revisiting runtime configuration
 - Documented the Mayar webhook fallback strategy in the README and an ADR
+- Completed Mayar Integration Task 10 (defined the internal Mayar client contract and normalized return type)
 
 ## Current Architecture Direction
 

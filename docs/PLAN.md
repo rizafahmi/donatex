@@ -272,7 +272,7 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 
 **Verification:**
 - [x] Write the result into project docs or code comments
-- [ ] Human review confirms the chosen security model is acceptable
+- [x] Human review confirms the chosen security model is acceptable
 
 **Dependencies:** Task 3
 
@@ -288,9 +288,29 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Freeze the internal contract used by the app before implementing the HTTP client, especially because Mayar’s QR response shape is not fully documented in the public collection.
 
 **Acceptance criteria:**
-- [ ] Internal function signature is defined for dynamic QR creation.
-- [ ] Expected normalized success payload is documented.
-- [ ] Unknown or undocumented response fields are explicitly marked as to-be-confirmed.
+- [x] Internal function signature is defined for dynamic QR creation.
+- [x] Expected normalized success payload is documented.
+- [x] Unknown or undocumented response fields are explicitly marked as to-be-confirmed.
+
+**Client contract (internal):**
+- `Donatex.Mayar.Client.create_qr(amount_idr)` where `amount_idr` is a positive integer.
+- Returns `{:ok, %Donatex.Mayar.Client.DynamicQr{...}}` or `{:error, reason}`.
+
+**Normalized success payload:**
+- `%Donatex.Mayar.Client.DynamicQr{`
+  - `mayar_transaction_id :: String.t()` (used for webhook dedupe + donation correlation)
+  - `amount :: pos_integer()` (IDR)
+  - `qr_image_url :: String.t()` (HTTP(S) URL or `data:` URL usable by the donor page)
+  - `expires_at :: DateTime.t() | nil` (optional)
+  - `}`
+
+**Normalized error reasons (current set, may expand):**
+- `:invalid_amount | :not_implemented | :unauthorized | :rate_limited | :bad_request | :upstream_error | :network_error | {:unexpected_response, term()}`
+
+**To be confirmed against real/sandbox `POST /qrcode/create` responses:**
+- Which Mayar response field maps to `mayar_transaction_id` (`data.transactionId` vs other ID fields)
+- Whether Mayar returns a ready-to-render QR image URL vs only QR content that must be rendered client-side
+- Whether an expiry timestamp is returned and in what field/format
 
 **Verification:**
 - [ ] Human review of client contract
