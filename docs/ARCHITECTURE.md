@@ -174,7 +174,7 @@ The core persisted entity is `Donation`.
 
 ### Donations Table
 
-Suggested fields:
+Implemented fields:
 
 - `id` - local primary key
 - `mayar_transaction_id` - unique Mayar transaction identifier
@@ -502,6 +502,9 @@ Architecture decisions live under [docs/decisions](file:///Users/riza/code/donat
 - [ADR-001: Use A Phoenix LiveView Monolith](file:///Users/riza/code/donatex/docs/decisions/ADR-001-phoenix-liveview-monolith.md)
 - [ADR-002: Persist Donations At QR Creation Time](file:///Users/riza/code/donatex/docs/decisions/ADR-002-persist-pending-donations.md)
 - [ADR-003: Keep Alert Queue In Overlay LiveView State](file:///Users/riza/code/donatex/docs/decisions/ADR-003-overlay-queue-in-liveview.md)
+- [ADR-004: Env-Driven Runtime Config](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
+- [ADR-005: Land Placeholder Routes Early](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
+- [ADR-006: Donations Table Schema](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
 
 Future ADRs should cover:
 

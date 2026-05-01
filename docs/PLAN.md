@@ -175,13 +175,13 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Add the persisted donation model required by the PRD, including a unique Mayar transaction identifier and alert state.
 
 **Acceptance criteria:**
-- [ ] `donations` table exists with `mayar_transaction_id`, `donor_name`, `amount`, `message`, `status`, `alerted`, and timestamps.
-- [ ] `mayar_transaction_id` has a unique index.
-- [ ] `status` defaults are sensible for pending donations.
+- [x] `donations` table exists with `mayar_transaction_id`, `donor_name`, `amount`, `message`, `status`, `alerted`, and timestamps.
+- [x] `mayar_transaction_id` has a unique index.
+- [x] `status` defaults are sensible for pending donations.
 
 **Verification:**
-- [ ] Run `mix ecto.migrate`
-- [ ] Inspect schema with a migration test or SQL query
+- [x] Run `mix ecto.migrate`
+- [x] Inspect schema with a migration test or SQL query
 
 **Dependencies:** Task 2
 

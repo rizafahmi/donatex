@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 1 implementation. Foundation Tasks 1-4 are complete (Phoenix app + SQLite + runtime config + placeholder routes), but the donation system itself has not been implemented yet.
+Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix app + SQLite + runtime config + placeholder routes), and the donations migration (Task 5) has landed. The donation domain (schema + context + tests) is next.
 
 ## Completed
 
@@ -25,6 +25,7 @@ Donatex is in Phase 1 implementation. Foundation Tasks 1-4 are complete (Phoenix
 - Implemented env-driven runtime configuration and `.env` workflow (Task 3), including a centralized config access module and tests
 - Hardened secrets hygiene by ignoring `.env` and common key/cert files in `.gitignore`
 - Completed Foundation Task 4 (route placeholders for donor, overlay, admin, and Mayar webhook)
+- Completed Data Model Task 5 (donations migration + unique index + verification test)
 
 ## Current Architecture Direction
 
@@ -43,6 +44,8 @@ Donatex is in Phase 1 implementation. Foundation Tasks 1-4 are complete (Phoenix
 - [docs/decisions/ADR-002-persist-pending-donations.md](file:///Users/riza/code/donatex/docs/decisions/ADR-002-persist-pending-donations.md)
 - [docs/decisions/ADR-003-overlay-queue-in-liveview.md](file:///Users/riza/code/donatex/docs/decisions/ADR-003-overlay-queue-in-liveview.md)
 - [docs/decisions/ADR-004-env-driven-runtime-config.md](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
+- [docs/decisions/ADR-005-placeholder-public-surfaces.md](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
+- [docs/decisions/ADR-006-donations-table-schema.md](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
 
 ## Open Risks And Unknowns
 
@@ -53,7 +56,7 @@ Donatex is in Phase 1 implementation. Foundation Tasks 1-4 are complete (Phoenix
 
 ## Not Started Yet
 
-- Donations schema and migration
+- Donations schema and changeset
 - Donations context
 - Mayar API client
 - Webhook controller and webhook processing pipeline
@@ -65,4 +68,4 @@ Donatex is in Phase 1 implementation. Foundation Tasks 1-4 are complete (Phoenix
 
 ## Recommended Next Step
 
-Implement Task 5 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): create the donations migration.
+Implement Task 6 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): add the `Donation` schema and changeset validations.
