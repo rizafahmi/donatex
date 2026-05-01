@@ -41,7 +41,8 @@ config :phoenix_test, endpoint: DonatexWeb.Endpoint
 
 config :donatex, :mayar,
   base_url: "https://api.example.test",
-  api_key: "mayar_test_key"
+  api_key: "mayar_test_key",
+  webhook_token: "mayar_webhook_test_token"
 
 config :donatex, :overlay, token: "overlay_test_token"
 

@@ -88,7 +88,8 @@ config :swoosh, :api_client, false
 
 config :donatex, :mayar,
   base_url: System.get_env("MAYAR_API_BASE_URL", "https://api.mayar.club/hl/v1"),
-  api_key: System.get_env("MAYAR_API_KEY")
+  api_key: System.get_env("MAYAR_API_KEY"),
+  webhook_token: System.get_env("MAYAR_WEBHOOK_TOKEN", "dev-mayar-webhook-token")
 
 config :donatex, :overlay, token: System.get_env("OVERLAY_TOKEN", "dev-overlay-token")
 

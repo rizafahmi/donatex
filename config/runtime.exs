@@ -58,11 +58,28 @@ if config_env() == :prod do
 
   config :donatex, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  mayar_webhook_token = fetch_env!.("MAYAR_WEBHOOK_TOKEN")
+
+  if byte_size(mayar_webhook_token) < 20 do
+    raise """
+    environment variable MAYAR_WEBHOOK_TOKEN is too short.
+    """
+  end
+
+  overlay_token = fetch_env!.("OVERLAY_TOKEN")
+
+  if byte_size(overlay_token) < 20 do
+    raise """
+    environment variable OVERLAY_TOKEN is too short.
+    """
+  end
+
   config :donatex, :mayar,
     base_url: fetch_env!.("MAYAR_API_BASE_URL"),
-    api_key: fetch_env!.("MAYAR_API_KEY")
+    api_key: fetch_env!.("MAYAR_API_KEY"),
+    webhook_token: mayar_webhook_token
 
-  config :donatex, :overlay, token: fetch_env!.("OVERLAY_TOKEN")
+  config :donatex, :overlay, token: overlay_token
 
   config :donatex, :admin,
     username: fetch_env!.("ADMIN_USERNAME"),

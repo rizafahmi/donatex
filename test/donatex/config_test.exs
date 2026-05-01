@@ -9,7 +9,8 @@ defmodule Donatex.ConfigTest do
 
     Application.put_env(:donatex, :mayar,
       base_url: "https://api.example.test",
-      api_key: "mayar_test_key"
+      api_key: "mayar_test_key",
+      webhook_token: "mayar_webhook_test_token"
     )
 
     Application.put_env(:donatex, :overlay, token: "overlay_test_token")
@@ -29,6 +30,7 @@ defmodule Donatex.ConfigTest do
   test "reads mayar config" do
     assert Donatex.Config.mayar_base_url() == "https://api.example.test"
     assert Donatex.Config.mayar_api_key() == "mayar_test_key"
+    assert Donatex.Config.mayar_webhook_token() == "mayar_webhook_test_token"
   end
 
   test "reads overlay config" do
