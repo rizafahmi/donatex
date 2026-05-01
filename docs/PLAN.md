@@ -313,7 +313,7 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 - Whether an expiry timestamp is returned and in what field/format
 
 **Verification:**
-- [ ] Human review of client contract
+- [x] Human review of client contract
 
 **Dependencies:** Task 3
 
