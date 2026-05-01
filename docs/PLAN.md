@@ -74,14 +74,14 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Create the base Phoenix 1.8 + LiveView project with Ecto enabled so future tasks land into a running application rather than a blank repo.
 
 **Acceptance criteria:**
-- [ ] The Phoenix app boots locally.
-- [ ] LiveView is enabled and the default landing page renders.
-- [ ] `mix test` runs successfully on the fresh app.
+- [x] The Phoenix app boots locally.
+- [x] LiveView is enabled and the default landing page renders.
+- [x] `mix test` runs successfully on the fresh app.
 
 **Verification:**
-- [ ] Run `mix precommit`
-- [ ] Run `mix phx.server`
-- [ ] Manual check: visit `/` and confirm the app renders
+- [x] Run `mix precommit`
+- [x] Run `mix phx.server`
+- [x] Manual check: visit `/` and confirm the app renders
 
 **Dependencies:** None
 
@@ -98,14 +98,14 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Replace the default database adapter if needed, wire up SQLite, and ensure local dev/test databases are correctly configured.
 
 **Acceptance criteria:**
-- [ ] The app uses SQLite for development and test.
-- [ ] `mix ecto.create` and `mix ecto.migrate` work.
-- [ ] Repo configuration is stable in both dev and test.
+- [x] The app uses SQLite for development and test.
+- [x] `mix ecto.create` and `mix ecto.migrate` work.
+- [x] Repo configuration is stable in both dev and test.
 
 **Verification:**
-- [ ] Run `mix ecto.create`
-- [ ] Run `mix ecto.migrate`
-- [ ] Run `mix precommit`
+- [x] Run `mix ecto.create`
+- [x] Run `mix ecto.migrate`
+- [x] Run `mix precommit`
 
 **Dependencies:** Task 1
 
@@ -122,13 +122,13 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Define the required environment variables for Mayar, overlay access, admin auth, and app URL configuration so later tasks share a stable contract.
 
 **Acceptance criteria:**
-- [ ] Runtime config includes Mayar API base URL, Mayar API key, overlay token, admin username, admin password, and app base URL.
-- [ ] Development setup is documented around `source .env`.
-- [ ] Missing required production config fails clearly.
+- [x] Runtime config includes Mayar API base URL, Mayar API key, overlay token, admin username, admin password, and app base URL.
+- [x] Development setup is documented around `source .env`.
+- [x] Missing required production config fails clearly.
 
 **Verification:**
-- [ ] Manual check: app boots with values loaded from environment
-- [ ] Manual check: app reports a clear config error when a required value is missing in prod mode
+- [x] Manual check: app boots with values loaded from environment
+- [x] Manual check: app reports a clear config error when a required value is missing in prod mode
 
 **Dependencies:** Task 1
 

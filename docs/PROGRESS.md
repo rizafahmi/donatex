@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in the planning and architecture phase. The Phoenix application skeleton exists, but the donation system itself has not been implemented yet.
+Donatex is in Phase 1 implementation. The Phoenix application skeleton exists and runtime configuration is wired, but the donation system itself has not been implemented yet.
 
 ## Completed
 
@@ -20,6 +20,8 @@ Donatex is in the planning and architecture phase. The Phoenix application skele
   - secrets should be env-driven via `.env` in local development
 - Fixed the Dialyzer/`mix precommit` issue by adding `:ex_unit` to the Dialyzer PLT config in [mix.exs](file:///Users/riza/code/donatex/mix.exs)
 - Verified `mix dialyzer`, `mix test`, and `mix precommit` pass on the current codebase
+- Implemented env-driven runtime configuration and `.env` workflow (Task 3), including a centralized config access module and tests
+- Hardened secrets hygiene by ignoring `.env` and common key/cert files in `.gitignore`
 
 ## Current Architecture Direction
 
@@ -37,6 +39,7 @@ Donatex is in the planning and architecture phase. The Phoenix application skele
 - [docs/decisions/ADR-001-phoenix-liveview-monolith.md](file:///Users/riza/code/donatex/docs/decisions/ADR-001-phoenix-liveview-monolith.md)
 - [docs/decisions/ADR-002-persist-pending-donations.md](file:///Users/riza/code/donatex/docs/decisions/ADR-002-persist-pending-donations.md)
 - [docs/decisions/ADR-003-overlay-queue-in-liveview.md](file:///Users/riza/code/donatex/docs/decisions/ADR-003-overlay-queue-in-liveview.md)
+- [docs/decisions/ADR-004-env-driven-runtime-config.md](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
 
 ## Open Risks And Unknowns
 
