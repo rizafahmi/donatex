@@ -195,13 +195,13 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Define the Ecto schema, validations, and status constraints used by the rest of the system.
 
 **Acceptance criteria:**
-- [ ] Required fields are validated.
-- [ ] Only allowed statuses are accepted.
-- [ ] Amount is stored as an integer in IDR.
+- [x] Required fields are validated.
+- [x] Only allowed statuses are accepted.
+- [x] Amount is stored as an integer in IDR.
 
 **Verification:**
-- [ ] Run schema tests
-- [ ] Manual check: invalid attrs are rejected in changeset tests
+- [x] Run schema tests
+- [x] Manual check: invalid attrs are rejected in changeset tests
 
 **Dependencies:** Task 5
 

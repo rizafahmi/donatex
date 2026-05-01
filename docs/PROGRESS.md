@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix app + SQLite + runtime config + placeholder routes), and the donations migration (Task 5) has landed. The donation domain (schema + context + tests) is next.
+Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix app + SQLite + runtime config + placeholder routes). Data Model Task 5 (donations migration) and Task 6 (Donation schema + changeset) are complete. Next is the Donations context + persistence behavior tests (Tasks 7-8).
 
 ## Completed
 
@@ -26,6 +26,7 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 - Hardened secrets hygiene by ignoring `.env` and common key/cert files in `.gitignore`
 - Completed Foundation Task 4 (route placeholders for donor, overlay, admin, and Mayar webhook)
 - Completed Data Model Task 5 (donations migration + unique index + verification test)
+- Completed Data Model Task 6 (Donation schema + changeset validations + schema tests)
 
 ## Current Architecture Direction
 
@@ -56,7 +57,6 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 
 ## Not Started Yet
 
-- Donations schema and changeset
 - Donations context
 - Mayar API client
 - Webhook controller and webhook processing pipeline
@@ -68,4 +68,4 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 
 ## Recommended Next Step
 
-Implement Task 6 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): add the `Donation` schema and changeset validations.
+Implement Task 7 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): add the Donations context functions used by QR generation, webhook ingestion, overlay recovery, and admin listing.
