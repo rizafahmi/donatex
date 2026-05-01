@@ -382,16 +382,22 @@ That would add system complexity without solving an MVP problem the current desi
 
 ## Webhook Security Risk
 
-The PRD requires that only valid Mayar webhooks trigger alerts. However, the published Mayar documentation reviewed so far documents webhook payloads and management endpoints but does not clearly document a request signature or HMAC verification scheme.
+The PRD requires that only valid Mayar webhooks trigger alerts. The published Mayar documentation reviewed for this project documents webhook payloads and management endpoints, but does not document a request signature header, shared secret exchange, or HMAC verification scheme.
 
-This means the architecture must treat webhook authenticity as an unresolved integration risk.
+For MVP, Donatex adopts a fallback trust model instead of assuming undocumented signing exists.
 
 ### Required Handling
 
 - Isolate authenticity checks in `Donatex.Mayar.WebhookAuth`
+- Register an HTTPS callback URL that includes a non-guessable `MAYAR_WEBHOOK_TOKEN`
+- Reject requests whose token does not match before any database writes or PubSub broadcast
 - Do not spread webhook trust assumptions through controller or business logic
-- Document the final accepted verification mechanism once confirmed from Mayar behavior, dashboard configuration, or updated docs
-- Until confirmed, treat the webhook security design as incomplete
+- Keep payload validation and donation correlation checks even after token verification
+
+### Residual Risk
+
+- The URL-secret model is weaker than signed webhooks because it does not prove payload integrity
+- If Mayar later documents an official signing mechanism, replace the token fallback in `Donatex.Mayar.WebhookAuth`
 
 ## Error And Idempotency Model
 

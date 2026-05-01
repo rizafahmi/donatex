@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix app + SQLite + runtime config + placeholder routes). Data Model Tasks 5-8 are complete (donations migration, donation schema, donations context, and persistence behavior tests). Next is Mayar integration contract work starting with Task 9.
+Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Task 9 is complete. Next is Task 10: define the Mayar client interface.
 
 ## Completed
 
@@ -29,6 +29,9 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 - Completed Data Model Task 6 (Donation schema + changeset validations + schema tests)
 - Completed Data Model Task 7 (Donations context with create/mark-paid/recovery-query/mark-alerted/admin-list APIs and tests)
 - Completed Data Model Task 8 (persistence behavior tests for dedupe + state transitions + recovery query)
+- Completed Mayar Integration Task 9 (validated that Mayar docs do not publish webhook signing details and chose the MVP fallback trust model)
+- Extended the env/config contract with `MAYAR_WEBHOOK_TOKEN` so webhook auth can be enforced without revisiting runtime configuration
+- Documented the Mayar webhook fallback strategy in the README and an ADR
 
 ## Current Architecture Direction
 
@@ -49,10 +52,11 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 - [docs/decisions/ADR-004-env-driven-runtime-config.md](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
 - [docs/decisions/ADR-005-placeholder-public-surfaces.md](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
 - [docs/decisions/ADR-006-donations-table-schema.md](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
+- [docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md](file:///Users/riza/code/donatex/docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md)
 
 ## Open Risks And Unknowns
 
-- Mayar’s public webhook docs do not clearly document a signature or HMAC verification scheme
+- Mayar’s public webhook docs still do not publish a signature or HMAC verification scheme; MVP will rely on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - The exact response shape of `POST /qrcode/create` still needs to be confirmed against real or sandbox responses
 - The exact mapping between Mayar transaction identifiers and local donation rows still needs to be finalized during implementation
 - Pending donation cleanup behavior needs a final implementation decision if QR creation partially fails
@@ -69,4 +73,4 @@ Donatex is in Phase 2 implementation. Foundation Tasks 1-4 are complete (Phoenix
 
 ## Recommended Next Step
 
-Implement Task 9 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): validate the Mayar webhook authenticity model.
+Implement Task 10 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): define the Mayar client interface.

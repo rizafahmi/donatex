@@ -266,12 +266,12 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Resolve the biggest documented gap: the Mayar docs show payloads and management endpoints but do not document a webhook signature scheme. This task confirms whether one exists in practice or whether the system must validate authenticity another way.
 
 **Acceptance criteria:**
-- [ ] Review the Mayar docs and dashboard settings for signature/header support.
-- [ ] If available, document the exact header and verification algorithm.
-- [ ] If unavailable, choose and document the fallback trust model for MVP.
+- [x] Review the Mayar docs and dashboard settings for signature/header support.
+- [x] If available, document the exact header and verification algorithm.
+- [x] If unavailable, choose and document the fallback trust model for MVP.
 
 **Verification:**
-- [ ] Write the result into project docs or code comments
+- [x] Write the result into project docs or code comments
 - [ ] Human review confirms the chosen security model is acceptable
 
 **Dependencies:** Task 3
@@ -279,6 +279,7 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Files likely touched:**
 - `docs/PLAN.md`
 - `README.md`
+- `docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md`
 
 **Estimated scope:** XS
 
