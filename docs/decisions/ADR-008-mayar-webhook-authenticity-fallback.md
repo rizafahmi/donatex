@@ -27,6 +27,30 @@ Those pages do not document any of the usual authenticity features expected for 
 
 That leaves the app with a real security gap if it accepts unsigned requests on a fixed public endpoint.
 
+## Evidence
+
+This risk is reproducible in-app with [task9_webhook_risk_proof.exs](file:///Users/riza/code/donatex/scripts/task9_webhook_risk_proof.exs), which uses `Plug.Test.conn/3` and calls the Phoenix router directly.
+
+Run:
+
+```bash
+mix run scripts/task9_webhook_risk_proof.exs
+```
+
+Observed output:
+
+```text
+Request #1 to /webhooks/mayar
+Status: 200
+Body: {"ok":true}
+
+Request #2 to /webhooks/mayar
+Status: 200
+Body: {"ok":true}
+
+Control check: tokenized-like path => 404
+```
+
 ## Decision
 
 For the MVP, Donatex will use a tokenized HTTPS callback URL as its webhook authenticity fallback.
