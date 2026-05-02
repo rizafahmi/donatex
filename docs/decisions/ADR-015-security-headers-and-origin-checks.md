@@ -34,6 +34,7 @@ The donor and overlay pages also load external images (Mayar QR image URLs), and
    - allows remote QR images while keeping other sources locked down
    - avoids `unsafe-inline` scripts by allowing the one required inline bootstrap script via a CSP script hash
 3. Enable origin checking in production by deriving `check_origin` from `DONATEX_BASE_URL`.
+4. Include `x-content-type-options: nosniff` in the shared headers.
 
 ## Alternatives Considered
 
@@ -60,4 +61,3 @@ The donor and overlay pages also load external images (Mayar QR image URLs), and
 - The application gains a stable baseline security header policy that applies to all routes.
 - LiveView continues to work without enabling `unsafe-inline` for scripts.
 - Production deployments must set `DONATEX_BASE_URL` correctly so origin checks accept the correct scheme/host/port.
-

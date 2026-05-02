@@ -3,7 +3,7 @@
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
 ## 2026-05-02: Validate Mayar QR Image URLs And Redact QR Data From Logs (ADR-017)
-- Reason: Prevent unsafe URL rendering and keep webhook correlation correct by requiring Mayar transaction ids, validating QR URL schemes, and avoiding QR URL leakage in logs.
+- Reason: Prevent unsafe URL rendering and keep webhook correlation correct by validating QR URL schemes, deriving a stable Mayar transaction id (response `transactionId`/`id` or UUID embedded in the QR URL), and avoiding QR URL leakage in logs.
 - Reference: [ADR-017](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
 
 ## 2026-05-02: Fail Closed When QR Is Created But Donation Persistence Fails (ADR-018)

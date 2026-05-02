@@ -23,9 +23,24 @@ Because the Mayar response and webhook payloads are treated as untrusted input, 
 - avoid rendering unexpected URL schemes that could be abused as an injection vector
 - avoid logging usable QR content that might be sensitive or replayable while still allowing operational debugging
 
+During real traffic testing, Mayar `POST /qrcode/create` was observed to sometimes omit `transactionId`/`id`, returning only:
+
+```json
+{
+  "statusCode": 200,
+  "messages": "Success",
+  "data": {
+    "amount": 25000,
+    "url": "`https://media.mayar.club/images/resized/480/<uuid>.png`"
+  }
+}
+```
+
+In that case, the `<uuid>` filename component appears to be stable and usable for webhook correlation.
+
 ## Decision
 
-1. Require the Mayar QR create API response to include a non-empty transaction identifier (`transactionId` or fallback `id`). If it is missing, treat the response as `{:unexpected_response, body}`.
+1. Prefer the Mayar QR create API response transaction identifier (`transactionId` or fallback `id`). If it is missing, derive the transaction id from the QR image URL path when it contains a UUID filename (e.g. `.../<uuid>.png`). If neither is available, treat the response as `{:unexpected_response, body}`.
 2. Validate `qr_image_url` before returning it to the caller:
    - allow `https://...`
    - allow `data:image/{png|jpeg|webp};base64,...`
@@ -38,9 +53,9 @@ Because the Mayar response and webhook payloads are treated as untrusted input, 
 
 ### Derive a transaction id when Mayar omits one
 
-- Pros: keeps the donor flow going if Mayar changes response shape
+- Pros: keeps the donor flow going if Mayar omits `transactionId` but embeds a stable UUID in the QR URL
 - Cons: breaks webhook correlation if Mayar webhooks reference the real transaction id; increases risk of misattribution
-- Rejected because the donation lifecycle depends on `mayar_transaction_id` as the deduplication key and correlation handle
+- Accepted only when the derived id is clearly Mayar-provided (a UUID in the QR URL path); still fail closed if no stable identifier can be extracted
 
 ### Allow any `data:image/*` URL
 
