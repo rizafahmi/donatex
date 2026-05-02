@@ -14,4 +14,4 @@
 
 - Does Mayar expose any undocumented webhook signature header in the dashboard or live requests, or must MVP authenticity use a fallback strategy?
 - What exact response fields does `POST /qrcode/create` return in practice for a successful dynamic QR creation?
-- Should `transactionStatus = paid` or `status = SUCCESS` be treated as the primary condition for donation confirmation, or both?
+- Donation confirmation currently treats `paid` and `SUCCESS` statuses as successful payment; expand this set only after observing new real payload values.

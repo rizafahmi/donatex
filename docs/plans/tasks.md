@@ -265,6 +265,7 @@
 - [x] QR creation requests accept an amount and return normalized app data.
 - [x] Errors are normalized into app-friendly return tuples.
 - [x] Successful QR creation logs include whether the transaction id came from response fields or was derived from the QR URL (to help confirm webhook correlation in real traffic).
+- [x] Observed in real traffic: when Mayar QR create omits `transactionId`/`id`, the derived UUID from the QR URL matches the webhook `transactionId` for the same payment.
 
 **Verification:**
 - [x] Run client tests with mocked HTTP responses
@@ -745,13 +746,13 @@
 **Description:** Capture enough setup information that the app can be configured, exposed publicly, and connected to Mayar without tribal knowledge.
 
 **Acceptance criteria:**
-- [ ] `.env` variables are documented.
-- [ ] Mayar webhook registration flow is documented.
-- [ ] Overlay and admin URLs are documented.
-- [ ] Recovery behavior and webhook retry caveats are documented.
+- [x] `.env` variables are documented.
+- [x] Mayar webhook registration flow is documented.
+- [x] Overlay and admin URLs are documented.
+- [x] Recovery behavior and webhook retry caveats are documented.
 
 **Verification:**
-- [ ] Manual doc review
+- [x] Manual doc review
 
 **Dependencies:** Task 32
 

@@ -3,7 +3,7 @@
 ## Current State
 - Latest commit: 142d725 (docs(adr): record webhook acceptance criteria)
 - Working tree: has uncommitted changes
-- Test status: 75 tests, 0 failures
+- Test status: 76 tests, 0 failures
 - Lint: `mix credo` passing
 - Dialyzer: `mix dialyzer` passing
 - Full verification: `mix precommit` passing
@@ -24,9 +24,9 @@
 - [x] Fix Credo nesting findings in DonateLive amount validation and Mayar create QR logging helpers
 - [x] Stabilize SQLite DB tests by running donations DataCase tests non-async
 - [x] Validate donation query indexes (`donations_recovery_queue_idx`, `donations_order_idx`) via migration tests
+- [x] Confirm webhook transaction id matches the QR create identifier (observed `id_source=url` create response correlated with webhook `transactionId` in real traffic)
 
 ## In Progress
-- [ ] Confirm webhook transaction id matches the QR create identifier (response `transactionId`/`id` or UUID extracted from QR URL)
 - [ ] Document setup and deployment details (env vars, webhook registration, private URLs)
 - [ ] Run a final end-to-end verification pass (manual smoke test)
 
@@ -35,9 +35,8 @@
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 
 ## Next Steps
-1. Confirm webhook transaction id matches the QR create identifier (response `transactionId`/`id` or UUID extracted from QR URL)
-2. Document setup and deployment details (env vars, webhook registration, private URLs)
-3. Run a final end-to-end verification pass (manual smoke test)
+1. Document setup and deployment details (env vars, webhook registration, private URLs)
+2. Run a final end-to-end verification pass (manual smoke test)
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

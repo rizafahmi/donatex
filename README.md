@@ -24,6 +24,12 @@ Donatex expects these values to be provided via environment variables. In develo
 | `ADMIN_USERNAME` | Basic auth username for `/admin` |
 | `ADMIN_PASSWORD` | Basic auth password for `/admin` |
 | `DONATEX_BASE_URL` | Public base URL of this app (used to build public links) |
+| `PHX_HOST` | Public host used by Phoenix endpoint URL config (prod) |
+| `SECRET_KEY_BASE` | Required in production; generate with `mix phx.gen.secret` |
+| `DATABASE_PATH` | Absolute path to SQLite DB file (prod) |
+| `PORT` | Server port (defaults to 4000) |
+| `PHX_SERVER` | Set to `true` when running as a server in production |
+| `POOL_SIZE` | Repo pool size (defaults to 5) |
 
 ## Mayar Webhook Authenticity
 
@@ -39,6 +45,15 @@ For the MVP, Donatex will treat webhook authenticity as a URL-secret model:
 - Still validate payload shape and correlate the event to an existing donation row.
 
 This is weaker than signed webhooks because it does not provide message integrity. If Mayar later documents official request signing, Donatex should replace the URL-secret fallback with that mechanism.
+
+## Setup & Deployment
+
+See [OPERATIONS.md](docs/OPERATIONS.md) for:
+
+- webhook callback URL format and registration steps
+- overlay/admin URLs to copy into OBS and your browser
+- recovery behavior and webhook retry/deduping semantics
+- production-only env vars (`DATABASE_PATH`, `SECRET_KEY_BASE`, `PHX_HOST`, etc.)
 
 ## Learn more
 
