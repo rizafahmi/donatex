@@ -47,6 +47,8 @@ defmodule Donatex.MixProject do
       {:usage_rules, "~> 1.0", only: [:dev]},
       {:dialyxir, "~> 1.0", runtime: false, only: [:dev, :test]},
       {:credo, "~> 1.0", runtime: false, only: [:dev, :test]},
+      {:ex_slop, "~> 0.1", only: [:dev, :test], runtime: false},
+      {:ex_ast, "~> 0.7", only: [:dev, :test], runtime: false},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.5"},

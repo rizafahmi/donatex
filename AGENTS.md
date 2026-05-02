@@ -36,6 +36,15 @@ LiveView pages should follow Phoenix 1.8 layout conventions, including wrapping 
 - Do not add extra payment methods beyond QRIS.
 - Do not introduce a separate queue service or external broker unless the simple single-node LiveView + PubSub approach proves insufficient.
 
+## Guidelines
+- Use ExAST when code structure matters; prefer it over regex for Elixir code transformations. Example:
+
+```shell
+mix ex_ast.search  'IO.inspect(_)'
+mix ex_ast.replace 'IO.inspect(expr, _)' 'Logger.debug(inspect(expr))' lib/
+mix ex_ast.diff lib/old.ex lib/new.ex
+```
+
 ## Topic Docs
 
 - [Elixir Guideline](docs/elixir-guide.md)

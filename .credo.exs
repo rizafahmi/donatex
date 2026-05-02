@@ -214,6 +214,9 @@
           #
           # Custom checks can be created using `mix credo.gen.check`.
           #
+        ],
+        extra: [
+          {ExSlop, :recommended}
         ]
       }
     }
