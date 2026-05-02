@@ -65,6 +65,66 @@ defmodule Donatex.Mayar.ClientTest do
             }} = Client.create_qr(10_000)
   end
 
+  test "create_qr/1 extracts mayar_transaction_id from the QR url when no transactionId is present" do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => %{
+          "amount" => 25_000,
+          "url" =>
+            "`https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png`"
+        }
+      })
+    end)
+
+    assert {:ok,
+            %Client.DynamicQr{
+              mayar_transaction_id: "ce50314d-52fe-4cfe-8488-0ccc8a0393a8",
+              amount: 25_000,
+              qr_image_url:
+                "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png",
+              expires_at: nil
+            }} = Client.create_qr(25_000)
+  end
+
+  test "create_qr/1 accepts alternate response field names and parses expires_at" do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => %{
+          "transactionId" => "txn_test_20000",
+          "amount" => "20000",
+          "qrImageUrl" => "https://example.invalid/qr/20000",
+          "expiresAt" => "2026-05-02T10:00:00Z"
+        }
+      })
+    end)
+
+    assert {:ok,
+            %Client.DynamicQr{
+              mayar_transaction_id: "txn_test_20000",
+              amount: 20_000,
+              qr_image_url: "https://example.invalid/qr/20000",
+              expires_at: %DateTime{}
+            }} = Client.create_qr(20_000)
+  end
+
+  test "create_qr/1 parses unix timestamp expiry in seconds or milliseconds" do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => %{
+          "transactionId" => "txn_test_expiry_epoch",
+          "amount" => 30_000,
+          "url" => "https://example.invalid/qr/30000",
+          "expiresAt" => 1_800_000_000_000
+        }
+      })
+    end)
+
+    assert {:ok, %Client.DynamicQr{expires_at: %DateTime{} = expires_at}} =
+             Client.create_qr(30_000)
+
+    assert expires_at.year == 2027
+  end
+
   test "create_qr/1 maps 401 responses to unauthorized" do
     Req.Test.expect(__MODULE__, fn conn ->
       Plug.Conn.send_resp(conn, 401, "unauthorized")

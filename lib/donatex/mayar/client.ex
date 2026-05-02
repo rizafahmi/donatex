@@ -51,11 +51,14 @@ defmodule Donatex.Mayar.Client do
 
     require Logger
 
+    @uuid_regex ~r/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
+
     @impl true
     def create_qr(amount_idr) do
       case Req.post(request(), url: "/qrcode/create", json: %{amount: amount_idr}) do
         {:ok, %Req.Response{status: status, body: body}} ->
           response = normalize_response(status, body)
+          maybe_log_create_qr_body(body)
           log_create_qr_response(status, body, response)
           response
 
@@ -143,6 +146,12 @@ defmodule Donatex.Mayar.Client do
       )
     end
 
+    defp maybe_log_create_qr_body(body) do
+      if Application.get_env(:donatex, :mayar_log_create_qr_body, false) do
+        Logger.debug("Mayar create_qr raw_body=#{inspect_body(body)}")
+      end
+    end
+
     defp format_expires_at(nil), do: "nil"
 
     defp format_expires_at(%DateTime{} = datetime) do
@@ -158,11 +167,11 @@ defmodule Donatex.Mayar.Client do
     end
 
     defp build_dynamic_qr(%{"data" => data}) when is_map(data) do
-      with {:ok, mayar_transaction_id} <- fetch_binary(data, ["transactionId", "id"]),
-           {:ok, amount} <- fetch_positive_integer(data, ["amount"]),
-           {:ok, qr_image_url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
+      with {:ok, qr_image_url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
            qr_image_url <- normalize_qr_image_url(qr_image_url),
            :ok <- validate_qr_image_url(qr_image_url),
+           {:ok, mayar_transaction_id} <- fetch_mayar_transaction_id(data, qr_image_url),
+           {:ok, amount} <- fetch_positive_integer(data, ["amount"]),
            {:ok, expires_at} <-
              parse_expires_at(Map.get(data, "expiresAt") || Map.get(data, "expires_at")) do
         {:ok,
@@ -192,6 +201,37 @@ defmodule Donatex.Mayar.Client do
       fetch(data, keys, &positive_integer/1)
     end
 
+    defp fetch_mayar_transaction_id(data, qr_image_url) do
+      case fetch_binary(data, ["transactionId", "id"]) do
+        {:ok, mayar_transaction_id} ->
+          {:ok, mayar_transaction_id}
+
+        :error ->
+          extract_transaction_id_from_url(qr_image_url)
+      end
+    end
+
+    defp extract_transaction_id_from_url(url) when is_binary(url) do
+      case URI.parse(url) do
+        %URI{path: path} when is_binary(path) and byte_size(path) > 0 ->
+          transaction_id =
+            path
+            |> Path.basename()
+            |> Path.rootname()
+
+          if uuid?(transaction_id) do
+            {:ok, transaction_id}
+          else
+            :error
+          end
+
+        _other ->
+          :error
+      end
+    end
+
+    defp extract_transaction_id_from_url(_url), do: :error
+
     defp parse_expires_at(nil), do: {:ok, nil}
     defp parse_expires_at(""), do: {:ok, nil}
 
@@ -202,7 +242,24 @@ defmodule Donatex.Mayar.Client do
       end
     end
 
+    defp parse_expires_at(expires_at) when is_integer(expires_at) and expires_at > 0 do
+      expires_at
+      |> normalize_unix_timestamp()
+      |> DateTime.from_unix()
+      |> case do
+        {:ok, parsed} -> {:ok, parsed}
+        {:error, _reason} -> :error
+      end
+    end
+
     defp parse_expires_at(_expires_at), do: :error
+
+    defp normalize_unix_timestamp(timestamp)
+         when is_integer(timestamp) and timestamp > 4_000_000_000 do
+      div(timestamp, 1_000)
+    end
+
+    defp normalize_unix_timestamp(timestamp), do: timestamp
 
     defp present_binary(value) when is_binary(value) do
       case String.trim(value) do
@@ -214,6 +271,17 @@ defmodule Donatex.Mayar.Client do
     defp present_binary(_value), do: nil
 
     defp positive_integer(value) when is_integer(value) and value > 0, do: value
+
+    defp positive_integer(value) when is_binary(value) do
+      value
+      |> String.trim()
+      |> Integer.parse()
+      |> case do
+        {integer, ""} when integer > 0 -> integer
+        _ -> nil
+      end
+    end
+
     defp positive_integer(_value), do: nil
 
     defp normalize_qr_image_url(url) when is_binary(url) do
@@ -229,8 +297,6 @@ defmodule Donatex.Mayar.Client do
     end
 
     defp validate_qr_image_url(url) when is_binary(url) do
-      url = normalize_qr_image_url(url)
-
       cond do
         https_url?(url) -> :ok
         data_image_url?(url) -> :ok
@@ -260,6 +326,10 @@ defmodule Donatex.Mayar.Client do
         %URI{host: host} when host in ["localhost", "127.0.0.1", "0.0.0.0"] -> true
         _ -> false
       end
+    end
+
+    defp uuid?(value) when is_binary(value) do
+      Regex.match?(@uuid_regex, value)
     end
   end
 
