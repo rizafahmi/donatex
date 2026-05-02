@@ -11,7 +11,7 @@ defmodule DonatexWeb.SecurityHeadersTest do
              get_resp_header(conn, "permissions-policy")
 
     assert [csp] = get_resp_header(conn, "content-security-policy")
-    assert csp =~ "script-src 'self' 'sha256-upezcioBKi0E/iqFFMYwRsb+SJt3JiqGq3KOHTBgB1M='"
+    assert csp =~ "script-src 'self' 'sha256-EVYDGHSK/rxwzu+pTaoqPoOXtDc/oiZPntzv6wWXhj8='"
     refute csp =~ "script-src 'self' 'unsafe-inline'"
   end
 end
