@@ -14,16 +14,31 @@ defmodule DonatexWeb.DonationPresenter do
     }
   end
 
-  def format_idr(amount) when is_integer(amount) do
+  def format_idr(amount) when is_integer(amount) and amount >= 0 do
     amount
     |> Integer.to_string()
-    |> String.graphemes()
-    |> Enum.reverse()
-    |> Enum.chunk_every(3)
-    |> Enum.map(&(Enum.reverse(&1) |> Enum.join()))
-    |> Enum.reverse()
-    |> Enum.join(".")
+    |> format_digits_with_thousands_separator()
   end
+
+  def format_idr(amount) when is_integer(amount) do
+    "-" <> format_idr(-amount)
+  end
+
+  defp format_digits_with_thousands_separator(digits) when is_binary(digits) do
+    digits
+    |> String.reverse()
+    |> split_every_three_bytes()
+    |> Enum.intersperse(".")
+    |> IO.iodata_to_binary()
+    |> String.reverse()
+  end
+
+  defp split_every_three_bytes(<<a, b, c, rest::binary>>) do
+    [<<a, b, c>> | split_every_three_bytes(rest)]
+  end
+
+  defp split_every_three_bytes(<<>>), do: []
+  defp split_every_three_bytes(rest), do: [rest]
 
   def present_message?(message) when is_binary(message), do: byte_size(String.trim(message)) > 0
   def present_message?(_message), do: false
