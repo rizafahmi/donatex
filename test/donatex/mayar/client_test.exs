@@ -1,6 +1,8 @@
 defmodule Donatex.Mayar.ClientTest do
   use ExUnit.Case, async: false
 
+  import ExUnit.CaptureLog
+
   alias Donatex.Mayar.Client
 
   setup :verify_req_expectations!
@@ -44,6 +46,8 @@ defmodule Donatex.Mayar.ClientTest do
       assert Jason.decode!(body) == %{"amount" => 10_000}
 
       Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
         "data" => %{
           "id" => "txn_test_10000",
           "amount" => 10_000,
@@ -66,7 +70,9 @@ defmodule Donatex.Mayar.ClientTest do
       Plug.Conn.send_resp(conn, 401, "unauthorized")
     end)
 
-    assert {:error, :unauthorized} = Client.create_qr(10_000)
+    capture_log(fn ->
+      assert {:error, :unauthorized} = Client.create_qr(10_000)
+    end)
   end
 
   test "create_qr/1 maps 429 responses to rate_limited" do
@@ -74,13 +80,17 @@ defmodule Donatex.Mayar.ClientTest do
       Plug.Conn.send_resp(conn, 429, "too many requests")
     end)
 
-    assert {:error, :rate_limited} = Client.create_qr(10_000)
+    capture_log(fn ->
+      assert {:error, :rate_limited} = Client.create_qr(10_000)
+    end)
   end
 
   test "create_qr/1 maps transport failures to network_error" do
     Req.Test.expect(__MODULE__, &Req.Test.transport_error(&1, :econnrefused))
 
-    assert {:error, :network_error} = Client.create_qr(10_000)
+    capture_log(fn ->
+      assert {:error, :network_error} = Client.create_qr(10_000)
+    end)
   end
 
   test "create_qr/1 returns unexpected_response when required fields are missing" do
@@ -88,8 +98,10 @@ defmodule Donatex.Mayar.ClientTest do
       Req.Test.json(conn, %{"data" => %{"amount" => 10_000}})
     end)
 
-    assert {:error, {:unexpected_response, %{"data" => %{"amount" => 10_000}}}} =
-             Client.create_qr(10_000)
+    capture_log(fn ->
+      assert {:error, {:unexpected_response, %{"data" => %{"amount" => 10_000}}}} =
+               Client.create_qr(10_000)
+    end)
   end
 
   test "create_qr/1 returns unexpected_response when qr_image_url is not an https or data:image URL" do
@@ -103,15 +115,17 @@ defmodule Donatex.Mayar.ClientTest do
       })
     end)
 
-    assert {:error,
-            {:unexpected_response,
-             %{
-               "data" => %{
-                 "amount" => 10_000,
-                 "transactionId" => "txn_test_bad_url",
-                 "url" => "javascript:alert(1)"
-               }
-             }}} = Client.create_qr(10_000)
+    capture_log(fn ->
+      assert {:error,
+              {:unexpected_response,
+               %{
+                 "data" => %{
+                   "amount" => 10_000,
+                   "transactionId" => "txn_test_bad_url",
+                   "url" => "javascript:alert(1)"
+                 }
+               }}} = Client.create_qr(10_000)
+    end)
   end
 
   defp verify_req_expectations!(_context) do

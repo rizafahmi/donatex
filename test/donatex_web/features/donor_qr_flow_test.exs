@@ -1,6 +1,8 @@
 defmodule DonatexWeb.DonorQrFlowTest do
   use DonatexWeb.ConnCase, async: false
 
+  import ExUnit.CaptureLog
+
   alias Donatex.Config
   alias Donatex.Donations.Donation
   alias Donatex.Repo
@@ -39,6 +41,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       assert Jason.decode!(body) == %{"amount" => 10_000}
 
       Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
         "data" => %{
           "transactionId" => "tx-donate-1",
           "amount" => 10_000,
@@ -70,6 +74,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
   } do
     Req.Test.expect(__MODULE__, fn conn ->
       Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
         "data" => %{
           "transactionId" => "tx-donate-2",
           "amount" => 10_000,
@@ -114,12 +120,14 @@ defmodule DonatexWeb.DonorQrFlowTest do
       Plug.Conn.send_resp(conn, 401, "unauthorized")
     end)
 
-    conn
-    |> visit(~p"/donate")
-    |> fill_in("Your name", with: "Riza")
-    |> choose("Rp 10.000", exact: false)
-    |> click_button("Create your QRIS")
-    |> assert_has("h1", "Donate")
+    capture_log(fn ->
+      conn
+      |> visit(~p"/donate")
+      |> fill_in("Your name", with: "Riza")
+      |> choose("Rp 10.000", exact: false)
+      |> click_button("Create your QRIS")
+      |> assert_has("h1", "Donate")
+    end)
   end
 
   defp verify_req_expectations!(_context) do
