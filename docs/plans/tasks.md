@@ -722,12 +722,12 @@
 **Description:** Log QR creation, webhook acceptance/rejection, duplicate deliveries, and replay events without leaking secrets.
 
 **Acceptance criteria:**
-- [ ] Success and failure states are visible in logs.
-- [ ] Secrets are not logged.
-- [ ] Duplicate webhook deliveries are distinguishable.
+- [x] Success and failure states are visible in logs.
+- [x] Secrets are not logged.
+- [x] Duplicate webhook deliveries are distinguishable.
 
 **Verification:**
-- [ ] Manual check of logs during local flow tests
+- [x] Manual check of logs during local flow tests
 
 **Dependencies:** Task 19, Task 30
 

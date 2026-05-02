@@ -30,8 +30,9 @@ Because the Mayar response and webhook payloads are treated as untrusted input, 
    - allow `https://...`
    - allow `data:image/{png|jpeg|webp};base64,...`
    - allow `http://localhost|127.0.0.1|0.0.0.0` only when explicitly enabled via configuration for local development
-3. When logging Mayar create QR failures, redact QR URL fields from logged response bodies.
+3. When logging Mayar create QR failures, redact QR URL fields from logged response bodies (both known URL keys and any response keys containing `qr`).
 4. Avoid using `Mix.env()` in runtime code paths (LiveView/controllers). Use runtime configuration flags instead for developer-only UI details.
+5. For lifecycle logging (QR create, webhook accept/reject, admin replay), log only correlation identifiers (transaction id, donation id) and avoid logging secrets or usable QR content.
 
 ## Alternatives Considered
 

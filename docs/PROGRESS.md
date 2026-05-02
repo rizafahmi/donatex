@@ -14,6 +14,7 @@
 - [x] Admin is basic-auth protected and can replay an alert without mutating `alerted`
 - [x] Mayar client requires a transaction id, validates QR image URL schemes, and avoids logging usable QR URLs
 - [x] Decide and test partial-failure behavior for “QR created but DB insert fails”
+- [x] Add safe lifecycle logging (QR creation, webhook accept/reject/duplicate, admin replay)
 
 ## In Progress
 - [ ] Confirm Mayar `POST /qrcode/create` response shape against real/sandbox traffic (field names, expiry semantics)
@@ -24,13 +25,11 @@
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - The exact response shape of `POST /qrcode/create` still needs to be confirmed against real or sandbox responses
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
-- Pending donation cleanup behavior needs a final implementation decision if QR creation partially fails
 
 ## Next Steps
-1. Decide and test partial-failure behavior for “QR created but DB insert fails”
-2. Confirm Mayar `POST /qrcode/create` response shape against real/sandbox traffic (field names, expiry semantics)
-3. Document setup and deployment details (env vars, webhook registration, private URLs)
-4. Run a final end-to-end verification pass (`mix precommit` + manual smoke test)
+1. Confirm Mayar `POST /qrcode/create` response shape against real/sandbox traffic (field names, expiry semantics)
+2. Document setup and deployment details (env vars, webhook registration, private URLs)
+3. Run a final end-to-end verification pass (`mix precommit` + manual smoke test)
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

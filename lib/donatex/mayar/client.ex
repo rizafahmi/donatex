@@ -102,25 +102,54 @@ defmodule Donatex.Mayar.Client do
     defp redact_body(%{"data" => data} = body) when is_map(data) do
       redacted_data =
         Enum.reduce(["url", "qrImageUrl", "qr_image_url"], data, fn key, acc ->
-          if Map.has_key?(acc, key) do
-            Map.put(acc, key, "[redacted]")
-          else
-            acc
-          end
+          Map.replace(acc, key, "[redacted]")
         end)
+        |> redact_qr_fields()
 
       Map.put(body, "data", redacted_data)
     end
 
     defp redact_body(body), do: body
 
-    defp log_create_qr_response(_status, _body, {:ok, _dynamic_qr}), do: :ok
+    defp redact_qr_fields(data) when is_map(data) do
+      Enum.reduce(Map.keys(data), data, fn
+        key, acc when is_binary(key) ->
+          if String.contains?(String.downcase(key), "qr") do
+            Map.put(acc, key, "[redacted]")
+          else
+            acc
+          end
+
+        _key, acc ->
+          acc
+      end)
+    end
+
+    defp log_create_qr_response(status, _body, {:ok, %DynamicQr{} = dynamic_qr}) do
+      Logger.info(
+        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
+      )
+    end
+
+    defp log_create_qr_response(_status, _body, {:error, :unauthorized}),
+      do: Logger.warning("Mayar create_qr failed reason=unauthorized")
+
+    defp log_create_qr_response(_status, _body, {:error, :rate_limited}),
+      do: Logger.warning("Mayar create_qr failed reason=rate_limited")
 
     defp log_create_qr_response(status, body, {:error, reason}) do
       Logger.warning(
         "Mayar create_qr failed status=#{status} reason=#{inspect(reason)} body=#{inspect_body(body)}"
       )
     end
+
+    defp format_expires_at(nil), do: "nil"
+
+    defp format_expires_at(%DateTime{} = datetime) do
+      DateTime.to_iso8601(datetime)
+    end
+
+    defp format_expires_at(other), do: inspect(other)
 
     defp exception_message(exception) do
       Exception.message(exception)
