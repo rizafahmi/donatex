@@ -328,12 +328,12 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Implement the HTTP client around Mayar’s authenticated endpoints for dynamic QR generation and any follow-up lookup needed for live confirmation.
 
 **Acceptance criteria:**
-- [ ] The client calls the configured Mayar base URL using the API key.
-- [ ] QR creation requests accept an amount and return normalized app data.
-- [ ] Errors are normalized into app-friendly return tuples.
+- [x] The client calls the configured Mayar base URL using the API key.
+- [x] QR creation requests accept an amount and return normalized app data.
+- [x] Errors are normalized into app-friendly return tuples.
 
 **Verification:**
-- [ ] Run client tests with mocked HTTP responses
+- [x] Run client tests with mocked HTTP responses
 
 **Dependencies:** Task 10
 
@@ -349,12 +349,12 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Cover the success and failure paths so later UI work can rely on the client contract without live API access.
 
 **Acceptance criteria:**
-- [ ] Success response is parsed correctly.
-- [ ] API errors return normalized failures.
-- [ ] Network failures return normalized failures.
+- [x] Success response is parsed correctly.
+- [x] API errors return normalized failures.
+- [x] Network failures return normalized failures.
 
 **Verification:**
-- [ ] Run `mix test test/.../mayar/client_test.exs`
+- [x] Run `mix test test/.../mayar/client_test.exs`
 
 **Dependencies:** Task 11
 
@@ -368,12 +368,12 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Isolate how `payment.received` maps into local donation updates using the payload fields documented by Mayar.
 
 **Acceptance criteria:**
-- [ ] The parser extracts event name, transaction ID, donor name, amount, and transaction status.
-- [ ] Non-`payment.received` events are ignored safely.
-- [ ] Missing critical fields are rejected.
+- [x] The parser extracts event name, transaction ID, donor name, amount, and transaction status.
+- [x] Non-`payment.received` events are ignored safely.
+- [x] Missing critical fields are rejected.
 
 **Verification:**
-- [ ] Run parser tests from example payloads
+- [x] Run parser tests from example payloads
 
 **Dependencies:** Task 9
 
@@ -385,9 +385,9 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 
 ### Checkpoint: Integration Contract
 
-- [ ] Mayar client contract is fixed
-- [ ] Webhook authenticity strategy is explicitly decided
-- [ ] Parser behavior is documented and tested
+- [x] Mayar client contract is fixed
+- [x] Webhook authenticity strategy is explicitly decided
+- [x] Parser behavior is documented and tested
 
 ### Phase 4: Donor Flow
 

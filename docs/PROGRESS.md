@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Tasks 9-10 are complete. Next is Task 11: implement the Mayar API client.
+Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Tasks 9-13 are complete. Next is Task 14: build the donor form UI.
 
 ## Completed
 
@@ -33,6 +33,9 @@ Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Mo
 - Extended the env/config contract with `MAYAR_WEBHOOK_TOKEN` so webhook auth can be enforced without revisiting runtime configuration
 - Documented the Mayar webhook fallback strategy in the README and an ADR
 - Completed Mayar Integration Task 10 (defined the internal Mayar client contract and normalized return type)
+- Completed Mayar Integration Task 11 (implemented the `Req`-backed Mayar API client with normalized success and error handling)
+- Completed Mayar Integration Task 12 (covered the Mayar client with mocked success, API error, and network failure tests)
+- Completed Mayar Integration Task 13 (extracted webhook payload parsing into `Donatex.Mayar.Webhook` and covered `payment.received` parsing, safe ignore behavior, and missing-field rejection)
 
 ## Current Architecture Direction
 
@@ -60,6 +63,7 @@ Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Mo
 - Mayar’s public webhook docs still do not publish a signature or HMAC verification scheme; MVP will rely on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - The exact response shape of `POST /qrcode/create` still needs to be confirmed against real or sandbox responses
 - The exact mapping between Mayar transaction identifiers and local donation rows still needs to be finalized during implementation
+- Webhook parsing currently accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 - Pending donation cleanup behavior needs a final implementation decision if QR creation partially fails
 
 ## Not Started Yet
@@ -72,6 +76,12 @@ Donatex is in Phase 3 implementation. Foundation Tasks 1-4 are complete, Data Mo
 - Basic auth plug for admin
 - End-to-end donation lifecycle implementation
 
+## Recently Verified
+
+- `mix test test/donatex/mayar/client_test.exs`
+- `mix test test/donatex/mayar/webhook_test.exs test/donatex_web/controllers/mayar_webhook_controller_test.exs`
+- `mix test`
+
 ## Recommended Next Step
 
-Implement Task 10 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): define the Mayar client interface.
+Implement Task 14 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): build the donor form UI.
