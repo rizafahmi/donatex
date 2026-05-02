@@ -402,6 +402,7 @@
 **Verification:**
 - [x] Manual check: simulate a webhook after page creation and watch the page update
 - [x] Feature test covers the transition
+- [x] Feature test covers the UUID-from-QR-URL correlation path when Mayar QR create omits `transactionId`/`id`
 
 **Dependencies:** Task 15, Task 19
 
