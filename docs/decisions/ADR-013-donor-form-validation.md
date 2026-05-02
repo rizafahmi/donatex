@@ -31,6 +31,7 @@ Implement donor form validation using `Ecto.Changeset` in `DonatexWeb.DonateLive
 - Validate amount selection by:
   - accepting preset amounts from an allowlist
   - requiring and validating `custom_amount` only when `amount_option == "custom"`
+  - enforcing `custom_amount >= 1000` and `custom_amount` in multiples of 1000 to match the mobile-friendly input step size
 
 ## Alternatives Considered
 

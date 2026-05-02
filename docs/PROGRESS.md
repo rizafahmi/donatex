@@ -3,7 +3,7 @@
 ## Current State
 - Latest commit: 142d725 (docs(adr): record webhook acceptance criteria)
 - Working tree: has uncommitted changes
-- Test status: 72 tests, 0 failures
+- Test status: 74 tests, 0 failures
 - Lint: `mix credo` passing
 - Dialyzer: `mix dialyzer` passing
 - Full verification: `mix precommit` passing
@@ -14,10 +14,12 @@
 - [x] Overlay consumes broadcasts, recovers missed alerts from DB, and plays alerts sequentially
 - [x] Admin is basic-auth protected and can replay an alert without mutating `alerted`
 - [x] Mayar client extracts a stable transaction id (response `transactionId`/`id` or UUID in the QR URL), validates QR image URL schemes, and avoids logging usable QR URLs
+- [x] Mayar create QR logging indicates whether the transaction id came from response fields or was derived from the QR URL (`id_source=response|url`)
 - [x] Decide and test partial-failure behavior for “QR created but DB insert fails”
 - [x] Add safe lifecycle logging (QR creation, webhook accept/reject/duplicate, admin replay)
 - [x] Confirm Mayar `POST /qrcode/create` response shape against real traffic (can return only `data.amount` + `data.url`)
 - [x] Add `x-content-type-options: nosniff` to shared browser security headers
+- [x] Fix donor custom amount browser validation by aligning input `min`/`step` and enforcing server-side multiples-of-1000
 
 ## In Progress
 - [ ] Confirm webhook transaction id matches the QR create identifier (response `transactionId`/`id` or UUID extracted from QR URL)

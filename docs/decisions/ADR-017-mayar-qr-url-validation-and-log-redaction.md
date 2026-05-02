@@ -48,6 +48,7 @@ In that case, the `<uuid>` filename component appears to be stable and usable fo
 3. When logging Mayar create QR failures, redact QR URL fields from logged response bodies (both known URL keys and any response keys containing `qr`).
 4. Avoid using `Mix.env()` in runtime code paths (LiveView/controllers). Use runtime configuration flags instead for developer-only UI details.
 5. For lifecycle logging (QR create, webhook accept/reject, admin replay), log only correlation identifiers (transaction id, donation id) and avoid logging secrets or usable QR content.
+6. For Mayar QR creation success logs, include whether the transaction id came from response fields (`transactionId`/`id`) or was derived from the QR URL path (useful when confirming webhook correlation against real traffic).
 
 ## Alternatives Considered
 

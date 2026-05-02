@@ -264,6 +264,7 @@
 - [x] The client calls the configured Mayar base URL using the API key.
 - [x] QR creation requests accept an amount and return normalized app data.
 - [x] Errors are normalized into app-friendly return tuples.
+- [x] Successful QR creation logs include whether the transaction id came from response fields or was derived from the QR URL (to help confirm webhook correlation in real traffic).
 
 **Verification:**
 - [x] Run client tests with mocked HTTP responses
@@ -331,6 +332,7 @@
 **Acceptance criteria:**
 - [x] Name is required.
 - [x] User can choose preset amounts or enter a custom amount.
+- [x] Custom amounts are validated as integers in IDR with mobile-friendly constraints (min Rp 1.000, step Rp 1.000).
 - [x] Message is optional.
 - [x] Layout works on mobile.
 
