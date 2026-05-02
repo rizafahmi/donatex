@@ -47,19 +47,22 @@ defmodule Donatex.Donations do
       nil ->
         {:error, :not_found}
 
-      %Donation{status: "paid"} = donation ->
-        {:ok, donation, false}
-
       donation ->
-        case donation |> Donation.changeset(%{status: "paid"}) |> Repo.update() do
-          {:ok, updated} -> {:ok, updated, true}
-          {:error, _changeset} = error -> error
-        end
+        mark_paid_with_change(donation)
     end
   end
 
   def mark_paid_by_mayar_transaction_id_with_change(_mayar_transaction_id),
     do: {:error, :invalid_transaction_id}
+
+  def mark_paid_with_change(%Donation{status: "paid"} = donation), do: {:ok, donation, false}
+
+  def mark_paid_with_change(%Donation{} = donation) do
+    case donation |> Donation.changeset(%{status: "paid"}) |> Repo.update() do
+      {:ok, updated} -> {:ok, updated, true}
+      {:error, _changeset} = error -> error
+    end
+  end
 
   def mark_paid_by_mayar_transaction_id(mayar_transaction_id)
       when is_binary(mayar_transaction_id) and byte_size(mayar_transaction_id) > 0 do

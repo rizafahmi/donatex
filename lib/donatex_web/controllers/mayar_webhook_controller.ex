@@ -54,10 +54,8 @@ defmodule DonatexWeb.MayarWebhookController do
 
         :ok
 
-      _donation ->
-        case Donations.mark_paid_by_mayar_transaction_id_with_change(
-               payment_received.mayar_transaction_id
-             ) do
+      donation ->
+        case Donations.mark_paid_with_change(donation) do
           {:ok, donation, true} ->
             Logger.info(
               "Mayar webhook accepted mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} amount=#{donation.amount}"
@@ -88,7 +86,9 @@ defmodule DonatexWeb.MayarWebhookController do
     end
   end
 
-  defp paid_status?(status) when is_binary(status), do: normalize_status(status) == "paid"
+  defp paid_status?(status) when is_binary(status) do
+    normalize_status(status) in ["paid", "success"]
+  end
 
   defp normalize_status(status) when is_binary(status) do
     status
