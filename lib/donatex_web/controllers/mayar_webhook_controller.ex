@@ -2,6 +2,7 @@ defmodule DonatexWeb.MayarWebhookController do
   use DonatexWeb, :controller
 
   alias Donatex.Donations
+  alias Donatex.Mayar.Webhook
 
   def create(conn, params) do
     _ = maybe_process_webhook(params)
@@ -9,9 +10,8 @@ defmodule DonatexWeb.MayarWebhookController do
   end
 
   defp maybe_process_webhook(params) do
-    with "payment.received" <- fetch_event(params),
-         %{} = data <- Map.get(params, "data"),
-         {:ok, mayar_transaction_id} <- fetch_transaction_id(data),
+    with {:ok, %Webhook.PaymentReceived{mayar_transaction_id: mayar_transaction_id}} <-
+           Webhook.parse(params),
          {:ok, donation, true} <-
            Donations.mark_paid_by_mayar_transaction_id_with_change(mayar_transaction_id) do
       Phoenix.PubSub.broadcast(
@@ -25,16 +25,6 @@ defmodule DonatexWeb.MayarWebhookController do
       _ -> :ok
     end
   end
-
-  defp fetch_event(%{"event" => event}) when is_binary(event), do: event
-  defp fetch_event(%{"event.received" => event}) when is_binary(event), do: event
-  defp fetch_event(_params), do: nil
-
-  defp fetch_transaction_id(%{"transactionId" => id}) when is_binary(id) and byte_size(id) > 0,
-    do: {:ok, id}
-
-  defp fetch_transaction_id(%{"id" => id}) when is_binary(id) and byte_size(id) > 0, do: {:ok, id}
-  defp fetch_transaction_id(_data), do: :error
 
   defp donation_payload(donation) do
     %{

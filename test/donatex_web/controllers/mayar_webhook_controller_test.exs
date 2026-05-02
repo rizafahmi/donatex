@@ -24,7 +24,8 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
         "data" => %{
           "transactionId" => "tx-webhook-1",
           "amount" => 10_000,
-          "customerName" => "Donor"
+          "customerName" => "Donor",
+          "transactionStatus" => "paid"
         }
       })
 
@@ -38,7 +39,11 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     |> put_req_header("accept", "application/json")
     |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
       "event" => "payment.received",
-      "data" => %{"transactionId" => "tx-webhook-1"}
+      "data" => %{
+        "transactionId" => "tx-webhook-1",
+        "amount" => 10_000,
+        "transactionStatus" => "paid"
+      }
     })
 
     refute_receive {:donation_paid, _payload}, 50
