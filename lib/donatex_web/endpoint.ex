@@ -8,7 +8,9 @@ defmodule DonatexWeb.Endpoint do
     store: :cookie,
     key: "_donatex_key",
     signing_salt: "i0kSIhYw",
-    same_site: "Lax"
+    same_site: "Lax",
+    http_only: true,
+    secure: Application.compile_env(:donatex, :secure_cookies, false)
   ]
 
   socket "/live", Phoenix.LiveView.Socket,
