@@ -2,7 +2,7 @@
 
 ## Current Status
 
-Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, and Mayar Integration Tasks 9-13 are complete. Next is Task 14: build the donor form UI.
+Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Model Tasks 5-8 are complete, Mayar Integration Tasks 9-13 are complete, and Donor Flow Task 14 is complete. Next is Task 15: wire donor submission to pending donation creation and QR generation.
 
 ## Completed
 
@@ -36,6 +36,7 @@ Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Mo
 - Completed Mayar Integration Task 11 (implemented the `Req`-backed Mayar API client with normalized success and error handling)
 - Completed Mayar Integration Task 12 (covered the Mayar client with mocked success, API error, and network failure tests)
 - Completed Mayar Integration Task 13 (extracted webhook payload parsing into `Donatex.Mayar.Webhook` and covered `payment.received` parsing, safe ignore behavior, and missing-field rejection)
+- Completed Donor Flow Task 14 (built the public donor form UI with required name validation, preset/custom amount selection, optional message, and responsive LiveView tests)
 
 ## Current Architecture Direction
 
@@ -68,9 +69,9 @@ Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Mo
 
 ## Not Started Yet
 
-- Mayar API client
 - Webhook controller and webhook processing pipeline
-- Donor LiveView
+- Donor submission + QR generation flow
+- Donor payment and paid-state UI
 - Overlay LiveView
 - Admin LiveView
 - Basic auth plug for admin
@@ -78,10 +79,12 @@ Donatex is in Phase 4 implementation. Foundation Tasks 1-4 are complete, Data Mo
 
 ## Recently Verified
 
+- `mix test test/donatex_web/live/donate_live_test.exs test/donatex_web/surface_routes_test.exs`
 - `mix test test/donatex/mayar/client_test.exs`
 - `mix test test/donatex/mayar/webhook_test.exs test/donatex_web/controllers/mayar_webhook_controller_test.exs`
+- `mix precommit`
 - `mix test`
 
 ## Recommended Next Step
 
-Implement Task 14 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): build the donor form UI.
+Implement Task 15 from [docs/PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md): wire donor submission to pending donation creation and QR generation.

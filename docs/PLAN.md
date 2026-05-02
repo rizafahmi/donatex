@@ -396,14 +396,14 @@ Build a single-streamer Phoenix LiveView app that lets viewers create a QRIS don
 **Description:** Add the public donation page with name, preset amounts, custom amount entry, and optional message.
 
 **Acceptance criteria:**
-- [ ] Name is required.
-- [ ] User can choose preset amounts or enter a custom amount.
-- [ ] Message is optional.
-- [ ] Layout works on mobile.
+- [x] Name is required.
+- [x] User can choose preset amounts or enter a custom amount.
+- [x] Message is optional.
+- [x] Layout works on mobile.
 
 **Verification:**
-- [ ] Run LiveView tests for validation
-- [ ] Manual check in a narrow mobile viewport
+- [x] Run LiveView tests for validation
+- [x] Manual check in a narrow mobile viewport
 
 **Dependencies:** Task 4
 
