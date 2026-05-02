@@ -43,6 +43,7 @@ The system must create one Mayar QRIS payment per donation, persist donation sta
 - The donor page creates local `pending` donations before Mayar payment confirmation
 - Mayar webhook processing upgrades matching donations to `paid`, then broadcasts alert events
 - Overlay recovery reads missed paid-but-unalerted rows from SQLite at mount time
+- The web layer applies a strict CSP + security header policy, and production uses LiveView origin checks
 
 ## High-Level Topology
 
@@ -380,6 +381,15 @@ Do not introduce:
 
 That would add system complexity without solving an MVP problem the current design cannot handle.
 
+## Web Security
+
+Donatex is expected to be deployed to the public internet, so browser-level protections are treated as part of the MVP baseline:
+
+- Apply a strict CSP and related security headers to all routes.
+- Require correct production LiveView origin configuration via env-driven `DONATEX_BASE_URL`.
+
+Implementation details and rationale are captured in ADR-015.
+
 ## Webhook Security Risk
 
 The PRD requires that only valid Mayar webhooks trigger alerts. The published Mayar documentation reviewed for this project documents webhook payloads and management endpoints, but does not document a request signature header, shared secret exchange, or HMAC verification scheme.
@@ -511,6 +521,8 @@ Architecture decisions live under [docs/decisions](file:///Users/riza/code/donat
 - [ADR-004: Env-Driven Runtime Config](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
 - [ADR-005: Land Placeholder Routes Early](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
 - [ADR-006: Donations Table Schema](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
+- [ADR-014: Use Erlang :queue For Overlay Alert FIFO](file:///Users/riza/code/donatex/docs/decisions/ADR-014-overlay-queue-uses-erlang-queue.md)
+- [ADR-015: Add CSP Security Headers And Production Origin Checks](file:///Users/riza/code/donatex/docs/decisions/ADR-015-security-headers-and-origin-checks.md)
 
 Future ADRs should cover:
 

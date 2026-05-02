@@ -55,6 +55,8 @@ mix ex_ast.diff lib/old.ex lib/new.ex
 - [Design Guideline](docs/DESIGN.md)
 - [Testing Guideline](docs/test-guide.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Plan Index](docs/PLAN.md)
+- [Progress](docs/PROGRESS.md)
 
 <!-- usage-rules-start -->
 <!-- igniter-start -->
