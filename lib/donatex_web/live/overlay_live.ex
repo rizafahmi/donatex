@@ -13,6 +13,7 @@ defmodule DonatexWeb.OverlayLive do
     queue =
       Donations.list_paid_unalerted_donations()
       |> Enum.map(&DonationPresenter.payload/1)
+      |> :queue.from_list()
 
     {:ok,
      socket
@@ -25,7 +26,7 @@ defmodule DonatexWeb.OverlayLive do
   def handle_info({:donation_paid, donation_payload}, socket) do
     {:noreply,
      socket
-     |> update(:queue, &(&1 ++ [donation_payload]))
+     |> update(:queue, &:queue.in(donation_payload, &1))
      |> start_next_alert()}
   end
 
@@ -73,12 +74,18 @@ defmodule DonatexWeb.OverlayLive do
     """
   end
 
-  defp start_next_alert(%{assigns: %{current: nil, queue: [next | rest]}} = socket) do
-    Process.send_after(self(), {:dismiss_current, next.id}, 5_000)
+  defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do
+    case :queue.out(queue) do
+      {{:value, next}, rest} ->
+        Process.send_after(self(), {:dismiss_current, next.id}, 5_000)
 
-    socket
-    |> assign(:current, next)
-    |> assign(:queue, rest)
+        socket
+        |> assign(:current, next)
+        |> assign(:queue, rest)
+
+      {:empty, _queue} ->
+        socket
+    end
   end
 
   defp start_next_alert(socket), do: socket
