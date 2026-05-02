@@ -115,6 +115,50 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> assert_has("h1", "Donate")
   end
 
+  test "webhook correlation works when QR create response omits transaction id and the UUID is derived from the QR URL",
+       %{
+         conn: conn
+       } do
+    transaction_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "amount" => 25_000,
+          "url" => "`https://media.mayar.club/images/resized/480/#{transaction_id}.png`"
+        }
+      })
+    end)
+
+    session =
+      conn
+      |> visit(~p"/donate")
+      |> fill_in("Your name", with: "Riza")
+      |> choose("Rp 25.000", exact: false)
+      |> click_button("Create your QRIS")
+      |> assert_has("h1", "Scan the QRIS")
+
+    donation = Repo.get_by!(Donation, mayar_transaction_id: transaction_id)
+
+    conn
+    |> recycle()
+    |> put_req_header("accept", "application/json")
+    |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+      "event" => "payment.received",
+      "data" => %{
+        "id" => donation.mayar_transaction_id,
+        "amount" => donation.amount,
+        "customerName" => donation.donor_name,
+        "transactionStatus" => "paid"
+      }
+    })
+
+    session
+    |> assert_has("h1", "Thank you for the support")
+  end
+
   test "shows an error and stays on the form when QR creation fails", %{conn: conn} do
     Req.Test.expect(__MODULE__, fn conn ->
       Plug.Conn.send_resp(conn, 401, "unauthorized")
