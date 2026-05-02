@@ -1,5 +1,5 @@
 defmodule Donatex.Donations.DonationTest do
-  use Donatex.DataCase, async: true
+  use Donatex.DataCase, async: false
 
   alias Donatex.Donations.Donation
 

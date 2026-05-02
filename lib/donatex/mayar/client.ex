@@ -152,21 +152,21 @@ defmodule Donatex.Mayar.Client do
           "response"
 
         :error ->
-          case fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]) do
-            {:ok, url} when is_binary(url) ->
-              if extract_transaction_id_from_url(normalize_qr_image_url(url)) != :error do
-                "url"
-              else
-                "unknown"
-              end
-
-            :error ->
-              "unknown"
-          end
+          transaction_id_source_from_url(data)
       end
     end
 
     defp transaction_id_source(_body), do: "unknown"
+
+    defp transaction_id_source_from_url(data) do
+      with {:ok, url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
+           normalized_url <- normalize_qr_image_url(url),
+           {:ok, _transaction_id} <- extract_transaction_id_from_url(normalized_url) do
+        "url"
+      else
+        _ -> "unknown"
+      end
+    end
 
     defp maybe_log_create_qr_body(body) do
       if Application.get_env(:donatex, :mayar_log_create_qr_body, false) do

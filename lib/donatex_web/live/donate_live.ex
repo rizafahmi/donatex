@@ -399,17 +399,20 @@ defmodule DonatexWeb.DonateLive do
           message: "Enter a donation amount of at least 1000"
         )
         |> validate_change(:custom_amount, fn :custom_amount, amount ->
-          if is_integer(amount) and rem(amount, 1_000) == 0 do
-            []
-          else
-            [custom_amount: "Enter an amount in multiples of 1000"]
-          end
+          validate_custom_amount_step(amount)
         end)
 
       _ ->
         add_error(changeset, :amount_option, "Choose a donation amount")
     end
   end
+
+  defp validate_custom_amount_step(amount)
+       when is_integer(amount) and rem(amount, 1_000) == 0,
+       do: []
+
+  defp validate_custom_amount_step(_amount),
+    do: [custom_amount: "Enter an amount in multiples of 1000"]
 
   defp assign_form(socket, changeset) do
     assign(socket, :form, to_form(changeset, as: :donation_form))

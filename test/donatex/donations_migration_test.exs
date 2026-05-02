@@ -1,5 +1,5 @@
 defmodule Donatex.DonationsMigrationTest do
-  use Donatex.DataCase, async: true
+  use Donatex.DataCase, async: false
   alias Ecto.Adapters.SQL
 
   test "donations table exists with expected columns, defaults, and unique index" do
@@ -53,5 +53,22 @@ defmodule Donatex.DonationsMigrationTest do
     assert Enum.any?(index_info_rows, fn [_seqno, _cid, name] ->
              name == "mayar_transaction_id"
            end)
+
+    assert index_columns("donations_recovery_queue_idx") == [
+             "status",
+             "alerted",
+             "inserted_at",
+             "id"
+           ]
+
+    assert index_columns("donations_order_idx") == ["inserted_at", "id"]
+  end
+
+  defp index_columns(index_name) do
+    %{rows: rows} = SQL.query!(Repo, "PRAGMA index_info(#{index_name})", [])
+
+    rows
+    |> Enum.sort_by(fn [seqno, _cid, _name] -> seqno end)
+    |> Enum.map(fn [_seqno, _cid, name] -> name end)
   end
 end
