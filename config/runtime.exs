@@ -85,10 +85,28 @@ if config_env() == :prod do
     username: fetch_env!.("ADMIN_USERNAME"),
     password: fetch_env!.("ADMIN_PASSWORD")
 
-  config :donatex, :app, base_url: fetch_env!.("DONATEX_BASE_URL")
+  base_url = fetch_env!.("DONATEX_BASE_URL")
+
+  origin =
+    case URI.parse(base_url) do
+      %URI{scheme: scheme, host: host, port: nil} when is_binary(scheme) and is_binary(host) ->
+        "#{scheme}://#{host}"
+
+      %URI{scheme: scheme, host: host, port: port}
+      when is_binary(scheme) and is_binary(host) and is_integer(port) ->
+        "#{scheme}://#{host}:#{port}"
+
+      _ ->
+        raise """
+        environment variable DONATEX_BASE_URL is invalid.
+        """
+    end
+
+  config :donatex, :app, base_url: base_url
 
   config :donatex, DonatexWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
+    check_origin: [origin],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.

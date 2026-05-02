@@ -3,6 +3,7 @@ defmodule DonatexWeb.MayarWebhookController do
 
   alias Donatex.Donations
   alias Donatex.Mayar.Webhook
+  alias DonatexWeb.DonationPresenter
 
   def create(conn, params) do
     _ = maybe_process_webhook(params)
@@ -17,23 +18,12 @@ defmodule DonatexWeb.MayarWebhookController do
       Phoenix.PubSub.broadcast(
         Donatex.PubSub,
         "donations:paid",
-        {:donation_paid, donation_payload(donation)}
+        {:donation_paid, DonationPresenter.payload(donation)}
       )
 
       :ok
     else
       _ -> :ok
     end
-  end
-
-  defp donation_payload(donation) do
-    %{
-      id: donation.id,
-      mayar_transaction_id: donation.mayar_transaction_id,
-      donor_name: donation.donor_name,
-      amount: donation.amount,
-      message: donation.message,
-      inserted_at: donation.inserted_at
-    }
   end
 end
