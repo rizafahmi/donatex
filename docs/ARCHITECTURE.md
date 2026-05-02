@@ -299,6 +299,7 @@ The exact topic naming can be adjusted, but the event contract should stay simpl
        ▼
 ╭────────────────────────────╮
 │ Donations/WebhookHandler   │
+│ confirm status + amount    │
 │ mark donation paid         │
 │ dedupe by tx id            │
 ╰──────┬─────────────────────╯
@@ -403,6 +404,8 @@ For MVP, Donatex adopts a fallback trust model instead of assuming undocumented 
 - Reject requests whose token does not match before any database writes or PubSub broadcast
 - Do not spread webhook trust assumptions through controller or business logic
 - Keep payload validation and donation correlation checks even after token verification
+  - Accept only `transactionStatus == paid` (or equivalent fallback)
+  - Require webhook amount to match the persisted donation amount
 
 ### Residual Risk
 

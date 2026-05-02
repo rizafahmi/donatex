@@ -2,6 +2,10 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
+## 2026-05-02: Require Paid Status And Amount Match For Webhook Processing (ADR-016)
+- Reason: Reduce false-positive paid transitions by validating payment status and correlating webhook amounts with persisted donations.
+- Reference: [ADR-016](file:///Users/riza/code/donatex/docs/decisions/ADR-016-webhook-acceptance-criteria.md)
+
 ## 2026-05-02: Add CSP Security Headers And Production Origin Checks (ADR-015)
 - Reason: Harden all public surfaces against XSS and cross-origin abuse in production deployments.
 - Reference: [ADR-015](file:///Users/riza/code/donatex/docs/decisions/ADR-015-security-headers-and-origin-checks.md)
