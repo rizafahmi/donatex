@@ -1,9 +1,9 @@
 defmodule DonatexWeb.AdminLive do
   use DonatexWeb, :live_view
 
+  require Logger
+
   alias Donatex.Donations
-  alias Donatex.Donations.Donation
-  alias Donatex.Repo
   alias DonatexWeb.DonationPresenter
 
   @impl Phoenix.LiveView
@@ -13,11 +13,16 @@ defmodule DonatexWeb.AdminLive do
 
   @impl Phoenix.LiveView
   def handle_event("replay", %{"id" => id}, socket) do
-    case Repo.get(Donation, id) do
+    case Donations.get_donation_by_id(id) do
       nil ->
+        Logger.warning("Admin replay failed donation_id=#{id} reason=not_found")
         {:noreply, put_flash(socket, :error, "Donation not found")}
 
       donation ->
+        Logger.info(
+          "Admin replay sent donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id}"
+        )
+
         Phoenix.PubSub.broadcast(
           Donatex.PubSub,
           "donations:paid",

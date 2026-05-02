@@ -35,6 +35,12 @@ defmodule Donatex.Donations do
 
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
+  def get_donation_by_id(id) when is_binary(id) and byte_size(id) > 0 do
+    Repo.get(Donation, id)
+  end
+
+  def get_donation_by_id(_id), do: nil
+
   def mark_paid_by_mayar_transaction_id_with_change(mayar_transaction_id)
       when is_binary(mayar_transaction_id) and byte_size(mayar_transaction_id) > 0 do
     case Repo.get_by(Donation, mayar_transaction_id: mayar_transaction_id) do
@@ -66,11 +72,7 @@ defmodule Donatex.Donations do
   def mark_paid_by_mayar_transaction_id(_mayar_transaction_id),
     do: {:error, :invalid_transaction_id}
 
-  def get_donation(id) when is_binary(id) and byte_size(id) > 0 do
-    Repo.get(Donation, id)
-  end
-
-  def get_donation(_id), do: nil
+  def get_donation(id), do: get_donation_by_id(id)
 
   def list_paid_unalerted_donations do
     Donation
