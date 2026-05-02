@@ -49,12 +49,23 @@ defmodule Donatex.Mayar.Client do
 
     @behaviour Impl
 
+    require Logger
+
     @impl true
     def create_qr(amount_idr) do
       case Req.post(request(), url: "/qrcode/create", json: %{amount: amount_idr}) do
-        {:ok, %Req.Response{status: status, body: body}} -> normalize_response(status, body)
-        {:error, %Req.TransportError{}} -> {:error, :network_error}
-        {:error, _exception} -> {:error, :upstream_error}
+        {:ok, %Req.Response{status: status, body: body}} ->
+          response = normalize_response(status, body)
+          log_create_qr_response(status, body, response)
+          response
+
+        {:error, %Req.TransportError{} = exception} ->
+          Logger.warning("Mayar create_qr network error: #{exception_message(exception)}")
+          {:error, :network_error}
+
+        {:error, exception} ->
+          Logger.warning("Mayar create_qr upstream error: #{exception_message(exception)}")
+          {:error, :upstream_error}
       end
     end
 
@@ -82,10 +93,46 @@ defmodule Donatex.Mayar.Client do
     defp normalize_response(status, _body) when status in 500..599, do: {:error, :upstream_error}
     defp normalize_response(_status, body), do: {:error, {:unexpected_response, body}}
 
+    defp inspect_body(body) do
+      body
+      |> redact_body()
+      |> inspect(limit: 20, printable_limit: 2_000)
+    end
+
+    defp redact_body(%{"data" => data} = body) when is_map(data) do
+      redacted_data =
+        Enum.reduce(["url", "qrImageUrl", "qr_image_url"], data, fn key, acc ->
+          if Map.has_key?(acc, key) do
+            Map.put(acc, key, "[redacted]")
+          else
+            acc
+          end
+        end)
+
+      Map.put(body, "data", redacted_data)
+    end
+
+    defp redact_body(body), do: body
+
+    defp log_create_qr_response(_status, _body, {:ok, _dynamic_qr}), do: :ok
+
+    defp log_create_qr_response(status, body, {:error, reason}) do
+      Logger.warning(
+        "Mayar create_qr failed status=#{status} reason=#{inspect(reason)} body=#{inspect_body(body)}"
+      )
+    end
+
+    defp exception_message(exception) do
+      Exception.message(exception)
+    rescue
+      _ -> inspect(exception)
+    end
+
     defp build_dynamic_qr(%{"data" => data}) when is_map(data) do
       with {:ok, mayar_transaction_id} <- fetch_binary(data, ["transactionId", "id"]),
            {:ok, amount} <- fetch_positive_integer(data, ["amount"]),
            {:ok, qr_image_url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
+           qr_image_url <- normalize_qr_image_url(qr_image_url),
            :ok <- validate_qr_image_url(qr_image_url),
            {:ok, expires_at} <-
              parse_expires_at(Map.get(data, "expiresAt") || Map.get(data, "expires_at")) do
@@ -140,30 +187,51 @@ defmodule Donatex.Mayar.Client do
     defp positive_integer(value) when is_integer(value) and value > 0, do: value
     defp positive_integer(_value), do: nil
 
+    defp normalize_qr_image_url(url) when is_binary(url) do
+      url
+      |> String.trim()
+      |> String.trim("`")
+    end
+
+    defp normalize_qr_image_url(url), do: url
+
+    defp allow_insecure_qr_image_url? do
+      Application.get_env(:donatex, :allow_insecure_qr_image_url, false)
+    end
+
     defp validate_qr_image_url(url) when is_binary(url) do
-      case String.trim(url) do
-        <<"https://", _rest::binary>> ->
-          :ok
+      url = normalize_qr_image_url(url)
 
-        <<"http://", _rest::binary>> = http_url ->
-          case URI.parse(http_url) do
-            %URI{host: host} when host in ["localhost", "127.0.0.1", "0.0.0.0"] -> :ok
-            _ -> :error
-          end
-
-        <<"data:image/", _rest::binary>> = data_url ->
-          if String.contains?(data_url, ";base64,") do
-            :ok
-          else
-            :error
-          end
-
-        _ ->
-          :error
+      cond do
+        https_url?(url) -> :ok
+        data_image_url?(url) -> :ok
+        allowed_insecure_http_url?(url) -> :ok
+        true -> :error
       end
     end
 
     defp validate_qr_image_url(_url), do: :error
+
+    defp https_url?(<<"https://", _rest::binary>>), do: true
+    defp https_url?(_url), do: false
+
+    defp data_image_url?(<<"data:image/png;base64,", _rest::binary>>), do: true
+    defp data_image_url?(<<"data:image/jpeg;base64,", _rest::binary>>), do: true
+    defp data_image_url?(<<"data:image/webp;base64,", _rest::binary>>), do: true
+    defp data_image_url?(_url), do: false
+
+    defp allowed_insecure_http_url?(<<"http://", _rest::binary>> = http_url) do
+      allow_insecure_qr_image_url?() and localhost_url?(http_url)
+    end
+
+    defp allowed_insecure_http_url?(_url), do: false
+
+    defp localhost_url?(url) do
+      case URI.parse(url) do
+        %URI{host: host} when host in ["localhost", "127.0.0.1", "0.0.0.0"] -> true
+        _ -> false
+      end
+    end
   end
 
   @spec create_qr(amount_idr :: pos_integer()) :: create_qr_result()

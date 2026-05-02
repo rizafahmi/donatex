@@ -3,6 +3,8 @@ defmodule DonatexWeb.DonateLive do
 
   import Ecto.Changeset
 
+  require Logger
+
   alias Donatex.Donations
   alias Donatex.Mayar.Client
   alias DonatexWeb.DonationPresenter
@@ -67,13 +69,17 @@ defmodule DonatexWeb.DonateLive do
            |> assign(:qr, qr)
            |> maybe_reconcile_paid_donation()}
 
-        {:error, :mayar, _reason} ->
+        {:error, :mayar, reason} ->
           {:noreply,
            socket
-           |> put_flash(:error, "Could not create a QR right now. Please try again.")
+           |> put_flash(:error, qr_error_message(reason))
            |> assign_form(changeset)}
 
-        {:error, :donation, _donation_changeset} ->
+        {:error, :donation, donation_changeset} ->
+          Logger.warning(
+            "Could not persist pending donation: #{inspect(changeset_error_summary(donation_changeset))}"
+          )
+
           {:noreply,
            socket
            |> put_flash(:error, "Could not save your donation. Please try again.")
@@ -489,4 +495,29 @@ defmodule DonatexWeb.DonateLive do
        do: tx == payload_tx
 
   defp donation_match?(_donation, _payload), do: false
+
+  defp qr_error_message(reason) do
+    base_message = "Could not create a QR right now. Please try again."
+
+    if show_mayar_error_reason?() do
+      "#{base_message} (#{mayar_reason(reason)})"
+    else
+      base_message
+    end
+  end
+
+  defp show_mayar_error_reason? do
+    Application.get_env(:donatex, :show_mayar_error_reason, false)
+  end
+
+  defp mayar_reason({:unexpected_response, _body}), do: "unexpected_response"
+  defp mayar_reason(reason) when is_atom(reason), do: Atom.to_string(reason)
+  defp mayar_reason(reason), do: inspect(reason)
+
+  defp changeset_error_summary(%Ecto.Changeset{errors: errors}) when is_list(errors) do
+    Enum.map(errors, fn
+      {field, {message, _opts}} -> {field, message}
+      other -> other
+    end)
+  end
 end

@@ -98,3 +98,7 @@ config :donatex, :admin,
   password: System.get_env("ADMIN_PASSWORD", "admin")
 
 config :donatex, :app, base_url: System.get_env("DONATEX_BASE_URL", "http://localhost:4000")
+
+config :donatex, :show_mayar_error_reason, true
+
+config :donatex, :allow_insecure_qr_image_url, true
