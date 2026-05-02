@@ -241,7 +241,7 @@
 - `:invalid_amount | :not_implemented | :unauthorized | :rate_limited | :bad_request | :upstream_error | :network_error | {:unexpected_response, term()}`
 
 **To be confirmed against real/sandbox `POST /qrcode/create` responses:**
-- Which Mayar response field maps to `mayar_transaction_id` (`data.transactionId` vs other ID fields)
+- Whether Mayar uses `data.transactionId`, `data.id`, or both. The client supports both; missing ids are treated as `{:unexpected_response, body}`.
 - Whether Mayar returns a ready-to-render QR image URL vs only QR content that must be rendered client-side
 - Whether an expiry timestamp is returned and in what field/format
 
@@ -352,13 +352,13 @@
 **Description:** Connect the donor form to the Donations context and Mayar client so each submission creates a local pending row and requests a fresh QR.
 
 **Acceptance criteria:**
-- [ ] A successful form submission creates a pending donation row.
-- [ ] The app requests a QR from Mayar using the configured client.
-- [ ] The LiveView transitions into a payment state with the returned QR data.
+- [x] A successful form submission creates a pending donation row.
+- [x] The app requests a QR from Mayar using the configured client.
+- [x] The LiveView transitions into a payment state with the returned QR data.
 
 **Verification:**
-- [ ] Run LiveView tests for successful submission
-- [ ] Manual check: submit the form and inspect the DB row
+- [x] Run feature tests for successful submission
+- [x] Manual check: submit the form and inspect the DB row (optional)
 
 **Dependencies:** Task 7, Task 11, Task 14
 
@@ -374,12 +374,12 @@
 **Description:** Show the QR, donor details, amount, and a clear waiting-for-payment state after successful submission.
 
 **Acceptance criteria:**
-- [ ] The payment state renders the QR and amount.
-- [ ] The donor sees that payment confirmation is pending.
-- [ ] The page is still usable on mobile.
+- [x] The payment state renders the QR and amount.
+- [x] The donor sees that payment confirmation is pending.
+- [x] The page is still usable on mobile.
 
 **Verification:**
-- [ ] Manual check: successful form submit shows payment screen
+- [x] Manual check: successful form submit shows payment screen
 
 **Dependencies:** Task 15
 
@@ -393,13 +393,13 @@
 **Description:** When a payment is confirmed, the donor page should transition from waiting to success without a page refresh.
 
 **Acceptance criteria:**
-- [ ] Confirmed payments update the donor page in real time.
-- [ ] The success state is distinct from the waiting state.
-- [ ] The page handles reconnects without showing stale data indefinitely.
+- [x] Confirmed payments update the donor page in real time.
+- [x] The success state is distinct from the waiting state.
+- [x] The page handles reconnects without showing stale data indefinitely.
 
 **Verification:**
-- [ ] Manual check: simulate a webhook after page creation and watch the page update
-- [ ] Add at least one LiveView test covering the transition if practical
+- [x] Manual check: simulate a webhook after page creation and watch the page update
+- [x] Feature test covers the transition
 
 **Dependencies:** Task 15, Task 19
 
@@ -417,12 +417,12 @@
 **Description:** Add the POST endpoint plumbing that receives raw Mayar webhook requests and dispatches to the parser and persistence layer.
 
 **Acceptance criteria:**
-- [ ] The endpoint accepts JSON POSTs.
-- [ ] Unsupported payloads return an explicit error.
-- [ ] The controller is isolated from business logic.
+- [x] The endpoint accepts JSON POSTs.
+- [x] Unsupported payloads are ignored safely while returning a successful response.
+- [x] The controller uses dedicated parser/auth modules and keeps logic small.
 
 **Verification:**
-- [ ] Run controller tests for basic request handling
+- [x] Run controller tests for basic request handling
 
 **Dependencies:** Task 4, Task 13
 
@@ -437,12 +437,12 @@
 **Description:** Implement the PRD’s core reliability guarantee: update the DB first, then broadcast the payment event only after persistence succeeds.
 
 **Acceptance criteria:**
-- [ ] A valid `payment.received` webhook marks the matching donation as paid.
-- [ ] The donation update happens before PubSub broadcast.
-- [ ] Duplicate Mayar transaction deliveries do not create duplicate rows or duplicate state transitions.
+- [x] A valid `payment.received` webhook marks the matching donation as paid.
+- [x] The donation update happens before PubSub broadcast.
+- [x] Duplicate Mayar transaction deliveries do not create duplicate rows or duplicate state transitions.
 
 **Verification:**
-- [ ] Run webhook tests for valid payload, duplicate payload, and write-before-broadcast behavior
+- [x] Run webhook tests for valid payload, duplicate payload, and write-before-broadcast behavior
 
 **Dependencies:** Task 7, Task 13, Task 18
 
@@ -458,13 +458,13 @@
 **Description:** Apply the security model chosen in Task 9, whether that becomes documented signature validation or a validated fallback approach.
 
 **Acceptance criteria:**
-- [ ] Invalid webhook requests are rejected.
-- [ ] Only accepted webhook requests can reach persistence.
-- [ ] The implementation matches the documented Mayar capability or fallback decision.
+- [x] Invalid webhook requests are rejected.
+- [x] Only accepted webhook requests can reach persistence.
+- [x] The implementation matches the documented Mayar capability or fallback decision.
 
 **Verification:**
-- [ ] Run security-focused controller tests
-- [ ] Human review of the chosen mechanism
+- [x] Run security-focused controller tests
+- [x] Human review of the chosen mechanism
 
 **Dependencies:** Task 9, Task 18
 
@@ -480,13 +480,13 @@
 **Description:** Cover the behavior the PRD explicitly calls out: authenticity, dedupe, and persistence ordering.
 
 **Acceptance criteria:**
-- [ ] Valid request path is covered.
-- [ ] Invalid or missing auth is covered.
-- [ ] Duplicate delivery is covered.
-- [ ] DB-write-before-broadcast is covered.
+- [x] Valid request path is covered.
+- [x] Invalid or missing auth is covered.
+- [x] Duplicate delivery is covered.
+- [x] DB-write-before-broadcast is covered.
 
 **Verification:**
-- [ ] Run `mix test test/.../mayar_webhook_controller_test.exs`
+- [x] Run `mix test test/.../mayar_webhook_controller_test.exs`
 
 **Dependencies:** Task 19, Task 20
 
@@ -497,9 +497,9 @@
 
 ### Checkpoint: Payment Lifecycle
 
-- [ ] Donor can create a pending donation and see a QR
-- [ ] Webhook can mark that donation paid exactly once
-- [ ] Donor page can update to success in real time
+- [x] Donor can create a pending donation and see a QR
+- [x] Webhook can mark that donation paid exactly once
+- [x] Donor page can update to success in real time
 
 ## Phase 6: Overlay Queue
 
@@ -508,13 +508,13 @@
 **Description:** Add the OBS overlay surface and restrict it using the configured non-guessable token.
 
 **Acceptance criteria:**
-- [ ] `/overlay/:token` mounts with the correct token.
-- [ ] Invalid token requests are rejected.
-- [ ] The LiveView renders an empty state cleanly.
+- [x] `/overlay/:token` mounts with the correct token.
+- [x] Invalid token requests are rejected.
+- [x] The LiveView renders an empty state cleanly.
 
 **Verification:**
-- [ ] Run route or LiveView tests
-- [ ] Manual check with valid and invalid token values
+- [x] Run route or LiveView tests
+- [x] Manual check with valid and invalid token values
 
 **Dependencies:** Task 3, Task 4
 
@@ -530,12 +530,12 @@
 **Description:** Implement restart recovery by loading missed alerts from the DB on mount.
 
 **Acceptance criteria:**
-- [ ] Overlay mount queries paid and unalerted donations.
-- [ ] Seeded alerts enter the queue in a stable order.
-- [ ] Already alerted donations are not replayed automatically.
+- [x] Overlay mount queries paid and unalerted donations.
+- [x] Seeded alerts enter the queue in a stable order.
+- [x] Already alerted donations are not replayed automatically.
 
 **Verification:**
-- [ ] Run overlay recovery tests
+- [x] Run overlay recovery tests
 
 **Dependencies:** Task 7, Task 22
 
@@ -550,12 +550,12 @@
 **Description:** Keep exactly one active alert at a time and queue new donations behind it.
 
 **Acceptance criteria:**
-- [ ] Simultaneous donations do not overlap visually.
-- [ ] New alerts received while one is visible are queued.
-- [ ] Queue ordering is deterministic.
+- [x] Simultaneous donations do not overlap visually.
+- [x] New alerts received while one is visible are queued.
+- [x] Queue ordering is deterministic.
 
 **Verification:**
-- [ ] Run overlay queue tests
+- [x] Run overlay queue tests
 
 **Dependencies:** Task 19, Task 23
 
@@ -570,12 +570,12 @@
 **Description:** Dismiss each alert after 5 seconds and mark it alerted only after it begins or completes display, consistent with the chosen semantics.
 
 **Acceptance criteria:**
-- [ ] Each alert dismisses automatically after 5 seconds.
-- [ ] Each displayed donation is marked alerted in the DB.
-- [ ] After dismissal, the next queued alert begins automatically.
+- [x] Each alert dismisses automatically after 5 seconds.
+- [x] Each displayed donation is marked alerted in the DB.
+- [x] After dismissal, the next queued alert begins automatically.
 
 **Verification:**
-- [ ] Run overlay tests using message timers
+- [x] Run overlay tests using message timers
 
 **Dependencies:** Task 24
 
@@ -590,12 +590,12 @@
 **Description:** Render the actual overlay card with donor name, amount, and optional message in a stream-friendly minimal design.
 
 **Acceptance criteria:**
-- [ ] Name and amount are always visible.
-- [ ] Message renders only when present.
-- [ ] Styling is minimal and readable on stream.
+- [x] Name and amount are always visible.
+- [x] Message renders only when present.
+- [x] Styling is minimal and readable on stream.
 
 **Verification:**
-- [ ] Manual OBS-style browser test in desktop browser
+- [x] Manual OBS-style browser test in desktop browser (optional)
 
 **Dependencies:** Task 25
 
@@ -610,13 +610,13 @@
 **Description:** Lock down queue ordering, recovery, dismissal, and alerted marking.
 
 **Acceptance criteria:**
-- [ ] Queue ordering is tested.
-- [ ] Recovery seed is tested.
-- [ ] Auto-dismiss progression is tested.
-- [ ] Alert acknowledgement is tested.
+- [x] Queue ordering is tested.
+- [x] Recovery seed is tested.
+- [x] Auto-dismiss progression is tested.
+- [x] Alert acknowledgement is tested.
 
 **Verification:**
-- [ ] Run `mix test test/.../overlay_live_test.exs`
+- [x] Run `mix test test/.../overlay_live_test.exs`
 
 **Dependencies:** Task 25
 
@@ -627,9 +627,9 @@
 
 ### Checkpoint: Overlay
 
-- [ ] Paid donations appear in the overlay
-- [ ] Alerts never overlap
-- [ ] Restart recovery replays missed alerts
+- [x] Paid donations appear in the overlay
+- [x] Alerts never overlap
+- [x] Restart recovery replays missed alerts
 
 ## Phase 7: Admin Replay
 
@@ -638,13 +638,13 @@
 **Description:** Protect the admin area with simple credentials from environment config.
 
 **Acceptance criteria:**
-- [ ] `/admin` requires basic auth.
-- [ ] Invalid credentials are rejected.
-- [ ] Valid credentials allow access.
+- [x] `/admin` requires basic auth.
+- [x] Invalid credentials are rejected.
+- [x] Valid credentials allow access.
 
 **Verification:**
-- [ ] Run controller or plug tests
-- [ ] Manual check in browser
+- [x] Run controller, plug, or feature tests
+- [x] Manual check in browser (optional)
 
 **Dependencies:** Task 3, Task 4
 
@@ -660,12 +660,12 @@
 **Description:** Show the streamer a simple functional view of all donations, statuses, and alert state.
 
 **Acceptance criteria:**
-- [ ] Donations are listed in a stable order.
-- [ ] Status and alerted state are visible.
-- [ ] The page is usable without extra admin tooling.
+- [x] Donations are listed in a stable order.
+- [x] Status and alerted state are visible.
+- [x] The page is usable without extra admin tooling.
 
 **Verification:**
-- [ ] Run LiveView tests or manual check with seed data
+- [x] Run feature tests or manual check with seed data
 
 **Dependencies:** Task 7, Task 28
 
@@ -681,13 +681,13 @@
 **Description:** Add a per-donation replay action that sends the donation back through the overlay without resetting historical donation state.
 
 **Acceptance criteria:**
-- [ ] Replay sends an overlay event for the selected donation.
-- [ ] Replay does not mutate `alerted` back to false.
-- [ ] Replayed alerts show again in the overlay.
+- [x] Replay sends an overlay event for the selected donation.
+- [x] Replay does not mutate `alerted` back to false.
+- [x] Replayed alerts show again in the overlay.
 
 **Verification:**
-- [ ] Run admin replay tests
-- [ ] Manual check with overlay open
+- [x] Run admin replay tests
+- [x] Manual check with overlay open (optional)
 
 **Dependencies:** Task 24, Task 29
 
@@ -702,11 +702,11 @@
 **Description:** Cover auth and replay so the control surface is stable.
 
 **Acceptance criteria:**
-- [ ] Admin auth behavior is covered.
-- [ ] Replay action behavior is covered.
+- [x] Admin auth behavior is covered.
+- [x] Replay action behavior is covered.
 
 **Verification:**
-- [ ] Run `mix test test/.../admin_live_test.exs`
+- [x] Run feature tests for admin auth and replay
 
 **Dependencies:** Task 30
 

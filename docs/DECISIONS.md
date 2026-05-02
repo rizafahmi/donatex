@@ -2,6 +2,10 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
+## 2026-05-02: Validate Mayar QR Image URLs And Redact QR Data From Logs (ADR-017)
+- Reason: Prevent unsafe URL rendering and keep webhook correlation correct by requiring Mayar transaction ids, validating QR URL schemes, and avoiding QR URL leakage in logs.
+- Reference: [ADR-017](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
+
 ## 2026-05-02: Require Paid Status And Amount Match For Webhook Processing (ADR-016)
 - Reason: Reduce false-positive paid transitions by validating payment status and correlating webhook amounts with persisted donations.
 - Reference: [ADR-016](file:///Users/riza/code/donatex/docs/decisions/ADR-016-webhook-acceptance-criteria.md)

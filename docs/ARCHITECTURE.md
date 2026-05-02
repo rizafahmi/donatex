@@ -129,6 +129,8 @@ The current repo does not implement these modules yet. This is the intended targ
   - Wraps `Req`
   - Creates dynamic QRIS transactions
   - Normalizes Mayar success/error responses
+  - Rejects responses that omit a transaction id
+  - Validates QR image URL schemes before rendering (and avoids logging usable QR URLs)
 
 - `Donatex.Mayar.Webhook`
   - Parses webhook payloads
