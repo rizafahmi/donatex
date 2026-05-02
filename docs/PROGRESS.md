@@ -3,7 +3,7 @@
 ## Current State
 - Latest commit: 142d725 (docs(adr): record webhook acceptance criteria)
 - Working tree: has uncommitted changes
-- Test status: 68 tests, 0 failures
+- Test status: 69 tests, 0 failures
 - Lint: `mix credo` passing
 - Dialyzer: `mix dialyzer` passing
 
@@ -13,9 +13,9 @@
 - [x] Overlay consumes broadcasts, recovers missed alerts from DB, and plays alerts sequentially
 - [x] Admin is basic-auth protected and can replay an alert without mutating `alerted`
 - [x] Mayar client requires a transaction id, validates QR image URL schemes, and avoids logging usable QR URLs
+- [x] Decide and test partial-failure behavior for “QR created but DB insert fails”
 
 ## In Progress
-- [ ] Decide and test partial-failure behavior for “QR created but DB insert fails”
 - [ ] Confirm Mayar `POST /qrcode/create` response shape against real/sandbox traffic (field names, expiry semantics)
 - [ ] Document setup and deployment details (env vars, webhook registration, private URLs)
 - [ ] Run a final end-to-end verification pass (`mix precommit` + manual smoke test)

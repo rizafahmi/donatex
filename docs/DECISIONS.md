@@ -6,6 +6,10 @@ This is a lightweight decision log (what/why/when). For detailed context and alt
 - Reason: Prevent unsafe URL rendering and keep webhook correlation correct by requiring Mayar transaction ids, validating QR URL schemes, and avoiding QR URL leakage in logs.
 - Reference: [ADR-017](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
 
+## 2026-05-02: Fail Closed When QR Is Created But Donation Persistence Fails (ADR-018)
+- Reason: Avoid paid-but-untracked transactions by never showing a QR that cannot be correlated to a persisted donation.
+- Reference: [ADR-018](file:///Users/riza/code/donatex/docs/decisions/ADR-018-qr-created-but-donation-persist-fails.md)
+
 ## 2026-05-02: Require Paid Status And Amount Match For Webhook Processing (ADR-016)
 - Reason: Reduce false-positive paid transitions by validating payment status and correlating webhook amounts with persisted donations.
 - Reference: [ADR-016](file:///Users/riza/code/donatex/docs/decisions/ADR-016-webhook-acceptance-criteria.md)
