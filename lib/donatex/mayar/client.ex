@@ -129,8 +129,10 @@ defmodule Donatex.Mayar.Client do
     end
 
     defp log_create_qr_response(status, body, {:ok, %DynamicQr{} = dynamic_qr}) do
+      {url_id_present, url_id_match} = transaction_id_observability(body)
+
       Logger.info(
-        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} id_source=#{transaction_id_source(body)} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
+        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} id_source=#{transaction_id_source(body)} url_id_present=#{url_id_present} url_id_match=#{url_id_match} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
       )
     end
 
@@ -167,6 +169,43 @@ defmodule Donatex.Mayar.Client do
         _ -> "unknown"
       end
     end
+
+    defp transaction_id_observability(body) do
+      response_transaction_id = response_transaction_id(body)
+      url_transaction_id = url_transaction_id(body)
+
+      url_id_present = is_binary(url_transaction_id)
+
+      url_id_match =
+        if is_binary(response_transaction_id) and is_binary(url_transaction_id) do
+          to_string(response_transaction_id == url_transaction_id)
+        else
+          "unknown"
+        end
+
+      {url_id_present, url_id_match}
+    end
+
+    defp response_transaction_id(%{"data" => data}) when is_map(data) do
+      case fetch_binary(data, ["transactionId", "id"]) do
+        {:ok, transaction_id} -> transaction_id
+        :error -> nil
+      end
+    end
+
+    defp response_transaction_id(_body), do: nil
+
+    defp url_transaction_id(%{"data" => data}) when is_map(data) do
+      with {:ok, url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
+           normalized_url <- normalize_qr_image_url(url),
+           {:ok, transaction_id} <- extract_transaction_id_from_url(normalized_url) do
+        transaction_id
+      else
+        _ -> nil
+      end
+    end
+
+    defp url_transaction_id(_body), do: nil
 
     defp maybe_log_create_qr_body(body) do
       if Application.get_env(:donatex, :mayar_log_create_qr_body, false) do
