@@ -12,6 +12,17 @@ Elixir 1.18, Phoenix 1.8, SQLite 3, Tailwind 4
 - Test: `mix test`
 - Full verification: `mix precommit`
 
+## At session start (clock in)
+1. Read [PROGRESS.md](docs/PROGRESS.md) for current state
+2. Read [DECISIONS.md](docs/DECISIONS.md) for important decisions
+3. Run `mix test` to confirm the repo is in a consistent state
+4. Continue from PROGRESS.md “Next Steps”
+
+## Before session end (clock out)
+1. Update [PROGRESS.md](docs/PROGRESS.md)
+2. Run `mix test` (or `mix precommit` for full verification)
+3. Commit all completed work
+
 ## Constraints
 - The app is a single-user, single-streamer system, not multi-tenant.
 - It must have exactly two primary public surfaces: donor page and OBS overlay, plus a simple admin page.
@@ -57,6 +68,8 @@ mix ex_ast.diff lib/old.ex lib/new.ex
 - [Architecture](docs/ARCHITECTURE.md)
 - [Plan Index](docs/PLAN.md)
 - [Progress](docs/PROGRESS.md)
+- [Decision Log](docs/DECISIONS.md)
+- [Architecture Decisions (ADRs)](docs/decisions)
 
 <!-- usage-rules-start -->
 <!-- igniter-start -->

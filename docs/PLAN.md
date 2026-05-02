@@ -5,6 +5,7 @@ This plan is split into smaller documents to make it easier to target specific s
 ## How to Use This Plan
 
 - For day-to-day “what’s next” and what’s already implemented, start with [PROGRESS.md](PROGRESS.md).
+- For important “why we chose this” notes, read [DECISIONS.md](DECISIONS.md) and the detailed ADRs in [decisions/](decisions/).
 - For design and system constraints, treat [PRD.md](PRD.md) and [ARCHITECTURE.md](ARCHITECTURE.md) as the source of truth.
 - For execution, use the task list and checkpoints in [plans/tasks.md](plans/tasks.md).
 
