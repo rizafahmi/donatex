@@ -19,6 +19,10 @@ defmodule DonatexWeb.DonateLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+    end
+
     preset_amounts =
       Enum.map(@preset_amounts, fn amount ->
         option = Integer.to_string(amount)
@@ -35,6 +39,8 @@ defmodule DonatexWeb.DonateLive do
      socket
      |> assign(:preset_amounts, preset_amounts)
      |> assign(:step, :form)
+     |> assign(:donation, nil)
+     |> assign(:qr, nil)
      |> assign_form(donation_form_changeset(%{}, validate_required?: false))}
   end
 
@@ -58,7 +64,8 @@ defmodule DonatexWeb.DonateLive do
            socket
            |> assign(:step, :payment)
            |> assign(:donation, donation)
-           |> assign(:qr, qr)}
+           |> assign(:qr, qr)
+           |> maybe_reconcile_paid_donation()}
 
         {:error, :mayar, _reason} ->
           {:noreply,
@@ -76,6 +83,26 @@ defmodule DonatexWeb.DonateLive do
       {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
     end
   end
+
+  def handle_event("new_donation", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:step, :form)
+     |> assign(:donation, nil)
+     |> assign(:qr, nil)
+     |> assign_form(donation_form_changeset(%{}, validate_required?: false))}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:donation_paid, payload}, socket) when is_map(payload) do
+    if donation_match?(socket.assigns[:donation], payload) do
+      {:noreply, assign(socket, :step, :paid)}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  def handle_info(_message, socket), do: {:noreply, socket}
 
   @impl Phoenix.LiveView
   def render(assigns) do
@@ -126,169 +153,213 @@ defmodule DonatexWeb.DonateLive do
           </div>
         </section>
       <% else %>
-        <% selected_amount_option = selected_amount_option(@form) %>
-        <% amount_option_error = amount_option_error(@form) %>
-
-        <section class="relative isolate overflow-hidden rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
-          <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-primary/16 via-transparent to-secondary/12" />
-          <div class="absolute -right-16 bottom-0 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
-
-          <div class="relative space-y-4">
-            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-base-content/55">
-              Support the stream
-            </p>
+        <%= if @step == :paid do %>
+          <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
             <div class="space-y-3">
-              <h1 class="text-4xl font-semibold tracking-tight text-balance text-base-content sm:text-5xl">
-                Donate
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-success">
+                Payment confirmed
+              </p>
+              <h1 class="text-3xl font-semibold tracking-tight text-balance text-base-content sm:text-4xl">
+                Thank you for the support
               </h1>
               <p class="max-w-xl text-sm leading-6 text-base-content/70 sm:text-base">
-                Send a quick QRIS tip from your phone. Your alert appears on stream after payment
-                confirmation lands.
+                Your donation is paid and will show on stream.
               </p>
             </div>
 
-            <div class="grid gap-3 pt-2 sm:grid-cols-3">
-              <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
-                  Mobile ready
-                </p>
-                <p class="mt-2 text-sm text-base-content/75">
-                  Fast form, large tap targets, no account needed.
-                </p>
-              </div>
-              <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
-                  QRIS only
-                </p>
-                <p class="mt-2 text-sm text-base-content/75">
-                  Pay with any QRIS-compatible banking or wallet app.
-                </p>
-              </div>
-              <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
-                  Live alert
-                </p>
-                <p class="mt-2 text-sm text-base-content/75">
-                  Name, amount, and message show after Mayar confirms payment.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-6 shadow-sm sm:px-8 sm:py-8">
-          <.form
-            for={@form}
-            id="donation-form"
-            phx-change="validate"
-            phx-submit="submit"
-            class="space-y-6"
-          >
-            <div class="space-y-2">
-              <p class="text-sm font-medium text-base-content/80">
-                Fill in your name, pick an amount, and add a message if you want one on stream.
+            <div class="mt-8 rounded-2xl border border-base-300/70 bg-base-200/30 px-5 py-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                Donation
               </p>
-              <div class="h-px bg-base-300/80" />
+              <p class="mt-2 text-lg font-semibold text-base-content">
+                Rp {DonationPresenter.format_idr(@donation.amount)}
+              </p>
+              <p class="mt-2 text-sm text-base-content/70">From {@donation.donor_name}</p>
+              <p
+                :if={DonationPresenter.present_message?(@donation.message)}
+                class="mt-3 text-sm text-base-content/70"
+              >
+                "{@donation.message}"
+              </p>
             </div>
 
-            <.input
-              field={@form[:donor_name]}
-              label="Your name"
-              placeholder="Riza"
-              autocomplete="name"
-              required
-            />
+            <div class="mt-6">
+              <button
+                type="button"
+                phx-click="new_donation"
+                class="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-content transition hover:opacity-95"
+              >
+                Make another donation
+              </button>
+            </div>
+          </section>
+        <% else %>
+          <% selected_amount_option = selected_amount_option(@form) %>
+          <% amount_option_error = amount_option_error(@form) %>
 
-            <fieldset class="space-y-3">
-              <legend class="w-full">
-                <span class="flex items-center justify-between gap-3">
-                  <span class="text-sm font-semibold text-base-content">Choose an amount</span>
-                  <span class="text-xs uppercase tracking-[0.2em] text-base-content/50">IDR</span>
-                </span>
-              </legend>
+          <section class="relative isolate overflow-hidden rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
+            <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-primary/16 via-transparent to-secondary/12" />
+            <div class="absolute -right-16 bottom-0 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
 
-              <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <label
-                  :for={preset <- @preset_amounts}
-                  for={preset.id}
-                  class={amount_option_classes(selected_amount_option == preset.option)}
-                >
-                  <input
-                    id={preset.id}
-                    type="radio"
-                    name={@form[:amount_option].name}
-                    value={preset.value}
-                    checked={selected_amount_option == preset.option}
-                    class="sr-only"
-                  />
-                  <span class="text-base font-semibold text-base-content">Rp {preset.formatted}</span>
-                  <span class="text-xs text-base-content/60">Quick tap</span>
-                </label>
-
-                <label
-                  for="donation_form_amount_option_custom"
-                  class={amount_option_classes(selected_amount_option == "custom")}
-                >
-                  <input
-                    id="donation_form_amount_option_custom"
-                    type="radio"
-                    name={@form[:amount_option].name}
-                    value="custom"
-                    checked={selected_amount_option == "custom"}
-                    class="sr-only"
-                  />
-                  <span class="text-base font-semibold text-base-content">Custom</span>
-                  <span class="text-xs text-base-content/60">Set your own</span>
-                </label>
+            <div class="relative space-y-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-base-content/55">
+                Support the stream
+              </p>
+              <div class="space-y-3">
+                <h1 class="text-4xl font-semibold tracking-tight text-balance text-base-content sm:text-5xl">
+                  Donate
+                </h1>
+                <p class="max-w-xl text-sm leading-6 text-base-content/70 sm:text-base">
+                  Send a quick QRIS tip from your phone. Your alert appears on stream after payment
+                  confirmation lands.
+                </p>
               </div>
 
-              <p :if={amount_option_error} class="text-sm font-medium text-error">
-                {amount_option_error}
-              </p>
-            </fieldset>
+              <div class="grid gap-3 pt-2 sm:grid-cols-3">
+                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                    Mobile ready
+                  </p>
+                  <p class="mt-2 text-sm text-base-content/75">
+                    Fast form, large tap targets, no account needed.
+                  </p>
+                </div>
+                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                    QRIS only
+                  </p>
+                  <p class="mt-2 text-sm text-base-content/75">
+                    Pay with any QRIS-compatible banking or wallet app.
+                  </p>
+                </div>
+                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                    Live alert
+                  </p>
+                  <p class="mt-2 text-sm text-base-content/75">
+                    Name, amount, and message show after Mayar confirms payment.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
 
-            <div
-              :if={selected_amount_option == "custom"}
-              class="rounded-2xl border border-base-300/80 bg-base-200/50 px-4 py-4"
+          <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-6 shadow-sm sm:px-8 sm:py-8">
+            <.form
+              for={@form}
+              id="donation-form"
+              phx-change="validate"
+              phx-submit="submit"
+              class="space-y-6"
             >
+              <div class="space-y-2">
+                <p class="text-sm font-medium text-base-content/80">
+                  Fill in your name, pick an amount, and add a message if you want one on stream.
+                </p>
+                <div class="h-px bg-base-300/80" />
+              </div>
+
               <.input
-                field={@form[:custom_amount]}
-                type="number"
-                label="Custom amount"
-                placeholder="15000"
-                min="1"
-                step="1000"
+                field={@form[:donor_name]}
+                label="Your name"
+                placeholder="Riza"
+                autocomplete="name"
                 required
               />
-              <p class="text-xs text-base-content/60">
-                Enter the amount in rupiah, without dots or commas.
-              </p>
-            </div>
 
-            <.input
-              field={@form[:message]}
-              type="textarea"
-              label="Message (optional)"
-              rows="4"
-              maxlength="160"
-              placeholder="Say something kind, funny, or hype for the stream."
-            />
+              <fieldset class="space-y-3">
+                <legend class="w-full">
+                  <span class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-semibold text-base-content">Choose an amount</span>
+                    <span class="text-xs uppercase tracking-[0.2em] text-base-content/50">IDR</span>
+                  </span>
+                </legend>
 
-            <div class="space-y-3 pt-2">
-              <button
-                type="submit"
-                class="inline-flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-4 text-left text-sm font-semibold text-primary-content transition hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <label
+                    :for={preset <- @preset_amounts}
+                    for={preset.id}
+                    class={amount_option_classes(selected_amount_option == preset.option)}
+                  >
+                    <input
+                      id={preset.id}
+                      type="radio"
+                      name={@form[:amount_option].name}
+                      value={preset.value}
+                      checked={selected_amount_option == preset.option}
+                      class="sr-only"
+                    />
+                    <span class="text-base font-semibold text-base-content">
+                      Rp {preset.formatted}
+                    </span>
+                    <span class="text-xs text-base-content/60">Quick tap</span>
+                  </label>
+
+                  <label
+                    for="donation_form_amount_option_custom"
+                    class={amount_option_classes(selected_amount_option == "custom")}
+                  >
+                    <input
+                      id="donation_form_amount_option_custom"
+                      type="radio"
+                      name={@form[:amount_option].name}
+                      value="custom"
+                      checked={selected_amount_option == "custom"}
+                      class="sr-only"
+                    />
+                    <span class="text-base font-semibold text-base-content">Custom</span>
+                    <span class="text-xs text-base-content/60">Set your own</span>
+                  </label>
+                </div>
+
+                <p :if={amount_option_error} class="text-sm font-medium text-error">
+                  {amount_option_error}
+                </p>
+              </fieldset>
+
+              <div
+                :if={selected_amount_option == "custom"}
+                class="rounded-2xl border border-base-300/80 bg-base-200/50 px-4 py-4"
               >
-                <span>Create your QRIS</span>
-                <span aria-hidden="true">&rarr;</span>
-              </button>
+                <.input
+                  field={@form[:custom_amount]}
+                  type="number"
+                  label="Custom amount"
+                  placeholder="15000"
+                  min="1"
+                  step="1000"
+                  required
+                />
+                <p class="text-xs text-base-content/60">
+                  Enter the amount in rupiah, without dots or commas.
+                </p>
+              </div>
 
-              <p class="text-xs leading-5 text-base-content/60">
-                You will review the QR code on the next step before paying.
-              </p>
-            </div>
-          </.form>
-        </section>
+              <.input
+                field={@form[:message]}
+                type="textarea"
+                label="Message (optional)"
+                rows="4"
+                maxlength="160"
+                placeholder="Say something kind, funny, or hype for the stream."
+              />
+
+              <div class="space-y-3 pt-2">
+                <button
+                  type="submit"
+                  class="inline-flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-4 text-left text-sm font-semibold text-primary-content transition hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                >
+                  <span>Create your QRIS</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </button>
+
+                <p class="text-xs leading-5 text-base-content/60">
+                  You will review the QR code on the next step before paying.
+                </p>
+              </div>
+            </.form>
+          </section>
+        <% end %>
       <% end %>
     </Layouts.app>
     """
@@ -400,4 +471,22 @@ defmodule DonatexWeb.DonateLive do
   end
 
   defp blank_to_nil(value), do: value
+
+  defp maybe_reconcile_paid_donation(%{assigns: %{step: :payment, donation: %{id: id}}} = socket) do
+    case Donations.get_donation(id) do
+      %{status: "paid"} -> assign(socket, :step, :paid)
+      _ -> socket
+    end
+  end
+
+  defp maybe_reconcile_paid_donation(socket), do: socket
+
+  defp donation_match?(%{id: id}, %{id: payload_id}) when is_binary(id) and is_binary(payload_id),
+    do: id == payload_id
+
+  defp donation_match?(%{mayar_transaction_id: tx}, %{mayar_transaction_id: payload_tx})
+       when is_binary(tx) and is_binary(payload_tx),
+       do: tx == payload_tx
+
+  defp donation_match?(_donation, _payload), do: false
 end

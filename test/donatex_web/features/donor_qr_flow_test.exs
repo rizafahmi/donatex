@@ -1,6 +1,7 @@
 defmodule DonatexWeb.DonorQrFlowTest do
   use DonatexWeb.ConnCase, async: false
 
+  alias Donatex.Config
   alias Donatex.Donations.Donation
   alias Donatex.Repo
 
@@ -62,6 +63,50 @@ defmodule DonatexWeb.DonorQrFlowTest do
     assert donation.status == "pending"
     assert donation.donor_name == "Riza"
     assert donation.amount == 10_000
+  end
+
+  test "webhook confirmation transitions donor page to success and supports new donation", %{
+    conn: conn
+  } do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => %{
+          "transactionId" => "tx-donate-2",
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/20000"
+        }
+      })
+    end)
+
+    session =
+      conn
+      |> visit(~p"/donate")
+      |> fill_in("Your name", with: "Riza")
+      |> choose("Rp 10.000", exact: false)
+      |> click_button("Create your QRIS")
+      |> assert_has("h1", "Scan the QRIS")
+
+    donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-2")
+
+    conn
+    |> recycle()
+    |> put_req_header("accept", "application/json")
+    |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+      "event" => "payment.received",
+      "data" => %{
+        "transactionId" => donation.mayar_transaction_id,
+        "amount" => donation.amount,
+        "customerName" => donation.donor_name,
+        "transactionStatus" => "paid"
+      }
+    })
+
+    session
+    |> assert_has("h1", "Thank you for the support")
+
+    session
+    |> click_button("Make another donation")
+    |> assert_has("h1", "Donate")
   end
 
   test "shows an error and stays on the form when QR creation fails", %{conn: conn} do
