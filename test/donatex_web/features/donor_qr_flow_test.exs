@@ -130,6 +130,42 @@ defmodule DonatexWeb.DonorQrFlowTest do
     end)
   end
 
+  test "shows an error and stays on the form when QR creation succeeds but donation persistence fails",
+       %{
+         conn: conn
+       } do
+    mayar_transaction_id = String.duplicate("x", 200)
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => mayar_transaction_id,
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/persist-failed"
+        }
+      })
+    end)
+
+    capture_log(fn ->
+      conn
+      |> visit(~p"/donate")
+      |> fill_in("Your name", with: "Riza")
+      |> choose("Rp 10.000", exact: false)
+      |> click_button("Create your QRIS")
+      |> assert_has("h1", "Donate")
+      |> unwrap(fn view ->
+        html = Phoenix.LiveViewTest.render(view)
+        assert html =~ "Could not save your donation"
+        refute html =~ "https://example.invalid/qr/persist-failed"
+        html
+      end)
+    end)
+
+    assert Repo.get_by(Donation, mayar_transaction_id: mayar_transaction_id) == nil
+  end
+
   defp verify_req_expectations!(_context) do
     Req.Test.verify_on_exit!()
   end

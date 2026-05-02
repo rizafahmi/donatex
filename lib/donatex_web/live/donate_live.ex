@@ -75,14 +75,10 @@ defmodule DonatexWeb.DonateLive do
            |> put_flash(:error, qr_error_message(reason))
            |> assign_form(changeset)}
 
-        {:error, :donation, donation_changeset} ->
-          Logger.warning(
-            "Could not persist pending donation: #{inspect(changeset_error_summary(donation_changeset))}"
-          )
-
+        {:error, :donation, _donation_changeset} ->
           {:noreply,
            socket
-           |> put_flash(:error, "Could not save your donation. Please try again.")
+           |> put_flash(:error, donation_persist_error_message())
            |> assign_form(changeset)}
       end
     else
@@ -447,16 +443,35 @@ defmodule DonatexWeb.DonateLive do
 
     with {:ok, %Client.DynamicQr{} = qr} <- Client.create_qr(amount),
          {:ok, donation} <-
-           Donations.create_pending_donation(%{
-             mayar_transaction_id: qr.mayar_transaction_id,
+           create_pending_donation_from_qr(qr, %{
              donor_name: donor_name,
              amount: amount,
              message: message
            }) do
       {:ok, donation, qr}
     else
-      {:error, %Ecto.Changeset{} = donation_changeset} -> {:error, :donation, donation_changeset}
-      {:error, reason} -> {:error, :mayar, reason}
+      {:error, %Ecto.Changeset{} = donation_changeset, %Client.DynamicQr{} = qr} ->
+        log_failed_donation_persist(qr, amount, donation_changeset)
+        {:error, :donation, donation_changeset}
+
+      {:error, reason} ->
+        {:error, :mayar, reason}
+    end
+  end
+
+  defp create_pending_donation_from_qr(%Client.DynamicQr{} = qr, %{
+         donor_name: donor_name,
+         amount: amount,
+         message: message
+       }) do
+    case Donations.create_pending_donation(%{
+           mayar_transaction_id: qr.mayar_transaction_id,
+           donor_name: donor_name,
+           amount: amount,
+           message: message
+         }) do
+      {:ok, donation} -> {:ok, donation}
+      {:error, %Ecto.Changeset{} = donation_changeset} -> {:error, donation_changeset, qr}
     end
   end
 
@@ -519,5 +534,15 @@ defmodule DonatexWeb.DonateLive do
       {field, {message, _opts}} -> {field, message}
       other -> other
     end)
+  end
+
+  defp donation_persist_error_message do
+    "Could not save your donation. Please try again. If you already scanned a QR code, please do not complete payment."
+  end
+
+  defp log_failed_donation_persist(%Client.DynamicQr{} = qr, amount, donation_changeset) do
+    Logger.warning(
+      "Could not persist pending donation mayar_transaction_id=#{qr.mayar_transaction_id} amount=#{amount} errors=#{inspect(changeset_error_summary(donation_changeset))}"
+    )
   end
 end
