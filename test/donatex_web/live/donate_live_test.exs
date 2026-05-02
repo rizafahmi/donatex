@@ -50,15 +50,18 @@ defmodule DonatexWeb.DonateLiveTest do
   test "shows the custom amount field and validates it", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/donate")
 
-    render_change(view, "validate", %{
-      "donation_form" => %{
-        "donor_name" => "Riza",
-        "amount_option" => "custom",
-        "message" => "Semangat streamnya"
-      }
-    })
+    html =
+      render_change(view, "validate", %{
+        "donation_form" => %{
+          "donor_name" => "Riza",
+          "amount_option" => "custom",
+          "message" => "Semangat streamnya"
+        }
+      })
 
     assert has_element?(view, "#donation_form_custom_amount")
+    assert html =~ ~s(min="1000")
+    assert html =~ ~s(step="1000")
 
     html =
       render_submit(view, "submit", %{
@@ -71,5 +74,23 @@ defmodule DonatexWeb.DonateLiveTest do
       })
 
     assert html =~ "Enter your donation amount"
+  end
+
+  test "accepts a valid custom amount", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/donate")
+
+    html =
+      render_submit(view, "submit", %{
+        "donation_form" => %{
+          "donor_name" => "Riza",
+          "amount_option" => "custom",
+          "custom_amount" => "150000",
+          "message" => ""
+        }
+      })
+
+    assert html =~ "Could not create a QR right now"
+    refute html =~ "Enter your donation amount"
+    refute html =~ "Enter an amount in multiples of 1000"
   end
 end
