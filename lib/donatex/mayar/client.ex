@@ -86,6 +86,7 @@ defmodule Donatex.Mayar.Client do
       with {:ok, mayar_transaction_id} <- fetch_binary(data, ["transactionId", "id"]),
            {:ok, amount} <- fetch_positive_integer(data, ["amount"]),
            {:ok, qr_image_url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
+           :ok <- validate_qr_image_url(qr_image_url),
            {:ok, expires_at} <-
              parse_expires_at(Map.get(data, "expiresAt") || Map.get(data, "expires_at")) do
         {:ok,
@@ -138,6 +139,31 @@ defmodule Donatex.Mayar.Client do
 
     defp positive_integer(value) when is_integer(value) and value > 0, do: value
     defp positive_integer(_value), do: nil
+
+    defp validate_qr_image_url(url) when is_binary(url) do
+      case String.trim(url) do
+        <<"https://", _rest::binary>> ->
+          :ok
+
+        <<"http://", _rest::binary>> = http_url ->
+          case URI.parse(http_url) do
+            %URI{host: host} when host in ["localhost", "127.0.0.1", "0.0.0.0"] -> :ok
+            _ -> :error
+          end
+
+        <<"data:image/", _rest::binary>> = data_url ->
+          if String.contains?(data_url, ";base64,") do
+            :ok
+          else
+            :error
+          end
+
+        _ ->
+          :error
+      end
+    end
+
+    defp validate_qr_image_url(_url), do: :error
   end
 
   @spec create_qr(amount_idr :: pos_integer()) :: create_qr_result()

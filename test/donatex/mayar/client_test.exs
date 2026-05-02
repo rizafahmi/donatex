@@ -92,6 +92,28 @@ defmodule Donatex.Mayar.ClientTest do
              Client.create_qr(10_000)
   end
 
+  test "create_qr/1 returns unexpected_response when qr_image_url is not an https or data:image URL" do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => %{
+          "transactionId" => "txn_test_bad_url",
+          "amount" => 10_000,
+          "url" => "javascript:alert(1)"
+        }
+      })
+    end)
+
+    assert {:error,
+            {:unexpected_response,
+             %{
+               "data" => %{
+                 "amount" => 10_000,
+                 "transactionId" => "txn_test_bad_url",
+                 "url" => "javascript:alert(1)"
+               }
+             }}} = Client.create_qr(10_000)
+  end
+
   defp verify_req_expectations!(_context) do
     Req.Test.verify_on_exit!()
   end
