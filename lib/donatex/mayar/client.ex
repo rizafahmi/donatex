@@ -128,9 +128,9 @@ defmodule Donatex.Mayar.Client do
       end)
     end
 
-    defp log_create_qr_response(status, _body, {:ok, %DynamicQr{} = dynamic_qr}) do
+    defp log_create_qr_response(status, body, {:ok, %DynamicQr{} = dynamic_qr}) do
       Logger.info(
-        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
+        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} id_source=#{transaction_id_source(body)} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
       )
     end
 
@@ -145,6 +145,28 @@ defmodule Donatex.Mayar.Client do
         "Mayar create_qr failed status=#{status} reason=#{inspect(reason)} body=#{inspect_body(body)}"
       )
     end
+
+    defp transaction_id_source(%{"data" => data}) when is_map(data) do
+      case fetch_binary(data, ["transactionId", "id"]) do
+        {:ok, _value} ->
+          "response"
+
+        :error ->
+          case fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]) do
+            {:ok, url} when is_binary(url) ->
+              if extract_transaction_id_from_url(normalize_qr_image_url(url)) != :error do
+                "url"
+              else
+                "unknown"
+              end
+
+            :error ->
+              "unknown"
+          end
+      end
+    end
+
+    defp transaction_id_source(_body), do: "unknown"
 
     defp maybe_log_create_qr_body(body) do
       if Application.get_env(:donatex, :mayar_log_create_qr_body, false) do

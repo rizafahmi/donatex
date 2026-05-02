@@ -103,6 +103,36 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     refute_receive {:donation_paid, _payload}, 50
   end
 
+  test "accepts the alternate id field name for webhook correlation", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    transaction_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
+
+    assert {:ok, %Donation{} = donation} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: transaction_id,
+               donor_name: "Donor",
+               amount: 25_000
+             })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "id" => transaction_id,
+          "amount" => 25_000,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    assert %Donation{id: id, status: "paid"} = Repo.get!(Donation, donation.id)
+    assert_received {:donation_paid, %{id: ^id, mayar_transaction_id: ^transaction_id}}
+  end
+
   test "rejects requests with invalid token before controller logic", %{conn: conn} do
     conn =
       conn
