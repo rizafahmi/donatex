@@ -165,6 +165,28 @@ defmodule Donatex.DonationsTest do
     end
   end
 
+  describe "mark_donation_alerted_by_id/1" do
+    test "marks paid donation as alerted" do
+      {:ok, _pending} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-alerted-by-id-1",
+          donor_name: "D",
+          amount: 50_000
+        })
+
+      assert {:ok, %Donation{} = donation} =
+               Donations.mark_paid_by_mayar_transaction_id("tx-alerted-by-id-1")
+
+      assert {:ok, %Donation{} = updated} = Donations.mark_donation_alerted_by_id(donation.id)
+      assert updated.alerted
+      assert updated.status == "paid"
+    end
+
+    test "returns not_found for unknown ids" do
+      assert {:error, :not_found} = Donations.mark_donation_alerted_by_id(Ecto.UUID.generate())
+    end
+  end
+
   describe "list_donations/0" do
     test "lists all donations for admin page" do
       {:ok, first} =
