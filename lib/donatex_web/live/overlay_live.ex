@@ -50,24 +50,26 @@ defmodule DonatexWeb.OverlayLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
-      <div class="flex min-h-[60vh] items-center justify-center">
+    <Layouts.app flash={@flash} variant="overlay">
+      <div class="flex min-h-dvh items-center justify-center p-6">
         <%= if @current do %>
-          <div class="rounded-3xl border border-base-300/70 bg-base-100 px-10 py-8 shadow-sm">
-            <p class="text-sm font-semibold text-base-content/70">Donation received</p>
-            <p class="mt-2 text-4xl font-semibold tracking-tight text-base-content">
+          <div class="w-full max-w-xl rounded-[2.25rem] border border-stroke/60 bg-surface/55 px-10 py-8 shadow-2xl shadow-black/50 backdrop-blur">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
+              Donation received
+            </p>
+            <p class="mt-4 font-display text-5xl font-semibold tracking-tight text-text">
               Rp {DonationPresenter.format_idr(@current.amount)}
             </p>
-            <p class="mt-2 text-xl font-semibold text-base-content">{@current.donor_name}</p>
+            <p class="mt-3 text-xl font-semibold text-text">{@current.donor_name}</p>
             <p
               :if={DonationPresenter.present_message?(@current.message)}
-              class="mt-3 text-base text-base-content/70"
+              class="mt-4 text-base text-text-muted"
             >
               "{@current.message}"
             </p>
           </div>
         <% else %>
-          <h1 class="text-base font-semibold text-base-content/60">Overlay</h1>
+          <h1 class="text-base font-semibold text-text-muted">Overlay</h1>
         <% end %>
       </div>
     </Layouts.app>
