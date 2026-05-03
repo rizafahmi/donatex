@@ -68,7 +68,7 @@ if config_env() == :prod do
 
   overlay_token = fetch_env!.("OVERLAY_TOKEN")
 
-  if byte_size(overlay_token) < 20 do
+  if byte_size(overlay_token) < 8 do
     raise """
     environment variable OVERLAY_TOKEN is too short.
     """
