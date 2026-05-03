@@ -91,8 +91,6 @@ config :donatex, :mayar,
   api_key: System.get_env("MAYAR_API_KEY"),
   webhook_token: System.get_env("MAYAR_WEBHOOK_TOKEN", "dev-mayar-webhook-token")
 
-config :donatex, :overlay, token: System.get_env("OVERLAY_TOKEN", "dev-overlay-token")
-
 config :donatex, :admin,
   username: System.get_env("ADMIN_USERNAME", "admin"),
   password: System.get_env("ADMIN_PASSWORD", "admin")

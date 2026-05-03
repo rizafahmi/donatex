@@ -7,8 +7,6 @@ defmodule Donatex.Config do
 
   def mayar_webhook_token, do: fetch_binary!(:mayar, :webhook_token)
 
-  def overlay_token, do: fetch_binary!(:overlay, :token)
-
   def admin_username, do: fetch_binary!(:admin, :username)
 
   def admin_password, do: fetch_binary!(:admin, :password)

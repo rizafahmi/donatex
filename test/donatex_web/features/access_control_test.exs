@@ -5,18 +5,9 @@ defmodule DonatexWeb.AccessControlTest do
 
   alias Donatex.Config
 
-  test "overlay route rejects invalid token with 404", %{conn: conn} do
+  test "overlay route valid", %{conn: conn} do
     conn
-    |> visit(~p"/overlay/not-the-token")
-    |> unwrap(fn conn ->
-      assert conn.status == 404
-      conn
-    end)
-  end
-
-  test "overlay route mounts with the configured token", %{conn: conn} do
-    conn
-    |> visit(~p"/overlay/#{Config.overlay_token()}")
+    |> visit(~p"/overlay")
     |> assert_has("h1", "Overlay")
   end
 

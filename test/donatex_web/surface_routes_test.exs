@@ -3,17 +3,15 @@ defmodule DonatexWeb.SurfaceRoutesTest do
 
   alias Donatex.Config
 
-  test "GET /donate", %{conn: conn} do
+  test "GET /", %{conn: conn} do
     conn
-    |> visit("/donate")
-    |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
+    |> visit("/")
+    |> assert_has("h1", "Donatex")
   end
 
-  test "GET /overlay/:token", %{conn: conn} do
-    token = Config.overlay_token()
-
+  test "GET /overlay", %{conn: conn} do
     conn
-    |> visit("/overlay/#{token}")
+    |> visit("/overlay")
     |> assert_has("h1", "Overlay")
   end
 

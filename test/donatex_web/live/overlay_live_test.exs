@@ -4,7 +4,6 @@ defmodule DonatexWeb.OverlayLiveTest do
   import Ecto.Query
   import Phoenix.LiveViewTest
 
-  alias Donatex.Config
   alias Donatex.Donations
   alias Donatex.Donations.Donation
   alias Donatex.Repo
@@ -37,7 +36,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       set: [inserted_at: ~U[2020-01-01 00:00:02Z]]
     )
 
-    {:ok, view, _html} = live(conn, ~p"/overlay/#{Config.overlay_token()}")
+    {:ok, view, _html} = live(conn, ~p"/overlay")
 
     assert has_element?(view, "div.obs-overlay-main-text", "A")
     refute has_element?(view, "div.obs-overlay-main-text", "B")
@@ -76,7 +75,7 @@ defmodule DonatexWeb.OverlayLiveTest do
     {:ok, _} = Donations.mark_donation_alerted(first)
     {:ok, _} = Donations.mark_donation_alerted(second)
 
-    {:ok, view, _html} = live(conn, ~p"/overlay/#{Config.overlay_token()}")
+    {:ok, view, _html} = live(conn, ~p"/overlay")
     assert has_element?(view, "h1", "Overlay")
 
     Phoenix.PubSub.broadcast(

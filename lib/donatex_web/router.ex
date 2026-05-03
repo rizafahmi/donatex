@@ -14,10 +14,6 @@ defmodule DonatexWeb.Router do
     plug DonatexWeb.Plugs.AdminBasicAuth
   end
 
-  pipeline :overlay do
-    plug DonatexWeb.Plugs.OverlayToken
-  end
-
   pipeline :api do
     plug :accepts, ["json"]
     plug :put_secure_browser_headers, DonatexWeb.SecurityHeaders.headers()
@@ -30,15 +26,10 @@ defmodule DonatexWeb.Router do
   scope "/", DonatexWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    # get "/", PageController, :home
 
-    live "/donate", DonateLive
-  end
-
-  scope "/", DonatexWeb do
-    pipe_through [:browser, :overlay]
-
-    live "/overlay/:token", OverlayLive
+    live "/", DonateLive
+    live "/overlay", OverlayLive
   end
 
   scope "/", DonatexWeb do

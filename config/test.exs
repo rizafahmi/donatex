@@ -44,8 +44,6 @@ config :donatex, :mayar,
   api_key: "mayar_test_key",
   webhook_token: "mayar_webhook_test_token"
 
-config :donatex, :overlay, token: "overlay_test_token"
-
 config :donatex, :admin,
   username: "admin_test",
   password: "pass_test"
