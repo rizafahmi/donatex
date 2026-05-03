@@ -31,44 +31,64 @@ defmodule DonatexWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :variant, :string, values: ~w(app overlay), default: "app"
+
   slot :inner_block, required: true
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.svg"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
+    <div class={[
+      "relative min-h-dvh",
+      @variant == "app" && "bg-background",
+      @variant == "overlay" && "bg-transparent"
+    ]}>
+      <div :if={@variant == "app"} class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 left-1/3 h-[32rem] w-[32rem] rounded-full bg-accent/18 blur-3xl" />
+        <div class="absolute -bottom-44 right-1/4 h-[34rem] w-[34rem] rounded-full bg-accent-2/14 blur-3xl" />
+        <div class="absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/25" />
       </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
+      <header
+        :if={@variant == "app"}
+        class="sticky top-0 z-30 border-b border-stroke/60 bg-background/70 backdrop-blur"
+      >
+        <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+          <a href="/" class="group flex items-baseline gap-3">
+            <span class="font-display text-lg tracking-tight text-text">Donatex</span>
+            <span class="text-[0.65rem] font-semibold tracking-[0.28em] text-text-muted/80">
+              QRIS
+            </span>
+          </a>
 
-    <.flash_group flash={@flash} />
+          <nav class="flex items-center gap-2">
+            <.link
+              navigate={~p"/donate"}
+              class="rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text"
+            >
+              Donate
+            </.link>
+            <.link
+              navigate={~p"/admin"}
+              class="rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text"
+            >
+              Admin
+            </.link>
+          </nav>
+        </div>
+      </header>
+
+      <main class={[
+        "relative",
+        @variant == "app" && "mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14",
+        @variant == "overlay" && "min-h-dvh"
+      ]}>
+        <div class={[@variant == "app" && "space-y-6"]}>
+          {render_slot(@inner_block)}
+        </div>
+      </main>
+
+      <.flash_group flash={@flash} />
+    </div>
     """
   end
 
@@ -84,7 +104,11 @@ defmodule DonatexWeb.Layouts do
 
   def flash_group(assigns) do
     ~H"""
-    <div id={@id} aria-live="polite">
+    <div
+      id={@id}
+      aria-live="polite"
+      class="fixed right-4 top-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3"
+    >
       <.flash kind={:info} flash={@flash} />
       <.flash kind={:error} flash={@flash} />
 
@@ -111,43 +135,6 @@ defmodule DonatexWeb.Layouts do
         Attempting to reconnect
         <.icon name="hero-arrow-path" class="ml-1 size-3 motion-safe:animate-spin" />
       </.flash>
-    </div>
-    """
-  end
-
-  @doc """
-  Provides dark vs light theme toggle based on themes defined in app.css.
-
-  See <head> in root.html.heex which applies the theme before page load.
-  """
-  def theme_toggle(assigns) do
-    ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/3 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 left-0 [[data-theme=light]_&]:left-1/3 [[data-theme=dark]_&]:left-2/3 transition-[left]" />
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="system"
-      >
-        <.icon name="hero-computer-desktop-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="light"
-      >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-
-      <button
-        class="flex p-2 cursor-pointer w-1/3"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="dark"
-      >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
     </div>
     """
   end
