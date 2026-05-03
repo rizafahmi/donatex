@@ -39,12 +39,12 @@ defmodule DonatexWeb.OverlayLiveTest do
 
     {:ok, view, _html} = live(conn, ~p"/overlay/#{Config.overlay_token()}")
 
-    assert has_element?(view, "span.text-lg", "A")
-    refute has_element?(view, "span.text-lg", "B")
+    assert has_element?(view, "div.obs-overlay-main-text", "A")
+    refute has_element?(view, "div.obs-overlay-main-text", "B")
 
     send(view.pid, {:dismiss_current, first.id})
     render(view)
-    assert has_element?(view, "span.text-lg", "B")
+    assert has_element?(view, "div.obs-overlay-main-text", "B")
 
     assert Repo.get!(Donation, first.id).alerted
 
@@ -86,7 +86,7 @@ defmodule DonatexWeb.OverlayLiveTest do
     )
 
     render(view)
-    assert has_element?(view, "span.text-lg", "C")
+    assert has_element?(view, "div.obs-overlay-main-text", "C")
 
     Phoenix.PubSub.broadcast(
       Donatex.PubSub,
@@ -95,12 +95,12 @@ defmodule DonatexWeb.OverlayLiveTest do
     )
 
     render(view)
-    assert has_element?(view, "span.text-lg", "C")
-    refute has_element?(view, "span.text-lg", "D")
+    assert has_element?(view, "div.obs-overlay-main-text", "C")
+    refute has_element?(view, "div.obs-overlay-main-text", "D")
 
     send(view.pid, {:dismiss_current, first.id})
     render(view)
-    assert has_element?(view, "span.text-lg", "D")
+    assert has_element?(view, "div.obs-overlay-main-text", "D")
   end
 
   defp donation_payload(donation) do

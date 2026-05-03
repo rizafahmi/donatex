@@ -51,7 +51,7 @@ defmodule DonatexWeb.OverlayLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} variant="overlay">
-      <div class="flex min-h-dvh items-center justify-center p-6">
+      <div class="obs-overlay-container">
         <%= if @current do %>
           <audio
             phx-hook="PlaySound"
@@ -61,37 +61,16 @@ defmodule DonatexWeb.OverlayLive do
             class="hidden"
           >
           </audio>
-          <div class="relative w-full max-w-xl animate-overlay-show">
-            <!-- Decorative background glow -->
-            <div class="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-accent/50 to-accent-2/50 opacity-40 blur-xl">
+          <div class="obs-overlay-line">
+            <div class="obs-overlay-box"></div>
+            <div class="obs-overlay-main-text font-display">
+              {@current.donor_name} memberikan
+              <span class="obs-overlay-amount font-display">
+                Rp {DonationPresenter.format_idr(@current.amount)}!!
+              </span>
             </div>
-
-            <div class="relative flex flex-col items-center justify-center rounded-[2.25rem] border border-stroke/50 bg-surface/85 px-10 py-12 text-center shadow-2xl shadow-black/60 backdrop-blur-md">
-              <div class="animate-text-reveal flex items-center gap-2">
-                <.icon name="hero-sparkles-solid" class="h-5 w-5 text-accent" />
-                <p class="text-sm font-bold uppercase tracking-[0.25em] text-accent">
-                  New Donation!
-                </p>
-                <.icon name="hero-sparkles-solid" class="h-5 w-5 text-accent" />
-              </div>
-
-              <p class="animate-amount-pop mt-4 bg-gradient-to-br from-white to-white/60 bg-clip-text font-display text-7xl font-bold tracking-tight text-transparent drop-shadow-sm">
-                Rp {DonationPresenter.format_idr(@current.amount)}
-              </p>
-
-              <div class="animate-message-reveal mt-6 flex flex-col items-center gap-4">
-                <div class="inline-flex items-center gap-2 rounded-full border border-stroke/40 bg-surface-2/60 px-5 py-2 shadow-inner">
-                  <.icon name="hero-user-solid" class="h-4 w-4 text-text-muted" />
-                  <span class="text-lg font-semibold text-text">{@current.donor_name}</span>
-                </div>
-
-                <p
-                  :if={DonationPresenter.present_message?(@current.message)}
-                  class="mt-2 max-w-md text-xl italic leading-relaxed text-text-muted"
-                >
-                  "{@current.message}"
-                </p>
-              </div>
+            <div class="obs-overlay-sub-text">
+              {@current.message}
             </div>
           </div>
         <% else %>
@@ -105,7 +84,7 @@ defmodule DonatexWeb.OverlayLive do
   defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do
     case :queue.out(queue) do
       {{:value, next}, rest} ->
-        Process.send_after(self(), {:dismiss_current, next.id}, 7_000)
+        Process.send_after(self(), {:dismiss_current, next.id}, 8_000)
 
         socket
         |> assign(:current, next)
