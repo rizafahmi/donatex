@@ -32,6 +32,7 @@ defmodule DonatexWeb.Layouts do
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
   attr :variant, :string, values: ~w(app overlay), default: "app"
+  attr :show_header, :boolean, default: true
 
   slot :inner_block, required: true
 
@@ -49,7 +50,7 @@ defmodule DonatexWeb.Layouts do
       </div>
 
       <header
-        :if={@variant == "app"}
+        :if={@variant == "app" && @show_header}
         class="sticky top-0 z-30 border-b border-stroke/60 bg-background/70 backdrop-blur"
       >
         <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
