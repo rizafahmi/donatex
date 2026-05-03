@@ -3,7 +3,7 @@
 ## Current State
 - Latest commit: f163748 (feat(overlay): add synced canvas confetti burst for maximum celebration)
 - Working tree: has uncommitted changes
-- Test status: 76 tests, 0 failures
+- Test status: 73 tests, 0 failures
 - Lint: `mix credo` passing
 - Dialyzer: `mix dialyzer` passing
 - Full verification: `mix precommit` passing
@@ -13,18 +13,18 @@
 - [x] Mayar webhook → DB transition to `paid` (deduped) → PubSub broadcast
 - [x] Overlay consumes broadcasts, recovers missed alerts from DB, and plays alerts sequentially
 - [x] Admin is basic-auth protected and can replay an alert without mutating `alerted`
-- [x] Mayar client extracts a stable transaction id (response `transactionId`/`id` or UUID in the QR URL), validates QR image URL schemes, and avoids logging usable QR URLs
-- [x] Mayar create QR logging indicates whether the transaction id came from response fields or was derived from the QR URL (`id_source=response|url`)
+- [x] Mayar client resolves a stable transaction id from the QR create response (`transactionId`/`id`) or a unique recent `/transactions/unpaid` lookup, validates QR image URL schemes, and avoids logging usable QR URLs
+- [x] Mayar create QR logging indicates whether the transaction id came from response fields or unpaid-transaction lookup (`id_source=response|unpaid`) and whether the QR asset UUID matched the stored transaction id
 - [x] Decide and test partial-failure behavior for “QR created but DB insert fails”
 - [x] Add safe lifecycle logging (QR creation, webhook accept/reject/duplicate, admin replay)
 - [x] Confirm Mayar `POST /qrcode/create` response shape against real traffic (can return only `data.amount` + `data.url`)
 - [x] Add `x-content-type-options: nosniff` to shared browser security headers
 - [x] Fix donor custom amount browser validation by aligning input `min`/`step` and enforcing server-side multiples-of-1000
-- [x] Add feature coverage for webhook correlation when QR create omits transaction id and UUID is derived from the QR URL
+- [x] Add feature coverage for webhook correlation when QR create omits transaction id and the real transaction id is resolved from `/transactions/unpaid`
 - [x] Fix Credo nesting findings in DonateLive amount validation and Mayar create QR logging helpers
 - [x] Stabilize SQLite DB tests by running donations DataCase tests non-async
 - [x] Validate donation query indexes (`donations_recovery_queue_idx`, `donations_order_idx`) via migration tests
-- [x] Confirm webhook transaction id matches the QR create identifier (observed `id_source=url` create response correlated with webhook `transactionId` in real traffic)
+- [x] Fix live Mayar correlation failure where the QR image UUID differed from the webhook `transactionId` by resolving the real transaction id from `/transactions/unpaid` and failing closed when it cannot be uniquely determined
 - [x] Apply custom HTML/CSS alert design from user requirements
 - [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
@@ -39,6 +39,7 @@
 ## Known Issues
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
+- If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
 1. No open implementation tasks in the current plan; deploy when ready.

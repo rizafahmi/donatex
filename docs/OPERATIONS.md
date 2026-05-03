@@ -116,6 +116,8 @@ Mayar webhook authenticity is currently treated as a URL-secret model (token in 
 4. If Mayar’s webhook UI provides a “test webhook” feature, use it against the same callback URL.
 5. Verify the public app URL is reachable over HTTPS before enabling live payments.
 
+If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Donatex performs a follow-up `GET /transactions/unpaid` lookup and only shows the QR when it can resolve a single fresh same-amount transaction. This avoids displaying a QR that later cannot be matched to the webhook transaction id.
+
 ## Recovery & Retry Semantics
 
 ### Webhook retries and duplicates

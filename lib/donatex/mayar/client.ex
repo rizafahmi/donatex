@@ -51,6 +51,9 @@ defmodule Donatex.Mayar.Client do
 
     require Logger
 
+    @unpaid_lookup_page_size 20
+    @unpaid_lookup_window_ms 120_000
+    @unpaid_lookup_future_tolerance_ms 30_000
     @uuid_regex ~r/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
     @impl true
@@ -60,7 +63,7 @@ defmodule Donatex.Mayar.Client do
           response = normalize_response(status, body)
           maybe_log_create_qr_body(body)
           log_create_qr_response(status, body, response)
-          response
+          unwrap_create_qr_response(response)
 
         {:error, %Req.TransportError{} = exception} ->
           Logger.warning("Mayar create_qr network error: #{exception_message(exception)}")
@@ -84,7 +87,7 @@ defmodule Donatex.Mayar.Client do
 
     defp normalize_response(status, body) when status in 200..299 do
       case build_dynamic_qr(body) do
-        {:ok, dynamic_qr} -> {:ok, dynamic_qr}
+        {:ok, dynamic_qr, id_source} -> {:ok, dynamic_qr, id_source}
         :error -> {:error, {:unexpected_response, body}}
       end
     end
@@ -128,11 +131,11 @@ defmodule Donatex.Mayar.Client do
       end)
     end
 
-    defp log_create_qr_response(status, body, {:ok, %DynamicQr{} = dynamic_qr}) do
-      {url_id_present, url_id_match} = transaction_id_observability(body)
+    defp log_create_qr_response(status, body, {:ok, %DynamicQr{} = dynamic_qr, id_source}) do
+      {url_id_present, _url_transaction_id} = transaction_id_observability(body)
 
       Logger.info(
-        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} id_source=#{transaction_id_source(body)} url_id_present=#{url_id_present} url_id_match=#{url_id_match} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
+        "Mayar create_qr ok status=#{status} mayar_transaction_id=#{dynamic_qr.mayar_transaction_id} id_source=#{id_source} url_id_present=#{url_id_present} url_id_match=#{url_id_match(dynamic_qr.mayar_transaction_id, body)} amount=#{dynamic_qr.amount} expires_at=#{format_expires_at(dynamic_qr.expires_at)}"
       )
     end
 
@@ -148,52 +151,21 @@ defmodule Donatex.Mayar.Client do
       )
     end
 
-    defp transaction_id_source(%{"data" => data}) when is_map(data) do
-      case fetch_binary(data, ["transactionId", "id"]) do
-        {:ok, _value} ->
-          "response"
-
-        :error ->
-          transaction_id_source_from_url(data)
-      end
-    end
-
-    defp transaction_id_source(_body), do: "unknown"
-
-    defp transaction_id_source_from_url(data) do
-      with {:ok, url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
-           normalized_url <- normalize_qr_image_url(url),
-           {:ok, _transaction_id} <- extract_transaction_id_from_url(normalized_url) do
-        "url"
-      else
-        _ -> "unknown"
-      end
-    end
-
     defp transaction_id_observability(body) do
-      response_transaction_id = response_transaction_id(body)
-      url_transaction_id = url_transaction_id(body)
-
-      url_id_present = is_binary(url_transaction_id)
-
-      url_id_match =
-        if is_binary(response_transaction_id) and is_binary(url_transaction_id) do
-          to_string(response_transaction_id == url_transaction_id)
-        else
-          "unknown"
-        end
-
-      {url_id_present, url_id_match}
+      {is_binary(url_transaction_id(body)), url_transaction_id(body)}
     end
 
-    defp response_transaction_id(%{"data" => data}) when is_map(data) do
-      case fetch_binary(data, ["transactionId", "id"]) do
-        {:ok, transaction_id} -> transaction_id
-        :error -> nil
+    defp url_id_match(mayar_transaction_id, body) when is_binary(mayar_transaction_id) do
+      case url_transaction_id(body) do
+        url_transaction_id when is_binary(url_transaction_id) ->
+          to_string(mayar_transaction_id == url_transaction_id)
+
+        _other ->
+          "unknown"
       end
     end
 
-    defp response_transaction_id(_body), do: nil
+    defp url_id_match(_mayar_transaction_id, _body), do: "unknown"
 
     defp url_transaction_id(%{"data" => data}) when is_map(data) do
       with {:ok, url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
@@ -213,6 +185,11 @@ defmodule Donatex.Mayar.Client do
       end
     end
 
+    defp unwrap_create_qr_response({:ok, %DynamicQr{} = dynamic_qr, _id_source}),
+      do: {:ok, dynamic_qr}
+
+    defp unwrap_create_qr_response(other), do: other
+
     defp format_expires_at(nil), do: "nil"
 
     defp format_expires_at(%DateTime{} = datetime) do
@@ -231,8 +208,8 @@ defmodule Donatex.Mayar.Client do
       with {:ok, qr_image_url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
            qr_image_url <- normalize_qr_image_url(qr_image_url),
            :ok <- validate_qr_image_url(qr_image_url),
-           {:ok, mayar_transaction_id} <- fetch_mayar_transaction_id(data, qr_image_url),
            {:ok, amount} <- fetch_positive_integer(data, ["amount"]),
+           {:ok, mayar_transaction_id, id_source} <- fetch_mayar_transaction_id(data, amount),
            {:ok, expires_at} <-
              parse_expires_at(Map.get(data, "expiresAt") || Map.get(data, "expires_at")) do
         {:ok,
@@ -241,7 +218,7 @@ defmodule Donatex.Mayar.Client do
            amount: amount,
            qr_image_url: qr_image_url,
            expires_at: expires_at
-         }}
+         }, id_source}
       end
     end
 
@@ -262,15 +239,77 @@ defmodule Donatex.Mayar.Client do
       fetch(data, keys, &positive_integer/1)
     end
 
-    defp fetch_mayar_transaction_id(data, qr_image_url) do
+    defp fetch_mayar_transaction_id(data, amount) do
       case fetch_binary(data, ["transactionId", "id"]) do
         {:ok, mayar_transaction_id} ->
-          {:ok, mayar_transaction_id}
+          {:ok, mayar_transaction_id, "response"}
 
         :error ->
-          extract_transaction_id_from_url(qr_image_url)
+          fetch_mayar_transaction_id_from_unpaid_transactions(amount)
       end
     end
+
+    defp fetch_mayar_transaction_id_from_unpaid_transactions(amount) when is_integer(amount) do
+      with {:ok, transactions} <- fetch_unpaid_transactions(),
+           {:ok, mayar_transaction_id} <- find_recent_unpaid_transaction_id(transactions, amount) do
+        {:ok, mayar_transaction_id, "unpaid"}
+      else
+        _ -> :error
+      end
+    end
+
+    defp fetch_unpaid_transactions do
+      case Req.get(request(),
+             url: "/transactions/unpaid",
+             params: [page: 1, pageSize: @unpaid_lookup_page_size]
+           ) do
+        {:ok, %Req.Response{status: status, body: %{"data" => transactions}}}
+        when status in 200..299 and is_list(transactions) ->
+          {:ok, transactions}
+
+        _other ->
+          :error
+      end
+    end
+
+    defp find_recent_unpaid_transaction_id(transactions, amount) when is_list(transactions) do
+      now_ms = System.system_time(:millisecond)
+
+      candidates =
+        Enum.filter(transactions, fn transaction ->
+          same_amount?(transaction, amount) and recent_transaction?(transaction, now_ms)
+        end)
+
+      case candidates do
+        [%{"id" => id}] ->
+          case present_binary(id) do
+            nil -> :error
+            normalized_id -> {:ok, normalized_id}
+          end
+
+        _other ->
+          :error
+      end
+    end
+
+    defp same_amount?(transaction, amount) when is_map(transaction) and is_integer(amount) do
+      match?({:ok, ^amount}, fetch_positive_integer(transaction, ["amount"]))
+    end
+
+    defp same_amount?(_transaction, _amount), do: false
+
+    defp recent_transaction?(transaction, now_ms) when is_map(transaction) do
+      case fetch_positive_integer(transaction, ["createdAt"]) do
+        {:ok, created_at} ->
+          created_at >= now_ms - @unpaid_lookup_window_ms and
+            created_at <= now_ms + @unpaid_lookup_future_tolerance_ms
+
+        :error ->
+          false
+      end
+    end
+
+    defp recent_transaction?(_transaction, _now_ms), do: false
 
     defp extract_transaction_id_from_url(url) when is_binary(url) do
       case URI.parse(url) do

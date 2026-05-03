@@ -65,7 +65,51 @@ defmodule Donatex.Mayar.ClientTest do
             }} = Client.create_qr(10_000)
   end
 
-  test "create_qr/1 extracts mayar_transaction_id from the QR url when no transactionId is present" do
+  test "create_qr/1 resolves mayar_transaction_id from unpaid transactions when the QR response omits it" do
+    unresolved_qr_url =
+      "`https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png`"
+
+    resolved_transaction_id = "c7c96ac3-5d19-49cb-beea-dd236218b001"
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      assert conn.method == "POST"
+      assert conn.request_path == "/hl/v1/qrcode/create"
+
+      Req.Test.json(conn, %{
+        "data" => %{
+          "amount" => 25_000,
+          "url" => unresolved_qr_url
+        }
+      })
+    end)
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      assert conn.method == "GET"
+      assert conn.request_path == "/hl/v1/transactions/unpaid"
+      assert URI.decode_query(conn.query_string) == %{"page" => "1", "pageSize" => "20"}
+
+      Req.Test.json(conn, %{
+        "data" => [
+          %{
+            "id" => resolved_transaction_id,
+            "amount" => 25_000,
+            "createdAt" => System.system_time(:millisecond)
+          }
+        ]
+      })
+    end)
+
+    assert {:ok,
+            %Client.DynamicQr{
+              mayar_transaction_id: ^resolved_transaction_id,
+              amount: 25_000,
+              qr_image_url:
+                "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png",
+              expires_at: nil
+            }} = Client.create_qr(25_000)
+  end
+
+  test "create_qr/1 fails closed when it cannot resolve a unique Mayar transaction id" do
     Req.Test.expect(__MODULE__, fn conn ->
       Req.Test.json(conn, %{
         "data" => %{
@@ -76,14 +120,34 @@ defmodule Donatex.Mayar.ClientTest do
       })
     end)
 
-    assert {:ok,
-            %Client.DynamicQr{
-              mayar_transaction_id: "ce50314d-52fe-4cfe-8488-0ccc8a0393a8",
-              amount: 25_000,
-              qr_image_url:
-                "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png",
-              expires_at: nil
-            }} = Client.create_qr(25_000)
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "data" => [
+          %{
+            "id" => "first-transaction-id",
+            "amount" => 25_000,
+            "createdAt" => System.system_time(:millisecond)
+          },
+          %{
+            "id" => "second-transaction-id",
+            "amount" => 25_000,
+            "createdAt" => System.system_time(:millisecond)
+          }
+        ]
+      })
+    end)
+
+    capture_log(fn ->
+      assert {:error,
+              {:unexpected_response,
+               %{
+                 "data" => %{
+                   "amount" => 25_000,
+                   "url" =>
+                     "`https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png`"
+                 }
+               }}} = Client.create_qr(25_000)
+    end)
   end
 
   test "create_qr/1 accepts alternate response field names and parses expires_at" do
