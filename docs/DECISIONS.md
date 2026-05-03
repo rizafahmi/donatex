@@ -2,6 +2,14 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
+## 2026-05-03: Use A Non-Guessable Token Route For Overlay Access (ADR-021)
+- Reason: Keep the OBS overlay private without introducing an accounts system; preserve the “paste URL into OBS” workflow by gating access with a long random token.
+- Reference: [ADR-021](file:///Users/riza/code/donatex/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
+
+## 2026-05-03: Use Basic Auth For Admin Access In MVP (ADR-020)
+- Reason: The admin surface is single-user; Basic Auth is a minimal, low-ops gate that avoids building an accounts system for the MVP.
+- Reference: [ADR-020](file:///Users/riza/code/donatex/docs/decisions/ADR-020-admin-basic-auth-for-mvp.md)
+
 ## 2026-05-02: Validate Mayar QR Image URLs And Redact QR Data From Logs (ADR-017)
 - Reason: Prevent unsafe URL rendering and keep webhook correlation correct by validating QR URL schemes, deriving a stable Mayar transaction id (response `transactionId`/`id` or UUID embedded in the QR URL), and avoiding QR URL leakage in logs.
 - Reference: [ADR-017](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
