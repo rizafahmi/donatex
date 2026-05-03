@@ -4,7 +4,7 @@ defmodule DonatexWeb.DonateLiveTest do
   import Phoenix.LiveViewTest
 
   test "renders the donor form with preset amounts and optional message", %{conn: conn} do
-    {:ok, view, html} = live(conn, ~p"/donate")
+    {:ok, view, html} = live(conn, ~p"/")
 
     assert html =~ "Bikin stream makin seru &amp; kasih semangat!"
     assert html =~ "Nama kamu"
@@ -17,7 +17,7 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "requires a donor name before continuing", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/donate")
+    {:ok, view, _html} = live(conn, ~p"/")
 
     html =
       view
@@ -34,7 +34,7 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "requires choosing a preset or custom amount", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/donate")
+    {:ok, view, _html} = live(conn, ~p"/")
 
     html =
       render_submit(view, "submit", %{
@@ -48,7 +48,7 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "shows the custom amount field and validates it", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/donate")
+    {:ok, view, _html} = live(conn, ~p"/")
 
     html =
       render_change(view, "validate", %{
@@ -77,7 +77,7 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "accepts a valid custom amount", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/donate")
+    {:ok, view, _html} = live(conn, ~p"/")
 
     html =
       render_submit(view, "submit", %{

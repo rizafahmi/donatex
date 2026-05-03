@@ -52,7 +52,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     end)
 
     conn
-    |> visit(~p"/donate")
+    |> visit(~p"/")
     |> fill_in("Nama kamu", with: "Riza")
     |> choose("Rp 10.000", exact: false)
     |> click_button("Dukung Sekarang")
@@ -86,7 +86,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     session =
       conn
-      |> visit(~p"/donate")
+      |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
       |> click_button("Dukung Sekarang")
@@ -134,7 +134,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     session =
       conn
-      |> visit(~p"/donate")
+      |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 25.000", exact: false)
       |> click_button("Dukung Sekarang")
@@ -166,7 +166,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     capture_log(fn ->
       conn
-      |> visit(~p"/donate")
+      |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
       |> click_button("Dukung Sekarang")
@@ -194,7 +194,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     capture_log(fn ->
       conn
-      |> visit(~p"/donate")
+      |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
       |> click_button("Dukung Sekarang")
