@@ -30,17 +30,19 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 let Hooks = {}
 Hooks.PlaySound = {
   mounted() {
-    this.el.play().catch(error => {
-      if (error.name === "NotAllowedError") {
-        console.warn(
-          "🔈 Autoplay blocked by browser. This is expected in Chrome/Safari during local testing.\n" +
-          "👉 Click anywhere on the overlay page to allow sound, then replay the alert.\n" +
-          "ℹ️ Note: OBS Browser Sources bypass this restriction automatically."
-        )
-      } else {
-        console.error("Audio playback failed:", error)
-      }
-    })
+    setTimeout(() => {
+      this.el.play().catch(error => {
+        if (error.name === "NotAllowedError") {
+          console.warn(
+            "🔈 Autoplay blocked by browser. This is expected in Chrome/Safari during local testing.\n" +
+            "👉 Click anywhere on the overlay page to allow sound, then replay the alert.\n" +
+            "ℹ️ Note: OBS Browser Sources bypass this restriction automatically."
+          )
+        } else {
+          console.error("Audio playback failed:", error)
+        }
+      })
+    }, 1500)
   }
 }
 
