@@ -8,16 +8,7 @@ defmodule DonatexWeb.CoreComponents do
   with doc strings and declarative assigns. You may customize and style
   them in any way you want, based on your application growth and needs.
 
-  The foundation for styling is Tailwind CSS, a utility-first CSS framework,
-  augmented with daisyUI, a Tailwind CSS plugin that provides UI components
-  and themes. Here are useful references:
-
-    * [daisyUI](https://daisyui.com/docs/intro/) - a good place to get
-      started and see the available components.
-
-    * [Tailwind CSS](https://tailwindcss.com) - the foundational framework
-      we build on. You will use it for layout, sizing, flexbox, grid, and
-      spacing.
+  The foundation for styling is Tailwind CSS, a utility-first CSS framework.
 
     * [Heroicons](https://heroicons.com) - see `icon/1` for usage.
 
@@ -56,25 +47,28 @@ defmodule DonatexWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class="toast toast-top toast-end z-50"
+      class={[
+        "group pointer-events-auto flex w-full items-start gap-3 rounded-2xl border bg-surface/80 px-4 py-3 text-sm text-text shadow-lg shadow-black/30 backdrop-blur",
+        @kind == :info && "border-stroke/70",
+        @kind == :error && "border-danger/55"
+      ]}
       {@rest}
     >
-      <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
-        @kind == :info && "alert-info",
-        @kind == :error && "alert-error"
-      ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
-        <div>
-          <p :if={@title} class="font-semibold">{@title}</p>
-          <p>{msg}</p>
-        </div>
-        <div class="flex-1" />
-        <button type="button" class="group self-start cursor-pointer" aria-label="close">
-          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
-        </button>
+      <div class="mt-0.5 shrink-0">
+        <.icon
+          :if={@kind == :info}
+          name="hero-information-circle"
+          class="size-5 text-accent-2/90"
+        />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 text-danger/90" />
       </div>
+      <div class="min-w-0 flex-1">
+        <p :if={@title} class="font-semibold text-text">{@title}</p>
+        <p class="text-text/90">{msg}</p>
+      </div>
+      <button type="button" class="shrink-0 opacity-40 transition group-hover:opacity-75">
+        <.icon name="hero-x-mark" class="size-5" />
+      </button>
     </div>
     """
   end
@@ -90,16 +84,19 @@ defmodule DonatexWeb.CoreComponents do
   """
   attr :rest, :global, include: ~w(href navigate patch method download name value disabled)
   attr :class, :any
-  attr :variant, :string, values: ~w(primary)
+  attr :variant, :string, values: ~w(primary ghost), default: "primary"
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+    variants = %{
+      "primary" =>
+        "inline-flex items-center justify-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-background shadow-sm shadow-accent/20 ring-1 ring-accent/30 transition hover:bg-accent/92 active:bg-accent/88 disabled:pointer-events-none disabled:opacity-60",
+      "ghost" =>
+        "inline-flex items-center justify-center gap-2 rounded-full border border-stroke/70 bg-surface/55 px-4 py-2 text-sm font-semibold text-text-muted shadow-sm shadow-black/20 transition hover:border-stroke hover:bg-surface-2/70 hover:text-text active:bg-surface-3/70 disabled:pointer-events-none disabled:opacity-60"
+    }
 
-    assigns =
-      assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
-      end)
+    variant_class = Map.fetch!(variants, assigns[:variant])
+    assigns = assign(assigns, :class, [variant_class, assigns[:class]])
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
       ~H"""
@@ -207,8 +204,8 @@ defmodule DonatexWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
+    <div class="space-y-1.5">
+      <label class="inline-flex items-center gap-2 text-sm text-text">
         <input
           type="hidden"
           name={@name}
@@ -216,17 +213,20 @@ defmodule DonatexWeb.CoreComponents do
           disabled={@rest[:disabled]}
           form={@rest[:form]}
         />
-        <span class="label">
-          <input
-            type="checkbox"
-            id={@id}
-            name={@name}
-            value="true"
-            checked={@checked}
-            class={@class || "checkbox checkbox-sm"}
-            {@rest}
-          />{@label}
-        </span>
+        <input
+          type="checkbox"
+          id={@id}
+          name={@name}
+          value="true"
+          checked={@checked}
+          class={[
+            @class ||
+              "size-4 rounded-md border border-stroke/70 bg-surface/60 text-accent shadow-inner shadow-black/20",
+            @errors != [] && (@error_class || "border-danger/70")
+          ]}
+          {@rest}
+        />
+        <span :if={@label} class="select-none">{@label}</span>
       </label>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
@@ -235,20 +235,25 @@ defmodule DonatexWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <select
-          id={@id}
-          name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
-          multiple={@multiple}
-          {@rest}
-        >
-          <option :if={@prompt} value="">{@prompt}</option>
-          {Form.options_for_select(@options, @value)}
-        </select>
+    <div class="space-y-1.5">
+      <label :if={@label} for={@id} class="block text-xs font-semibold tracking-wide text-text-muted">
+        {@label}
       </label>
+      <select
+        id={@id}
+        name={@name}
+        class={[
+          @class ||
+            "block w-full rounded-2xl border border-stroke/70 bg-surface/60 px-4 py-3 text-sm text-text shadow-inner shadow-black/20 transition focus:border-accent/60 focus:ring-4 focus:ring-accent/10",
+          @errors != [] &&
+            (@error_class || "border-danger/70 focus:border-danger/70 focus:ring-danger/10")
+        ]}
+        multiple={@multiple}
+        {@rest}
+      >
+        <option :if={@prompt} value="">{@prompt}</option>
+        {Form.options_for_select(@options, @value)}
+      </select>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -256,19 +261,21 @@ defmodule DonatexWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <textarea
-          id={@id}
-          name={@name}
-          class={[
-            @class || "w-full textarea",
-            @errors != [] && (@error_class || "textarea-error")
-          ]}
-          {@rest}
-        >{Form.normalize_value("textarea", @value)}</textarea>
+    <div class="space-y-1.5">
+      <label :if={@label} for={@id} class="block text-xs font-semibold tracking-wide text-text-muted">
+        {@label}
       </label>
+      <textarea
+        id={@id}
+        name={@name}
+        class={[
+          @class ||
+            "block w-full resize-none rounded-2xl border border-stroke/70 bg-surface/60 px-4 py-3 text-sm text-text shadow-inner shadow-black/20 transition placeholder:text-text-muted/60 focus:border-accent/60 focus:ring-4 focus:ring-accent/10",
+          @errors != [] &&
+            (@error_class || "border-danger/70 focus:border-danger/70 focus:ring-danger/10")
+        ]}
+        {@rest}
+      >{Form.normalize_value("textarea", @value)}</textarea>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -277,21 +284,23 @@ defmodule DonatexWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
-        <input
-          type={@type}
-          name={@name}
-          id={@id}
-          value={Phoenix.HTML.Form.normalize_value(@type, @value)}
-          class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
-          ]}
-          {@rest}
-        />
+    <div class="space-y-1.5">
+      <label :if={@label} for={@id} class="block text-xs font-semibold tracking-wide text-text-muted">
+        {@label}
       </label>
+      <input
+        type={@type}
+        name={@name}
+        id={@id}
+        value={Phoenix.HTML.Form.normalize_value(@type, @value)}
+        class={[
+          @class ||
+            "block w-full rounded-2xl border border-stroke/70 bg-surface/60 px-4 py-3 text-sm text-text shadow-inner shadow-black/20 transition placeholder:text-text-muted/60 focus:border-accent/60 focus:ring-4 focus:ring-accent/10",
+          @errors != [] &&
+            (@error_class || "border-danger/70 focus:border-danger/70 focus:ring-danger/10")
+        ]}
+        {@rest}
+      />
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -300,8 +309,8 @@ defmodule DonatexWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle" class="size-5" />
+    <p class="mt-1.5 flex items-start gap-2 text-sm text-danger">
+      <.icon name="hero-exclamation-circle" class="mt-0.5 size-5 shrink-0" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -318,10 +327,10 @@ defmodule DonatexWeb.CoreComponents do
     ~H"""
     <header class={[@actions != [] && "flex items-center justify-between gap-6", "pb-4"]}>
       <div>
-        <h1 class="text-lg font-semibold leading-8">
+        <h1 class="font-display text-lg font-semibold leading-8 text-text">
           {render_slot(@inner_block)}
         </h1>
-        <p :if={@subtitle != []} class="text-sm text-base-content/70">
+        <p :if={@subtitle != []} class="text-sm text-text-muted">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -362,34 +371,49 @@ defmodule DonatexWeb.CoreComponents do
       end
 
     ~H"""
-    <table class="table table-zebra">
-      <thead>
-        <tr>
-          <th :for={col <- @col}>{col[:label]}</th>
-          <th :if={@action != []}>
-            <span class="sr-only">Actions</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
-        <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
-          <td
-            :for={col <- @col}
-            phx-click={@row_click && @row_click.(row)}
-            class={@row_click && "hover:cursor-pointer"}
+    <div class="overflow-hidden rounded-2xl border border-stroke/60 bg-surface/50">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-surface-2/40 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+          <tr class="border-b border-stroke/60">
+            <th :for={col <- @col} class="px-4 py-3">
+              {col[:label]}
+            </th>
+            <th :if={@action != []} class="px-4 py-3 text-right">
+              <span class="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          id={@id}
+          phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}
+          class="divide-y divide-stroke/60"
+        >
+          <tr
+            :for={row <- @rows}
+            id={@row_id && @row_id.(row)}
+            class="bg-transparent transition hover:bg-surface-2/40"
           >
-            {render_slot(col, @row_item.(row))}
-          </td>
-          <td :if={@action != []} class="w-0 font-semibold">
-            <div class="flex gap-4">
-              <%= for action <- @action do %>
-                {render_slot(action, @row_item.(row))}
-              <% end %>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+            <td
+              :for={col <- @col}
+              phx-click={@row_click && @row_click.(row)}
+              class={[
+                "px-4 py-3 align-top text-text",
+                @row_click && "cursor-pointer"
+              ]}
+            >
+              {render_slot(col, @row_item.(row))}
+            </td>
+            <td :if={@action != []} class="px-4 py-3 text-right align-top font-semibold">
+              <div class="flex justify-end gap-3">
+                <%= for action <- @action do %>
+                  {render_slot(action, @row_item.(row))}
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     """
   end
 
@@ -409,12 +433,12 @@ defmodule DonatexWeb.CoreComponents do
 
   def list(assigns) do
     ~H"""
-    <ul class="list">
-      <li :for={item <- @item} class="list-row">
-        <div class="list-col-grow">
-          <div class="font-bold">{item.title}</div>
-          <div>{render_slot(item)}</div>
+    <ul class="space-y-2">
+      <li :for={item <- @item} class="rounded-2xl border border-stroke/60 bg-surface/50 px-4 py-3">
+        <div class="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+          {item.title}
         </div>
+        <div class="mt-2 text-sm text-text">{render_slot(item)}</div>
       </li>
     </ul>
     """
