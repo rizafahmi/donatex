@@ -46,3 +46,5 @@ npm-debug.log
 *.key
 
 .trae/
+
+/config/*.secret.exs
