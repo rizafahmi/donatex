@@ -2,8 +2,13 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
-## 2026-05-03: Use A Non-Guessable Token Route For Overlay Access (ADR-021)
-- Reason: Keep the OBS overlay private without introducing an accounts system; preserve the “paste URL into OBS” workflow by gating access with a long random token.
+## 2026-05-03: Remove Overlay Token Route (ADR-022)
+- Reason: This is a single-user system; the overlay no longer needs a token-gated route and should be reachable at `/overlay`.
+- Reference: [ADR-022](file:///Users/riza/code/donatex/docs/decisions/ADR-022-remove-overlay-token-route.md)
+
+## 2026-05-03: Superseded - Use A Non-Guessable Token Route For Overlay Access (ADR-021)
+- Superseded by: [ADR-022](file:///Users/riza/code/donatex/docs/decisions/ADR-022-remove-overlay-token-route.md)
+- Previous reason: Keep the OBS overlay private without introducing an accounts system; preserve the “paste URL into OBS” workflow by gating access with a long random token.
 - Reference: [ADR-021](file:///Users/riza/code/donatex/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
 
 ## 2026-05-03: Use Basic Auth For Admin Access In MVP (ADR-020)

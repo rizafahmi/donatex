@@ -36,7 +36,7 @@ Elixir 1.18, Phoenix 1.8, SQLite 3, Tailwind 4
 - The admin page must allow manual replay of missed alerts.
 - The donor flow must work on mobile.
 - The admin auth should stay simple for MVP: basic auth, not a full auth system.
-- The overlay route should use a non-guessable token/secret path.
+- The overlay route is `/overlay` and intentionally unauthenticated for the single-user MVP.
 - Out-of-scope items are hard “not now” constraints for MVP: no viewer accounts, no multi-streamer support, no analytics dashboard, no custom alert themes, no sound effects, no YouTube API integration, no tipping goals, no mobile app.
 - HTTP integration should use `Req`, not `HTTPoison`, `Tesla`, or `:httpc`.
 - Forms in LiveView must use `to_form/2` and the shared `<.input>` component.

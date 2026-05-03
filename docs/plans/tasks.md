@@ -78,7 +78,7 @@
 
 **Acceptance criteria:**
 - [x] `/donate` resolves.
-- [x] `/overlay/:token` resolves.
+- [x] `/overlay` resolves.
 - [x] `/admin` resolves.
 - [x] `/webhooks/mayar` resolves for POST requests.
 
@@ -507,18 +507,17 @@
 
 ## Phase 6: Overlay Queue
 
-## Task 22: Create overlay LiveView with token gate
+## Task 22: Create overlay LiveView
 
-**Description:** Add the OBS overlay surface and restrict it using the configured non-guessable token.
+**Description:** Add the OBS overlay surface at `/overlay`.
 
 **Acceptance criteria:**
-- [x] `/overlay/:token` mounts with the correct token.
-- [x] Invalid token requests are rejected.
+- [x] `/overlay` mounts.
 - [x] The LiveView renders an empty state cleanly.
 
 **Verification:**
 - [x] Run route or LiveView tests
-- [x] Manual check with valid and invalid token values
+- [x] Manual check that `/overlay` mounts
 
 **Dependencies:** Task 3, Task 4
 

@@ -30,7 +30,7 @@
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
-- [x] Document setup and deployment details (env vars, webhook registration, private URLs)
+- [x] Document setup and deployment details (env vars, webhook registration, private webhook URL)
 - [x] Run a final end-to-end verification pass (manual smoke test)
 
 ## In Progress

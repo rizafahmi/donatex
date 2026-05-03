@@ -20,7 +20,6 @@ Donatex expects these values to be provided via environment variables. In develo
 | `MAYAR_API_BASE_URL` | Mayar Headless API base URL (sandbox or prod) |
 | `MAYAR_API_KEY` | Mayar API key |
 | `MAYAR_WEBHOOK_TOKEN` | Non-guessable token embedded in the registered Mayar webhook callback URL (recommend 20+ characters) |
-| `OVERLAY_TOKEN` | Non-guessable token used by `/overlay/:token` (recommend 20+ characters) |
 | `ADMIN_USERNAME` | Basic auth username for `/admin` |
 | `ADMIN_PASSWORD` | Basic auth password for `/admin` |
 | `DONATEX_BASE_URL` | Public base URL of this app (used to build public links) |

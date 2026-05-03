@@ -15,7 +15,7 @@ Donatex is a web app that is expected to be internet-exposed in production.
 The MVP has three public surfaces:
 
 - public donor LiveView
-- private overlay LiveView behind a non-guessable token route
+- overlay LiveView (unauthenticated)
 - private admin LiveView behind basic auth
 
 Even with simple access control, browser-level protections should reduce risk from:

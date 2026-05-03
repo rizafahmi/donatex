@@ -5,7 +5,7 @@
 Donatex is a single-streamer Phoenix LiveView app with three surfaces:
 
 - Donor page: `/donate`
-- OBS overlay: `/overlay/:token`
+- OBS overlay: `/overlay`
 - Admin page: `/admin`
 
 Payments are created as Mayar dynamic QRIS transactions. Donatex creates a local `pending` donation row when the QR is generated, then upgrades it to `paid` when Mayar sends a webhook. The overlay shows paid donations as sequential alerts and recovers missed alerts after restarts by querying `paid AND alerted = false` from SQLite.
@@ -20,7 +20,7 @@ Payments are created as Mayar dynamic QRIS transactions. Donatex creates a local
 With the default `.env.example` values, the local surfaces are:
 
 - Donor page: `http://localhost:4000/donate`
-- Overlay: `http://localhost:4000/overlay/<OVERLAY_TOKEN>`
+- Overlay: `http://localhost:4000/overlay`
 - Admin: `http://localhost:4000/admin`
 - Webhook callback: `http://localhost:4000/webhooks/mayar/<MAYAR_WEBHOOK_TOKEN>`
 
@@ -69,9 +69,6 @@ These values are expected to be provided via environment variables. In developme
 
 ### Overlay & Admin
 
-- `OVERLAY_TOKEN`
-  - Non-guessable token used by `/overlay/:token`.
-  - Production enforces a minimum length (20+ characters).
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 
@@ -93,7 +90,6 @@ MAYAR_API_BASE_URL=https://api.mayar.id/hl/v1
 MAYAR_API_KEY=replace_me
 MAYAR_WEBHOOK_TOKEN=replace_me_with_a_long_random_token
 
-OVERLAY_TOKEN=replace_me_with_a_different_long_random_token
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=replace_me_with_a_strong_password
 ```
@@ -105,7 +101,7 @@ Keep this file readable only by root (or the app user if your process manager re
 Assuming `DONATEX_BASE_URL=https://donate.example.com`:
 
 - Donor page: `https://donate.example.com/donate`
-- Overlay (OBS Browser Source): `https://donate.example.com/overlay/<OVERLAY_TOKEN>`
+- Overlay (OBS Browser Source): `https://donate.example.com/overlay`
 - Admin: `https://donate.example.com/admin`
 - Mayar webhook callback URL: `https://donate.example.com/webhooks/mayar/<MAYAR_WEBHOOK_TOKEN>`
 
@@ -145,7 +141,7 @@ Mayar webhook authenticity is currently treated as a URL-secret model (token in 
 ## Production Notes
 
 - Terminate TLS in front of the app (Mayar webhooks should use HTTPS).
-- Keep `/overlay/:token` and `/webhooks/mayar/:token` URLs private; treat the tokens as secrets.
+- Keep `/webhooks/mayar/:token` URLs private; treat the token as a secret.
 - If you change `DONATEX_BASE_URL`, ensure it matches the URL users actually load in browsers (LiveView origin checks use it).
 
 ## GCP Free Tier Deployment (Single VM)

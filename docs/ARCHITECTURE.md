@@ -9,7 +9,7 @@ This document describes the Donatex architecture and constraints. It is written 
 Donatex is a self-hosted livestream donation app for a single streamer. It has three user-facing surfaces:
 
 - A public donor page at `/donate`
-- A private OBS overlay at `/overlay/:token`
+- An OBS overlay at `/overlay`
 - A private admin page at `/admin`
 
 The system must create one Mayar QRIS payment per donation, persist donation state in SQLite, update donation state from webhook events, and show paid donations as sequential overlay alerts that can be replayed from the admin page.
@@ -28,7 +28,6 @@ The system must create one Mayar QRIS payment per donation, persist donation sta
 - Webhook handling must persist before broadcast
 - Duplicate webhooks must be deduplicated by `mayar_transaction_id`
 - Admin auth is basic auth for MVP
-- Overlay access uses a non-guessable token in the route
 - Do not introduce multi-stream, analytics, accounts, extra payment methods, or a separate queue service
 
 ## Architecture Summary
@@ -222,13 +221,13 @@ The current router in [lib/donatex_web/router.ex](file:///Users/riza/code/donate
 
 - Browser routes
   - `/donate`
-  - `/overlay/:token`
+  - `/overlay`
   - `/admin`
 
 - Webhook route
   - `POST /webhooks/mayar/:token`
 
-Admin should sit behind a browser pipeline plus `Plug.BasicAuth` or a small custom plug. The overlay token is not authentication in the full sense; it is route secrecy for MVP access control.
+Admin should sit behind a browser pipeline plus `Plug.BasicAuth` or a small custom plug.
 
 ## Internal Eventing
 
@@ -440,7 +439,6 @@ Expected runtime configuration includes:
 
 - `MAYAR_API_BASE_URL`
 - `MAYAR_API_KEY`
-- `OVERLAY_TOKEN`
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 - application base URL or endpoint host values as needed
@@ -539,3 +537,4 @@ Architecture decisions live under [docs/decisions](file:///Users/riza/code/donat
 - [ADR-019: Deployment Strategy - GCP Free Tier Releases](file:///Users/riza/code/donatex/docs/decisions/ADR-019-deployment-strategy-gcp-free-tier-releases.md)
 - [ADR-020: Use Basic Auth For Admin Access In MVP](file:///Users/riza/code/donatex/docs/decisions/ADR-020-admin-basic-auth-for-mvp.md)
 - [ADR-021: Use A Non-Guessable Token Route For Overlay Access](file:///Users/riza/code/donatex/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
+- [ADR-022: Remove Overlay Token Route](file:///Users/riza/code/donatex/docs/decisions/ADR-022-remove-overlay-token-route.md)

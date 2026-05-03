@@ -69,7 +69,7 @@ All donations are persisted to SQLite. The host can replay missed alerts from a 
 
 **4. OBS Overlay (LiveView)**
 - Responsibility: listen for donation events via PubSub, maintain alert queue in socket state, render and animate alerts one at a time
-- Interface: route `/overlay` (no auth, but obscure enough — a UUID path segment is sufficient); auto-dismisses each alert after 5s; pulls unalerted donations from DB on mount to recover missed alerts after restart
+- Interface: route `/overlay` (no auth); auto-dismisses each alert after 5s; pulls unalerted donations from DB on mount to recover missed alerts after restart
 - New LiveView
 
 **5. Alert Queue**
@@ -136,5 +136,4 @@ Overlay LiveView mounts → Queries DB for `status: paid AND alerted: false` →
 
 - Schedule VPS deploys outside stream hours — downtime during a live stream means missed webhooks until Mayar retries.
 - Mayar webhook retry behavior should be verified in their docs — confirm retry count and interval before relying on it as the failure recovery mechanism.
-- The `/overlay` route should use a non-guessable path (e.g. `/overlay/:secret_token`) to prevent anyone who finds the URL from injecting fake alerts via a crafted HTML page — though the real protection is webhook signature verification.
-- Start with a hardcoded `SECRET_TOKEN` for overlay path and basic auth for admin — do not over-engineer auth for a personal tool.
+- If you need the overlay to be private, put it behind your own access control (reverse proxy auth, IP allowlist, or a tokenized path). The MVP default is an unauthenticated `/overlay` route.

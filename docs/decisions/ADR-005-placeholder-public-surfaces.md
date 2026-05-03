@@ -19,14 +19,14 @@ Without these routes existing early, later implementation tasks tend to mix rout
 Create placeholder implementations for:
 
 - `GET /donate` (LiveView)
-- `GET /overlay/:token` (LiveView)
+- `GET /overlay` (LiveView)
 - `GET /admin` (LiveView)
 - `POST /webhooks/mayar` (controller, JSON)
 
 These placeholders should be minimal and safe:
 
 - Render only simple headings (no feature logic).
-- Do not render secrets (e.g., never display the overlay token).
+- Do not render secrets (for example webhook callback tokens).
 - Keep webhook logic as a stub until the integration contract is implemented.
 
 ## Alternatives Considered
@@ -48,4 +48,3 @@ These placeholders should be minimal and safe:
 - The app establishes its public interface early, enabling incremental delivery.
 - Future changes can focus on behavior without churn in router wiring.
 - Placeholder code must remain minimal to avoid “temporary” logic becoming permanent.
-

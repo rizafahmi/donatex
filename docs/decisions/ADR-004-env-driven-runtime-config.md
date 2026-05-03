@@ -9,7 +9,6 @@ Accepted
 Donatex needs runtime configuration for:
 
 - Mayar API base URL and API key
-- An overlay route token used to gate OBS access
 - Basic auth credentials for the admin page
 - The public base URL of the application
 
@@ -41,4 +40,3 @@ These values are secrets or deployment-specific, so they must not be committed t
 - Production misconfiguration fails early and clearly, rather than failing later during donation handling.
 - Local development requires one explicit step (`source .env`) but avoids committing secrets.
 - A single config module (`Donatex.Config`) makes future refactors (e.g., moving to releases, secret managers) localized and testable.
-
