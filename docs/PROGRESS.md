@@ -1,7 +1,7 @@
 # Project Progress
 
 ## Current State
-- Latest commit: 142d725 (docs(adr): record webhook acceptance criteria)
+- Latest commit: f163748 (feat(overlay): add synced canvas confetti burst for maximum celebration)
 - Working tree: has uncommitted changes
 - Test status: 76 tests, 0 failures
 - Lint: `mix credo` passing
@@ -27,22 +27,21 @@
 - [x] Confirm webhook transaction id matches the QR create identifier (observed `id_source=url` create response correlated with webhook `transactionId` in real traffic)
 - [x] Apply custom HTML/CSS alert design from user requirements
 - [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
-- [x] Extend duration and delay sound effect slightly to sync with the animated text reveal
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
-- [x] Increase the display duration to 7 seconds so 6-second audio files aren't cut off
+- [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
+- [x] Document setup and deployment details (env vars, webhook registration, private URLs)
+- [x] Run a final end-to-end verification pass (manual smoke test)
 
 ## In Progress
-- [ ] Document setup and deployment details (env vars, webhook registration, private URLs)
-- [ ] Run a final end-to-end verification pass (manual smoke test)
+
 
 ## Known Issues
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 
 ## Next Steps
-1. Document setup and deployment details (env vars, webhook registration, private URLs)
-2. Run a final end-to-end verification pass (manual smoke test)
+1. No open implementation tasks in the current plan; deploy when ready.
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

@@ -10,6 +10,20 @@ Donatex is a single-streamer Phoenix LiveView app with three surfaces:
 
 Payments are created as Mayar dynamic QRIS transactions. Donatex creates a local `pending` donation row when the QR is generated, then upgrades it to `paid` when Mayar sends a webhook. The overlay shows paid donations as sequential alerts and recovers missed alerts after restarts by querying `paid AND alerted = false` from SQLite.
 
+## Local Development Setup
+
+1. Copy `.env.example` to `.env`.
+2. Fill in at least `MAYAR_API_KEY`.
+3. Load the variables into your shell with `source .env`.
+4. Run `mix setup` the first time, then `mix phx.server`.
+
+With the default `.env.example` values, the local surfaces are:
+
+- Donor page: `http://localhost:4000/donate`
+- Overlay: `http://localhost:4000/overlay/<OVERLAY_TOKEN>`
+- Admin: `http://localhost:4000/admin`
+- Webhook callback: `http://localhost:4000/webhooks/mayar/<MAYAR_WEBHOOK_TOKEN>`
+
 ## Environment Variables
 
 These values are expected to be provided via environment variables. In development, the intended workflow is `source .env` before starting the server. In production, set these variables in your process manager / container environment (do not rely on `.env` files).
@@ -27,7 +41,7 @@ These values are expected to be provided via environment variables. In developme
 
 - `DATABASE_PATH`
   - Absolute SQLite path used in production.
-  - Example: `/etc/donatex/donatex.db`
+  - Example: `/var/lib/donatex/donatex.db`
 - `POOL_SIZE` (optional)
   - Defaults to `5`.
 
@@ -61,6 +75,31 @@ These values are expected to be provided via environment variables. In developme
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 
+## Example Production Env File
+
+If you deploy with `systemd`, a file such as `/etc/donatex/donatex.env` can hold the release environment:
+
+```bash
+PHX_SERVER=true
+PORT=4000
+PHX_HOST=donate.example.com
+DONATEX_BASE_URL=https://donate.example.com
+
+SECRET_KEY_BASE=replace_me_with_mix_phx_gen_secret
+DATABASE_PATH=/var/lib/donatex/donatex.db
+POOL_SIZE=5
+
+MAYAR_API_BASE_URL=https://api.mayar.id/hl/v1
+MAYAR_API_KEY=replace_me
+MAYAR_WEBHOOK_TOKEN=replace_me_with_a_long_random_token
+
+OVERLAY_TOKEN=replace_me_with_a_different_long_random_token
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=replace_me_with_a_strong_password
+```
+
+Keep this file readable only by root (or the app user if your process manager requires it).
+
 ## Public URLs (What To Copy Into OBS / Mayar)
 
 Assuming `DONATEX_BASE_URL=https://donate.example.com`:
@@ -79,6 +118,7 @@ Mayar webhook authenticity is currently treated as a URL-secret model (token in 
    - `https://<your-host>/webhooks/mayar/<MAYAR_WEBHOOK_TOKEN>`
 3. Ensure the webhook is configured to deliver `payment.received` events.
 4. If Mayar’s webhook UI provides a “test webhook” feature, use it against the same callback URL.
+5. Verify the public app URL is reachable over HTTPS before enabling live payments.
 
 ## Recovery & Retry Semantics
 
@@ -87,17 +127,20 @@ Mayar webhook authenticity is currently treated as a URL-secret model (token in 
 - Webhook delivery is expected to be at-least-once; duplicates are handled idempotently by `mayar_transaction_id`.
 - Donatex updates the DB before broadcasting `donations:paid`. A duplicate webhook delivery should not rebroadcast.
 - If a webhook arrives for a `mayar_transaction_id` that does not exist locally, Donatex logs a warning and does not create a donation row.
+- Requests with an invalid webhook token are rejected with `404` before controller logic runs.
+- Requests that pass the token check currently return `200 {"ok":true}` even when the payload is ignored or logged as malformed, duplicate, unknown, or amount-mismatched. Check application logs, not only HTTP status codes, when validating webhook wiring.
 
 ### Overlay recovery
 
 - The overlay LiveView loads missed alerts on mount by querying `paid AND alerted = false` donations.
-- Alerts are displayed sequentially and auto-dismiss after 5 seconds.
+- Alerts are displayed sequentially. The current overlay keeps each alert mounted for about 8.5 seconds end-to-end so the 6-second audio cue and exit animation can finish cleanly.
 - Each displayed alert is marked `alerted=true` in SQLite.
 
 ### Admin replay
 
 - Admin replay rebroadcasts an overlay event for a selected donation.
 - Replay does not mutate `alerted` back to `false`.
+- Replay re-enters the overlay queue like any other paid donation broadcast, so it still respects sequential playback.
 
 ## Production Notes
 
@@ -158,4 +201,4 @@ WantedBy=multi-user.target
 ### SQLite Notes
 
 - Keep the database file outside the release directory so deploys don’t overwrite it.
-- Use an absolute path like `/etc/donatex/donatex.db` and ensure the directory exists and is writable by the app user.
+- Use an absolute path like `/var/lib/donatex/donatex.db` and ensure the directory exists and is writable by the app user.

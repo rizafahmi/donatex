@@ -2,9 +2,7 @@
 
 ## Purpose
 
-This document describes the target application architecture for Donatex. It is written for LLM agents that will implement and extend the system. It should be treated as the architectural source of truth until superseded by later ADRs.
-
-This is a target-state document, not a description of the current repository state. The current codebase is still mostly the default Phoenix skeleton.
+This document describes the Donatex architecture and constraints. It is written for LLM agents (and humans) that will implement and extend the system. For decision rationale and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions) and the decision log in [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md).
 
 ## System Goal
 
@@ -25,7 +23,7 @@ The system must create one Mayar QRIS payment per donation, persist donation sta
 - Donor flow must work on mobile
 - Overlay alerts only appear after payment confirmation
 - Alerts must never overlap
-- Alerts auto-dismiss after 5 seconds
+- Alerts auto-dismiss after ~8.5 seconds (tuned for the overlay animation/audio)
 - Overlay recovery must replay `paid` donations where `alerted = false`
 - Webhook handling must persist before broadcast
 - Duplicate webhooks must be deduplicated by `mayar_transaction_id`
@@ -107,7 +105,7 @@ The alert queue is an implementation detail of the overlay client. For MVP, it s
 
 ## Proposed Module Map
 
-The current repo does not implement these modules yet. This is the intended target structure.
+These modules define the primary application boundaries and are expected to remain stable as the MVP evolves.
 
 ### Domain And Persistence
 
@@ -333,7 +331,7 @@ The exact topic naming can be adjusted, but the event contract should stay simpl
 ╭────────────────────────────╮
 │ Seed in-memory queue       │
 │ display one alert          │
-│ every 5 seconds            │
+│ every ~8.5 seconds         │
 ╰──────┬─────────────────────╯
        ▼
 ╭────────────────────────────╮
@@ -371,7 +369,7 @@ Suggested behavior:
 - On mount, subscribe to PubSub and fetch recovery rows
 - If nothing is showing, display the next donation immediately
 - If an alert is already visible, append new donations to the queue
-- Use `Process.send_after/3` to dismiss after 5 seconds
+- Use `Process.send_after/3` to dismiss after ~8.5 seconds
 - On dismissal, mark the displayed donation as alerted and move to the next one
 
 ### Explicit Non-Goal
@@ -526,11 +524,18 @@ Architecture decisions live under [docs/decisions](file:///Users/riza/code/donat
 - [ADR-004: Env-Driven Runtime Config](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
 - [ADR-005: Land Placeholder Routes Early](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
 - [ADR-006: Donations Table Schema](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
+- [ADR-007: Donation Lifecycle Invariants And Idempotent Transitions](file:///Users/riza/code/donatex/docs/decisions/ADR-007-donation-lifecycle-invariants.md)
+- [ADR-008: Use A Tokenized Callback URL As The Mayar Webhook Authenticity Fallback](file:///Users/riza/code/donatex/docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md)
+- [ADR-009: Add A Composite Index For Overlay Recovery Queries](file:///Users/riza/code/donatex/docs/decisions/ADR-009-donation-recovery-index.md)
+- [ADR-010: Drop Redundant Donation Lookup Index](file:///Users/riza/code/donatex/docs/decisions/ADR-010-drop-redundant-donation-index.md)
+- [ADR-011: Use Secure HttpOnly Session Cookies In Production](file:///Users/riza/code/donatex/docs/decisions/ADR-011-secure-session-cookies-in-production.md)
+- [ADR-012: Add An Index For Donation Ordering Queries](file:///Users/riza/code/donatex/docs/decisions/ADR-012-add-admin-donations-order-index.md)
+- [ADR-013: Validate Donor Form Input With Ecto Changesets In LiveView](file:///Users/riza/code/donatex/docs/decisions/ADR-013-donor-form-validation.md)
 - [ADR-014: Use Erlang :queue For Overlay Alert FIFO](file:///Users/riza/code/donatex/docs/decisions/ADR-014-overlay-queue-uses-erlang-queue.md)
 - [ADR-015: Add CSP Security Headers And Production Origin Checks](file:///Users/riza/code/donatex/docs/decisions/ADR-015-security-headers-and-origin-checks.md)
-
-Future ADRs should cover:
-
-- Final webhook authenticity mechanism
-- Final Mayar transaction-to-local donation correlation strategy
-- Any future deployment or backup strategy if the system grows beyond MVP
+- [ADR-016: Require Paid Status And Amount Match For Webhook Processing](file:///Users/riza/code/donatex/docs/decisions/ADR-016-webhook-acceptance-criteria.md)
+- [ADR-017: Validate Mayar QR Image URLs And Redact QR Data From Logs](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
+- [ADR-018: Fail Closed When QR Is Created But Donation Persistence Fails](file:///Users/riza/code/donatex/docs/decisions/ADR-018-qr-created-but-donation-persist-fails.md)
+- [ADR-019: Deployment Strategy - GCP Free Tier Releases](file:///Users/riza/code/donatex/docs/decisions/ADR-019-deployment-strategy-gcp-free-tier-releases.md)
+- [ADR-020: Use Basic Auth For Admin Access In MVP](file:///Users/riza/code/donatex/docs/decisions/ADR-020-admin-basic-auth-for-mvp.md)
+- [ADR-021: Use A Non-Guessable Token Route For Overlay Access](file:///Users/riza/code/donatex/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
