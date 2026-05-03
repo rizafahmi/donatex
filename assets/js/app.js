@@ -28,9 +28,12 @@ import topbar from "../vendor/topbar"
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 let Hooks = {}
+import confetti from "../vendor/canvas-confetti"
+
 Hooks.PlaySound = {
   mounted() {
     setTimeout(() => {
+      // Play sound
       this.el.play().catch(error => {
         if (error.name === "NotAllowedError") {
           console.warn(
@@ -42,6 +45,32 @@ Hooks.PlaySound = {
           console.error("Audio playback failed:", error)
         }
       })
+
+      // Fire confetti celebration
+      const duration = 4000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        // Accents colors matching oklch(75% 0.14 165) ~ #10b981 green-ish and oklch(75% 0.14 65) ~ #eab308 orange/yellow-ish
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.8 },
+          colors: ['#79bd65', '#ea3d54', '#ee7b2a', '#ffffff']
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.8 },
+          colors: ['#79bd65', '#ea3d54', '#ee7b2a', '#ffffff']
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
     }, 1500)
   }
 }

@@ -28,6 +28,7 @@
 - [x] Apply custom HTML/CSS alert design from user requirements
 - [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
 - [x] Extend duration and delay sound effect slightly to sync with the animated text reveal
+- [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Increase the display duration to 7 seconds so 6-second audio files aren't cut off
 
