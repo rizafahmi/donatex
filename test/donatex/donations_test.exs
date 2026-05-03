@@ -1,8 +1,11 @@
 defmodule Donatex.DonationsTest do
   use Donatex.DataCase, async: false
 
+  import Ecto.Query, only: [from: 2]
+
   alias Donatex.Donations
   alias Donatex.Donations.Donation
+  alias Donatex.Repo
 
   describe "create_pending_donation/1" do
     test "creates a pending donation at QR generation time" do
@@ -188,7 +191,7 @@ defmodule Donatex.DonationsTest do
   end
 
   describe "list_donations/0" do
-    test "lists all donations for admin page" do
+    test "lists all donations for admin page ordered by newest first" do
       {:ok, first} =
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-7",
@@ -203,9 +206,26 @@ defmodule Donatex.DonationsTest do
           amount: 20_000
         })
 
+      older = ~U[2026-01-01 00:00:00Z]
+      newer = ~U[2026-01-02 00:00:00Z]
+
+      Repo.update_all(from(d in Donation, where: d.id == ^first.id),
+        set: [inserted_at: older, updated_at: older]
+      )
+
+      Repo.update_all(from(d in Donation, where: d.id == ^second.id),
+        set: [inserted_at: newer, updated_at: newer]
+      )
+
+      first_reloaded = Repo.get!(Donation, first.id)
+      second_reloaded = Repo.get!(Donation, second.id)
+
+      assert DateTime.compare(first_reloaded.inserted_at, older) == :eq
+      assert DateTime.compare(second_reloaded.inserted_at, newer) == :eq
+
       result = Donations.list_donations()
 
-      assert Enum.sort(Enum.map(result, & &1.id)) == Enum.sort([first.id, second.id])
+      assert Enum.map(result, & &1.id) == [second.id, first.id]
     end
   end
 end

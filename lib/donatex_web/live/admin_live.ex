@@ -41,7 +41,7 @@ defmodule DonatexWeb.AdminLive do
         {:noreply,
          socket
          |> put_flash(:info, "Marked as paid")
-         |> stream(:donations, [donation], at: -1)}
+         |> stream_insert(:donations, donation)}
 
       {:ok, _donation, false} ->
         {:noreply, put_flash(socket, :info, "Already paid")}

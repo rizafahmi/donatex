@@ -10,7 +10,7 @@ defmodule Donatex.Donations do
 
   def list_donations do
     Donation
-    |> order_by([d], asc: d.inserted_at, asc: d.id)
+    |> order_by([d], desc: d.inserted_at, desc: d.id)
     |> Repo.all()
   end
 
