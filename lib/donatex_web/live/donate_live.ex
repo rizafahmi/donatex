@@ -111,42 +111,42 @@ defmodule DonatexWeb.DonateLive do
     ~H"""
     <Layouts.app flash={@flash}>
       <%= if @step == :payment do %>
-        <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
+        <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
           <div class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-base-content/55">
+            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
               Almost there
             </p>
-            <h1 class="text-3xl font-semibold tracking-tight text-balance text-base-content sm:text-4xl">
+            <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
               Scan the QRIS
             </h1>
-            <p class="max-w-xl text-sm leading-6 text-base-content/70 sm:text-base">
+            <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
               Open your banking or wallet app and scan the code. This page will update when the payment is confirmed.
             </p>
           </div>
 
           <div class="mt-8 grid gap-6 sm:grid-cols-2 sm:items-start">
-            <div class="rounded-2xl border border-base-300/70 bg-base-200/30 p-6">
+            <div class="rounded-2xl border border-stroke/60 bg-background/35 p-6">
               <img
                 src={@qr.qr_image_url}
                 alt="QRIS QR code"
-                class="mx-auto w-full max-w-xs rounded-xl bg-base-100 p-4 shadow-sm"
+                class="mx-auto w-full max-w-xs rounded-xl bg-surface/60 p-4 shadow-sm shadow-black/30"
               />
             </div>
 
             <div class="space-y-4">
-              <div class="rounded-2xl border border-base-300/70 bg-base-200/30 px-5 py-4">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+              <div class="rounded-2xl border border-stroke/60 bg-background/35 px-5 py-4">
+                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
                   Donation
                 </p>
-                <p class="mt-2 text-lg font-semibold text-base-content">
+                <p class="mt-2 text-lg font-semibold text-text">
                   Rp {DonationPresenter.format_idr(@donation.amount)}
                 </p>
-                <p class="mt-2 text-sm text-base-content/70">
+                <p class="mt-2 text-sm text-text-muted">
                   From {@donation.donor_name}
                 </p>
                 <p
                   :if={DonationPresenter.present_message?(@donation.message)}
-                  class="mt-3 text-sm text-base-content/70"
+                  class="mt-3 text-sm text-text-muted"
                 >
                   "{@donation.message}"
                 </p>
@@ -156,89 +156,85 @@ defmodule DonatexWeb.DonateLive do
         </section>
       <% else %>
         <%= if @step == :paid do %>
-          <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
+          <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
             <div class="space-y-3">
               <p class="text-xs font-semibold uppercase tracking-[0.3em] text-success">
                 Payment confirmed
               </p>
-              <h1 class="text-3xl font-semibold tracking-tight text-balance text-base-content sm:text-4xl">
+              <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
                 Thank you for the support
               </h1>
-              <p class="max-w-xl text-sm leading-6 text-base-content/70 sm:text-base">
+              <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
                 Your donation is paid and will show on stream.
               </p>
             </div>
 
-            <div class="mt-8 rounded-2xl border border-base-300/70 bg-base-200/30 px-5 py-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+            <div class="mt-8 rounded-2xl border border-stroke/60 bg-background/35 px-5 py-4">
+              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
                 Donation
               </p>
-              <p class="mt-2 text-lg font-semibold text-base-content">
+              <p class="mt-2 text-lg font-semibold text-text">
                 Rp {DonationPresenter.format_idr(@donation.amount)}
               </p>
-              <p class="mt-2 text-sm text-base-content/70">From {@donation.donor_name}</p>
+              <p class="mt-2 text-sm text-text-muted">From {@donation.donor_name}</p>
               <p
                 :if={DonationPresenter.present_message?(@donation.message)}
-                class="mt-3 text-sm text-base-content/70"
+                class="mt-3 text-sm text-text-muted"
               >
                 "{@donation.message}"
               </p>
             </div>
 
             <div class="mt-6">
-              <button
-                type="button"
-                phx-click="new_donation"
-                class="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-content transition hover:opacity-95"
-              >
+              <.button type="button" phx-click="new_donation">
                 Make another donation
-              </button>
+              </.button>
             </div>
           </section>
         <% else %>
           <% selected_amount_option = selected_amount_option(@form) %>
           <% amount_option_error = amount_option_error(@form) %>
 
-          <section class="relative isolate overflow-hidden rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-8 shadow-sm sm:px-8">
-            <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-primary/16 via-transparent to-secondary/12" />
-            <div class="absolute -right-16 bottom-0 h-32 w-32 rounded-full bg-primary/10 blur-2xl" />
+          <section class="relative isolate overflow-hidden rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
+            <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-accent/14 via-transparent to-accent-2/12" />
+            <div class="absolute -right-16 bottom-0 h-32 w-32 rounded-full bg-accent/10 blur-2xl" />
 
             <div class="relative space-y-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-base-content/55">
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Support the stream
               </p>
               <div class="space-y-3">
-                <h1 class="text-4xl font-semibold tracking-tight text-balance text-base-content sm:text-5xl">
+                <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
                   Donate
                 </h1>
-                <p class="max-w-xl text-sm leading-6 text-base-content/70 sm:text-base">
+                <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
                   Send a quick QRIS tip from your phone. Your alert appears on stream after payment
                   confirmation lands.
                 </p>
               </div>
 
               <div class="grid gap-3 pt-2 sm:grid-cols-3">
-                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
                     Mobile ready
                   </p>
-                  <p class="mt-2 text-sm text-base-content/75">
+                  <p class="mt-2 text-sm text-text-muted">
                     Fast form, large tap targets, no account needed.
                   </p>
                 </div>
-                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
                     QRIS only
                   </p>
-                  <p class="mt-2 text-sm text-base-content/75">
+                  <p class="mt-2 text-sm text-text-muted">
                     Pay with any QRIS-compatible banking or wallet app.
                   </p>
                 </div>
-                <div class="rounded-2xl border border-base-300/80 bg-base-200/70 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-base-content/55">
+                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
+                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
                     Live alert
                   </p>
-                  <p class="mt-2 text-sm text-base-content/75">
+                  <p class="mt-2 text-sm text-text-muted">
                     Name, amount, and message show after Mayar confirms payment.
                   </p>
                 </div>
@@ -246,7 +242,7 @@ defmodule DonatexWeb.DonateLive do
             </div>
           </section>
 
-          <section class="rounded-[2rem] border border-base-300/70 bg-base-100 px-6 py-6 shadow-sm sm:px-8 sm:py-8">
+          <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-6 shadow-lg shadow-black/25 sm:px-8 sm:py-8">
             <.form
               for={@form}
               id="donation-form"
@@ -255,10 +251,10 @@ defmodule DonatexWeb.DonateLive do
               class="space-y-6"
             >
               <div class="space-y-2">
-                <p class="text-sm font-medium text-base-content/80">
+                <p class="text-sm font-medium text-text-muted">
                   Fill in your name, pick an amount, and add a message if you want one on stream.
                 </p>
-                <div class="h-px bg-base-300/80" />
+                <div class="h-px bg-stroke/60" />
               </div>
 
               <.input
@@ -272,8 +268,8 @@ defmodule DonatexWeb.DonateLive do
               <fieldset class="space-y-3">
                 <legend class="w-full">
                   <span class="flex items-center justify-between gap-3">
-                    <span class="text-sm font-semibold text-base-content">Choose an amount</span>
-                    <span class="text-xs uppercase tracking-[0.2em] text-base-content/50">IDR</span>
+                    <span class="text-sm font-semibold text-text">Choose an amount</span>
+                    <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
                   </span>
                 </legend>
 
@@ -291,10 +287,10 @@ defmodule DonatexWeb.DonateLive do
                       checked={selected_amount_option == preset.option}
                       class="sr-only"
                     />
-                    <span class="text-base font-semibold text-base-content">
+                    <span class="text-base font-semibold text-text">
                       Rp {preset.formatted}
                     </span>
-                    <span class="text-xs text-base-content/60">Quick tap</span>
+                    <span class="text-xs text-text-muted">Quick tap</span>
                   </label>
 
                   <label
@@ -309,19 +305,19 @@ defmodule DonatexWeb.DonateLive do
                       checked={selected_amount_option == "custom"}
                       class="sr-only"
                     />
-                    <span class="text-base font-semibold text-base-content">Custom</span>
-                    <span class="text-xs text-base-content/60">Set your own</span>
+                    <span class="text-base font-semibold text-text">Custom</span>
+                    <span class="text-xs text-text-muted">Set your own</span>
                   </label>
                 </div>
 
-                <p :if={amount_option_error} class="text-sm font-medium text-error">
+                <p :if={amount_option_error} class="text-sm font-medium text-danger">
                   {amount_option_error}
                 </p>
               </fieldset>
 
               <div
                 :if={selected_amount_option == "custom"}
-                class="rounded-2xl border border-base-300/80 bg-base-200/50 px-4 py-4"
+                class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-4"
               >
                 <.input
                   field={@form[:custom_amount]}
@@ -332,7 +328,7 @@ defmodule DonatexWeb.DonateLive do
                   step="1000"
                   required
                 />
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-text-muted">
                   Enter the amount in rupiah, without dots or commas.
                 </p>
               </div>
@@ -349,13 +345,13 @@ defmodule DonatexWeb.DonateLive do
               <div class="space-y-3 pt-2">
                 <button
                   type="submit"
-                  class="inline-flex w-full items-center justify-between rounded-2xl bg-primary px-5 py-4 text-left text-sm font-semibold text-primary-content transition hover:opacity-95 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  class="inline-flex w-full items-center justify-between rounded-2xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/20 ring-1 ring-accent/30 transition hover:bg-accent/92 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   <span>Create your QRIS</span>
                   <span aria-hidden="true">&rarr;</span>
                 </button>
 
-                <p class="text-xs leading-5 text-base-content/60">
+                <p class="text-xs leading-5 text-text-muted">
                   You will review the QR code on the next step before paying.
                 </p>
               </div>
@@ -432,14 +428,14 @@ defmodule DonatexWeb.DonateLive do
   defp amount_option_classes(true) do
     [
       "flex min-h-28 cursor-pointer flex-col justify-between rounded-2xl border px-4 py-4 transition",
-      "border-primary bg-primary/10 shadow-sm"
+      "border-accent/50 bg-accent/10 shadow-sm shadow-black/30"
     ]
   end
 
   defp amount_option_classes(false) do
     [
       "flex min-h-28 cursor-pointer flex-col justify-between rounded-2xl border px-4 py-4 transition",
-      "border-base-300 bg-base-200/60 hover:border-primary/50 hover:bg-base-200"
+      "border-stroke/60 bg-background/25 hover:border-stroke hover:bg-background/35"
     ]
   end
 
