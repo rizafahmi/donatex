@@ -245,7 +245,25 @@ defmodule Donatex.Mayar.Client do
           {:ok, mayar_transaction_id, "response"}
 
         :error ->
-          fetch_mayar_transaction_id_from_unpaid_transactions(amount)
+          # Try extracting from URL before hitting the API
+          case extract_transaction_id_from_data(data) do
+            {:ok, mayar_transaction_id} ->
+              {:ok, mayar_transaction_id, "url"}
+
+            :error ->
+              fetch_mayar_transaction_id_from_unpaid_transactions(amount)
+          end
+      end
+    end
+
+    defp extract_transaction_id_from_data(data) do
+      case fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]) do
+        {:ok, url} ->
+          normalized_url = normalize_qr_image_url(url)
+          extract_transaction_id_from_url(normalized_url)
+
+        :error ->
+          :error
       end
     end
 

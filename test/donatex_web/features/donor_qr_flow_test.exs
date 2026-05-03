@@ -115,14 +115,15 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
   end
 
-  test "webhook correlation uses the unpaid transaction id when QR create omits transaction id and the QR image URL UUID differs",
+  test "webhook correlation uses the QR image URL UUID when transaction id is omitted from QR create response",
        %{
          conn: conn
        } do
     qr_url =
       "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png"
 
-    transaction_id = "c7c96ac3-5d19-49cb-beea-dd236218b001"
+    # The UUID extracted from the QR image URL becomes the transaction ID
+    transaction_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
 
     Req.Test.expect(__MODULE__, fn conn ->
       assert conn.method == "POST"
@@ -135,21 +136,6 @@ defmodule DonatexWeb.DonorQrFlowTest do
           "amount" => 25_000,
           "url" => qr_url
         }
-      })
-    end)
-
-    Req.Test.expect(__MODULE__, fn conn ->
-      assert conn.method == "GET"
-      assert conn.request_path == "/hl/v1/transactions/unpaid"
-
-      Req.Test.json(conn, %{
-        "data" => [
-          %{
-            "id" => transaction_id,
-            "amount" => 25_000,
-            "createdAt" => System.system_time(:millisecond)
-          }
-        ]
       })
     end)
 

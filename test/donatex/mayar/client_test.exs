@@ -65,12 +65,13 @@ defmodule Donatex.Mayar.ClientTest do
             }} = Client.create_qr(10_000)
   end
 
-  test "create_qr/1 resolves mayar_transaction_id from unpaid transactions when the response omits it, even if the QR image URL contains a different UUID" do
+  test "create_qr/1 extracts mayar_transaction_id from QR image URL when response omits it" do
     qr_url =
-      "`https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png`"
+      "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png"
 
-    resolved_transaction_id = "f15c4b02-749f-4ab7-a1b8-a9ed6fe5d8ee"
+    url_transaction_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
 
+    # Simulate Mayar not returning transactionId in the response
     Req.Test.expect(__MODULE__, fn conn ->
       assert conn.method == "POST"
       assert conn.request_path == "/hl/v1/qrcode/create"
@@ -83,34 +84,18 @@ defmodule Donatex.Mayar.ClientTest do
       })
     end)
 
-    Req.Test.expect(__MODULE__, fn conn ->
-      assert conn.method == "GET"
-      assert conn.request_path == "/hl/v1/transactions/unpaid"
-
-      Req.Test.json(conn, %{
-        "data" => [
-          %{
-            "id" => resolved_transaction_id,
-            "amount" => 25_000,
-            "createdAt" => System.system_time(:millisecond)
-          }
-        ]
-      })
-    end)
-
     assert {:ok,
             %Client.DynamicQr{
-              mayar_transaction_id: ^resolved_transaction_id,
+              mayar_transaction_id: ^url_transaction_id,
               amount: 25_000,
-              qr_image_url:
-                "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png",
+              qr_image_url: ^qr_url,
               expires_at: nil
             }} = Client.create_qr(25_000)
   end
 
-  test "create_qr/1 fails closed when unpaid transaction lookup is ambiguous, even if the QR image URL contains a UUID" do
-    qr_url =
-      "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png"
+  test "create_qr/1 fails closed when unpaid transaction lookup is ambiguous and URL has no valid UUID" do
+    # Use a URL without a UUID to force fallback to unpaid lookup
+    qr_url = "https://media.mayar.club/images/resized/480/non-uuid-name.png"
 
     Req.Test.expect(__MODULE__, fn conn ->
       Req.Test.json(conn, %{
