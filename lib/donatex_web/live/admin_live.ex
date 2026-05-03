@@ -61,52 +61,80 @@ defmodule DonatexWeb.AdminLive do
     <Layouts.app flash={@flash}>
       <h1 class="font-display text-2xl font-semibold text-text">Admin</h1>
 
-      <div class="mt-8 space-y-4">
-        <div class="grid gap-3 text-sm font-semibold text-text-muted sm:grid-cols-6">
-          <div class="sm:col-span-2">Donor</div>
-          <div>Amount</div>
-          <div>Status</div>
-          <div>Alerted</div>
-          <div></div>
-        </div>
-
-        <div id="donations" phx-update="stream" class="space-y-3">
-          <div
+      <div class="mt-8">
+        <div id="donations" phx-update="stream" class="grid gap-4 sm:gap-5">
+          <article
             :for={{dom_id, donation} <- @streams.donations}
             id={dom_id}
-            class="grid items-center gap-3 rounded-2xl border border-stroke/60 bg-surface/55 px-4 py-3 text-sm text-text shadow-sm shadow-black/25 sm:grid-cols-6"
+            class="relative isolate overflow-hidden rounded-[2.25rem] border border-stroke/60 bg-surface/45 px-5 py-5 text-text shadow-xl shadow-black/30 sm:px-6"
           >
-            <div class="sm:col-span-2">
-              <div id={"donation-#{donation.id}"} class="font-semibold">{donation.donor_name}</div>
-              <div class="mt-1 text-xs text-text-muted">{donation.mayar_transaction_id}</div>
+            <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/10" />
+            <div class="absolute -left-24 top-10 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
+            <div class="absolute -right-24 -bottom-12 h-64 w-64 rounded-full bg-accent-2/10 blur-3xl" />
+
+            <div class="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div class="min-w-0">
+                <div id={"donation-#{donation.id}"} class="text-base font-semibold leading-6">
+                  {donation.donor_name}
+                </div>
+                <div class="mt-1 break-all text-[11px] font-semibold tracking-[0.22em] text-text-muted/90">
+                  {donation.mayar_transaction_id}
+                </div>
+              </div>
+
+              <div class="sm:text-right">
+                <div class="text-xl font-semibold tracking-tight">
+                  Rp {DonationPresenter.format_idr(donation.amount)}
+                </div>
+
+                <div class="mt-2 flex flex-wrap items-center gap-2 sm:justify-end">
+                  <div
+                    class={[
+                      "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
+                      donation.status == "paid" && "border-accent/30 bg-accent/10 text-text",
+                      donation.status == "pending" && "border-stroke/60 bg-background/20 text-text-muted"
+                    ]}
+                  >
+                    {donation.status}
+                  </div>
+
+                  <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                    <span class="relative flex size-2 items-center justify-center">
+                      <span :if={donation.alerted} class="relative inline-flex size-1.5 rounded-full bg-accent-2">
+                      </span>
+                      <span :if={!donation.alerted} class="relative inline-flex size-1.5 rounded-full bg-text-muted/40">
+                      </span>
+                    </span>
+                    <span>Alerted</span>
+                    <span class="text-text">{if donation.alerted, do: "Yes", else: "No"}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>Rp {DonationPresenter.format_idr(donation.amount)}</div>
-            <div class="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
-              {donation.status}
-            </div>
-            <div class="text-xs text-text-muted">{to_string(donation.alerted)}</div>
-            <div class="flex items-center gap-2 sm:text-right">
+
+            <div class="relative mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+              <.button
+                type="button"
+                variant="primary"
+                phx-click="replay"
+                phx-value-id={donation.id}
+                class="w-full px-5 py-2.5 text-xs sm:w-auto"
+              >
+                Replay Alert
+              </.button>
+
               <.button
                 :if={donation.status == "pending"}
                 type="button"
                 variant="ghost"
                 phx-click="mark_paid"
                 phx-value-id={donation.id}
-                class="px-3 py-1.5 text-xs"
+                class="w-full px-5 py-2.5 text-xs sm:w-auto"
               >
                 Mark Paid
               </.button>
-              <.button
-                type="button"
-                variant="ghost"
-                phx-click="replay"
-                phx-value-id={donation.id}
-                class="px-3 py-1.5 text-xs"
-              >
-                Replay
-              </.button>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </Layouts.app>
