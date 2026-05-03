@@ -119,7 +119,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
        %{
          conn: conn
        } do
-    qr_asset_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
+    # Use a URL without a UUID pattern to force fallback to unpaid transactions
+    qr_url_without_uuid = "https://media.mayar.club/images/qr/static.png"
     transaction_id = "c7c96ac3-5d19-49cb-beea-dd236218b001"
 
     Req.Test.expect(__MODULE__, fn conn ->
@@ -131,7 +132,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
         "messages" => "Success",
         "data" => %{
           "amount" => 25_000,
-          "url" => "`https://media.mayar.club/images/resized/480/#{qr_asset_id}.png`"
+          "url" => qr_url_without_uuid
         }
       })
     end)
