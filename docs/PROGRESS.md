@@ -25,6 +25,7 @@
 - [x] Stabilize SQLite DB tests by running donations DataCase tests non-async
 - [x] Validate donation query indexes (`donations_recovery_queue_idx`, `donations_order_idx`) via migration tests
 - [x] Confirm webhook transaction id matches the QR create identifier (observed `id_source=url` create response correlated with webhook `transactionId` in real traffic)
+- [x] Audit and enhance the OBS overlay design to be celebratory, fun, and engaging with CSS animations
 
 ## In Progress
 - [ ] Document setup and deployment details (env vars, webhook registration, private URLs)

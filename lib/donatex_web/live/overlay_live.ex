@@ -53,23 +53,41 @@ defmodule DonatexWeb.OverlayLive do
     <Layouts.app flash={@flash} variant="overlay">
       <div class="flex min-h-dvh items-center justify-center p-6">
         <%= if @current do %>
-          <div class="w-full max-w-xl rounded-[2.25rem] border border-stroke/60 bg-surface/55 px-10 py-8 shadow-2xl shadow-black/50 backdrop-blur">
-            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-text-muted">
-              Donation received
-            </p>
-            <p class="mt-4 font-display text-5xl font-semibold tracking-tight text-text">
-              Rp {DonationPresenter.format_idr(@current.amount)}
-            </p>
-            <p class="mt-3 text-xl font-semibold text-text">{@current.donor_name}</p>
-            <p
-              :if={DonationPresenter.present_message?(@current.message)}
-              class="mt-4 text-base text-text-muted"
-            >
-              "{@current.message}"
-            </p>
+          <div class="relative w-full max-w-xl animate-overlay-show">
+            <!-- Decorative background glow -->
+            <div class="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-accent/50 to-accent-2/50 opacity-40 blur-xl">
+            </div>
+
+            <div class="relative flex flex-col items-center justify-center rounded-[2.25rem] border border-stroke/50 bg-surface/85 px-10 py-12 text-center shadow-2xl shadow-black/60 backdrop-blur-md">
+              <div class="animate-text-reveal flex items-center gap-2">
+                <.icon name="hero-sparkles-solid" class="h-5 w-5 text-accent" />
+                <p class="text-sm font-bold uppercase tracking-[0.25em] text-accent">
+                  New Donation!
+                </p>
+                <.icon name="hero-sparkles-solid" class="h-5 w-5 text-accent" />
+              </div>
+
+              <p class="animate-amount-pop mt-4 bg-gradient-to-br from-white to-white/60 bg-clip-text font-display text-7xl font-bold tracking-tight text-transparent drop-shadow-sm">
+                Rp {DonationPresenter.format_idr(@current.amount)}
+              </p>
+
+              <div class="animate-message-reveal mt-6 flex flex-col items-center gap-4">
+                <div class="inline-flex items-center gap-2 rounded-full border border-stroke/40 bg-surface-2/60 px-5 py-2 shadow-inner">
+                  <.icon name="hero-user-solid" class="h-4 w-4 text-text-muted" />
+                  <span class="text-lg font-semibold text-text">{@current.donor_name}</span>
+                </div>
+
+                <p
+                  :if={DonationPresenter.present_message?(@current.message)}
+                  class="mt-2 max-w-md text-xl italic leading-relaxed text-text-muted"
+                >
+                  "{@current.message}"
+                </p>
+              </div>
+            </div>
           </div>
         <% else %>
-          <h1 class="text-base font-semibold text-text-muted">Overlay</h1>
+          <h1 class="hidden text-transparent" aria-hidden="true">Overlay</h1>
         <% end %>
       </div>
     </Layouts.app>
