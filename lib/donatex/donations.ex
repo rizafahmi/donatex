@@ -35,6 +35,44 @@ defmodule Donatex.Donations do
 
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
+  @doc """
+  Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
+  Matches by amount (and optional donor_name) for pending donations.
+  Returns the oldest matching pending donation.
+  """
+  def get_pending_donation_by_amount(amount, donor_name \\ nil)
+      when is_integer(amount) and amount > 0 do
+    query =
+      Donation
+      |> where(status: "pending")
+      |> where(amount: ^amount)
+      |> order_by([d], desc: d.inserted_at, asc: d.id)
+      |> limit(1)
+
+    query =
+      if donor_name && byte_size(donor_name) > 0 do
+        where(query, [d], d.donor_name == ^donor_name)
+      else
+        query
+      end
+
+    Repo.one(query)
+  end
+
+  def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
+    Donation
+    |> where(status: "pending")
+    |> where(amount: ^amount)
+    |> Repo.aggregate(:count)
+  end
+
+  def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)
+      when is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
+    donation
+    |> Donation.changeset(%{mayar_transaction_id: new_transaction_id})
+    |> Repo.update()
+  end
+
   def get_donation_by_id(id) when is_binary(id) and byte_size(id) > 0 do
     Repo.get(Donation, id)
   end
@@ -76,6 +114,15 @@ defmodule Donatex.Donations do
     do: {:error, :invalid_transaction_id}
 
   def get_donation(id), do: get_donation_by_id(id)
+
+  def mark_paid_by_id(id) when is_binary(id) and byte_size(id) > 0 do
+    case Repo.get(Donation, id) do
+      nil -> {:error, :not_found}
+      donation -> mark_paid_with_change(donation)
+    end
+  end
+
+  def mark_paid_by_id(_id), do: {:error, :invalid_id}
 
   def list_paid_unalerted_donations do
     Donation

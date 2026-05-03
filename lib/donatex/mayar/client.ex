@@ -29,10 +29,18 @@ defmodule Donatex.Mayar.Client do
 
   @type create_qr_result :: {:ok, DynamicQr.t()} | {:error, error_reason()}
 
+  @type create_qr_options :: %{optional(:reference) => String.t()}
+
   defmodule Impl do
     @moduledoc false
 
-    @callback create_qr(amount_idr :: pos_integer()) :: Donatex.Mayar.Client.create_qr_result()
+    @callback create_qr(
+                amount_idr :: pos_integer(),
+                opts :: Donatex.Mayar.Client.create_qr_options()
+              ) :: Donatex.Mayar.Client.create_qr_result()
+
+    @callback lookup_transaction(transaction_id :: String.t()) ::
+                {:ok, map()} | {:error, :not_implemented | :not_found | :network_error}
   end
 
   defmodule Stub do
@@ -41,7 +49,10 @@ defmodule Donatex.Mayar.Client do
     @behaviour Impl
 
     @impl true
-    def create_qr(_amount_idr), do: {:error, :not_implemented}
+    def create_qr(_amount_idr, _opts \\ %{}), do: {:error, :not_implemented}
+
+    @impl true
+    def lookup_transaction(_), do: {:error, :not_implemented}
   end
 
   defmodule HTTP do
@@ -57,10 +68,15 @@ defmodule Donatex.Mayar.Client do
     @uuid_regex ~r/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i
 
     @impl true
-    def create_qr(amount_idr) do
-      case Req.post(request(), url: "/qrcode/create", json: %{amount: amount_idr}) do
+    def create_qr(amount_idr, opts \\ %{}) do
+      body = %{amount: amount_idr}
+
+      body =
+        if reference = opts[:reference], do: Map.put(body, "reference", reference), else: body
+
+      case Req.post(request(), url: "/qrcode/create", json: body) do
         {:ok, %Req.Response{status: status, body: body}} ->
-          response = normalize_response(status, body)
+          response = normalize_response(status, body, opts)
           maybe_log_create_qr_body(body)
           log_create_qr_response(status, body, response)
           unwrap_create_qr_response(response)
@@ -75,6 +91,34 @@ defmodule Donatex.Mayar.Client do
       end
     end
 
+    @impl true
+    def lookup_transaction(transaction_id) do
+      case Req.get(request(), url: "/transactions/#{transaction_id}") do
+        {:ok, %Req.Response{status: status, body: body}} when status in 200..299 ->
+          {:ok, body}
+
+        {:ok, %Req.Response{status: 404, body: _body}} ->
+          {:error, :not_found}
+
+        {:ok, %Req.Response{status: 401, body: _body}} ->
+          {:error, :unauthorized}
+
+        {:error, %Req.TransportError{} = exception} ->
+          Logger.warning(
+            "Mayar lookup_transaction network error: #{exception_message(exception)}"
+          )
+
+          {:error, :network_error}
+
+        {:error, exception} ->
+          Logger.warning(
+            "Mayar lookup_transaction upstream error: #{exception_message(exception)}"
+          )
+
+          {:error, :upstream_error}
+      end
+    end
+
     defp request do
       [
         base_url: Config.mayar_base_url(),
@@ -85,19 +129,24 @@ defmodule Donatex.Mayar.Client do
       |> Req.new()
     end
 
-    defp normalize_response(status, body) when status in 200..299 do
+    defp normalize_response(status, body, _opts) when status in 200..299 do
       case build_dynamic_qr(body) do
         {:ok, dynamic_qr, id_source} -> {:ok, dynamic_qr, id_source}
         :error -> {:error, {:unexpected_response, body}}
       end
     end
 
-    defp normalize_response(400, _body), do: {:error, :bad_request}
-    defp normalize_response(401, _body), do: {:error, :unauthorized}
-    defp normalize_response(429, _body), do: {:error, :rate_limited}
-    defp normalize_response(status, _body) when status in 400..499, do: {:error, :bad_request}
-    defp normalize_response(status, _body) when status in 500..599, do: {:error, :upstream_error}
-    defp normalize_response(_status, body), do: {:error, {:unexpected_response, body}}
+    defp normalize_response(400, _body, _opts), do: {:error, :bad_request}
+    defp normalize_response(401, _body, _opts), do: {:error, :unauthorized}
+    defp normalize_response(429, _body, _opts), do: {:error, :rate_limited}
+
+    defp normalize_response(status, _body, _opts) when status in 400..499,
+      do: {:error, :bad_request}
+
+    defp normalize_response(status, _body, _opts) when status in 500..599,
+      do: {:error, :upstream_error}
+
+    defp normalize_response(_status, body, _opts), do: {:error, {:unexpected_response, body}}
 
     defp inspect_body(body) do
       body
@@ -451,12 +500,27 @@ defmodule Donatex.Mayar.Client do
     end
   end
 
-  @spec create_qr(amount_idr :: pos_integer()) :: create_qr_result()
-  def create_qr(amount_idr) when is_integer(amount_idr) and amount_idr > 0 do
-    impl().create_qr(amount_idr)
+  @spec create_qr(amount_idr :: pos_integer(), opts :: create_qr_options()) :: create_qr_result()
+  def create_qr(amount_idr, opts \\ %{})
+
+  def create_qr(amount_idr, opts) when is_integer(amount_idr) and amount_idr > 0 do
+    impl().create_qr(amount_idr, opts)
   end
 
-  def create_qr(_amount_idr), do: {:error, :invalid_amount}
+  def create_qr(_amount_idr, _opts), do: {:error, :invalid_amount}
+
+  @doc """
+  Looks up a transaction by its ID and returns details.
+  Mayar may include the original QR transaction ID or other fields we can use for matching.
+  """
+  @spec lookup_transaction(transaction_id :: String.t()) ::
+          {:ok, map()} | {:error, error_reason()}
+  def lookup_transaction(transaction_id)
+      when is_binary(transaction_id) and byte_size(transaction_id) > 0 do
+    impl().lookup_transaction(transaction_id)
+  end
+
+  def lookup_transaction(_), do: {:error, :invalid_transaction_id}
 
   defp impl do
     Application.get_env(:donatex, :mayar_client_impl, HTTP)

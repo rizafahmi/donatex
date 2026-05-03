@@ -1,10 +1,31 @@
 defmodule DonatexWeb.MayarWebhookControllerTest do
-  use DonatexWeb.ConnCase, async: true
+  use DonatexWeb.ConnCase, async: false
 
   alias Donatex.Config
   alias Donatex.Donations
   alias Donatex.Donations.Donation
   alias Donatex.Repo
+
+  defmodule TestStub do
+    @behaviour Donatex.Mayar.Client.Impl
+    def create_qr(_amount, _opts), do: {:error, :network_error}
+    def lookup_transaction(_tx_id), do: {:error, :not_implemented}
+  end
+
+  setup do
+    original_impl = Application.get_env(:donatex, :mayar_client_impl)
+    Application.put_env(:donatex, :mayar_client_impl, TestStub)
+
+    on_exit(fn ->
+      if original_impl do
+        Application.put_env(:donatex, :mayar_client_impl, original_impl)
+      else
+        Application.delete_env(:donatex, :mayar_client_impl)
+      end
+    end)
+
+    :ok
+  end
 
   test "marks donation as paid and broadcasts only once", %{conn: conn} do
     Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
@@ -167,5 +188,47 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
       |> post(~p"/webhooks/mayar/not-a-real-token", %{"event" => "payment.received"})
 
     assert response(conn, 404)
+  end
+
+  test "falls back to amount lookup when transaction ID differs (Mayar confirmation ID)", %{
+    conn: conn
+  } do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    # Mayar returns a different transaction ID in the QR URL vs what they send in webhook
+    original_tx_id = "original-qr-tx-id-12345"
+    confirmation_tx_id = "confirmation-tx-id-67890"
+
+    assert {:ok, %Donation{} = donation} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: original_tx_id,
+               donor_name: "Maya",
+               amount: 15_000
+             })
+
+    # Mayar webhook sends the confirmation transaction ID (different from QR URL)
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => confirmation_tx_id,
+          "amount" => 15_000,
+          "customerName" => "Maya",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Donation should be marked as paid and transaction ID updated
+    updated_donation = Repo.get!(Donation, donation.id)
+    assert updated_donation.status == "paid"
+    assert updated_donation.mayar_transaction_id == confirmation_tx_id
+
+    # Broadcast should have been sent with updated transaction ID
+    assert_received {:donation_paid, %{id: id, mayar_transaction_id: ^confirmation_tx_id}}
+    assert id == donation.id
   end
 end

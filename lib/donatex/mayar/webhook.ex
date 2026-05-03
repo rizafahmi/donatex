@@ -24,10 +24,18 @@ defmodule Donatex.Mayar.Webhook do
     with :ok <- ensure_payment_received(event),
          {:ok, data} <- fetch_data(payload),
          {:ok, mayar_transaction_id} <-
-           fetch_required_binary(data, ["transactionId", "id"], :mayar_transaction_id),
+           fetch_required_binary(
+             data,
+             ["transactionId", "id", "referenceId", "reference_id"],
+             :mayar_transaction_id
+           ),
          {:ok, amount} <- fetch_amount(data),
          {:ok, transaction_status} <-
-           fetch_required_binary(data, ["transactionStatus", "status"], :transaction_status) do
+           fetch_required_binary(
+             data,
+             ["transactionStatus", "status", "paymentStatus"],
+             :transaction_status
+           ) do
       {:ok,
        %PaymentReceived{
          event: event,
