@@ -6,12 +6,12 @@ defmodule DonatexWeb.DonateLiveTest do
   test "renders the donor form with preset amounts and optional message", %{conn: conn} do
     {:ok, view, html} = live(conn, ~p"/donate")
 
-    assert html =~ "Donate"
-    assert html =~ "Your name"
+    assert html =~ "Donasi cepat. Biar stream makin sering tayang."
+    assert html =~ "Nama kamu"
     assert html =~ "Rp 5.000"
     assert html =~ "Rp 10.000"
     assert html =~ "Rp 25.000"
-    assert html =~ "Message (optional)"
+    assert html =~ "Pesan (opsional)"
 
     refute has_element?(view, "#donation_form_custom_amount")
   end
@@ -30,7 +30,7 @@ defmodule DonatexWeb.DonateLiveTest do
       )
       |> render_submit()
 
-    assert html =~ "Please enter your name"
+    assert html =~ "Tulis namamu dulu"
   end
 
   test "requires choosing a preset or custom amount", %{conn: conn} do
@@ -44,7 +44,7 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert html =~ "Choose a donation amount"
+    assert html =~ "Pilih nominal donasi"
   end
 
   test "shows the custom amount field and validates it", %{conn: conn} do
@@ -73,7 +73,7 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert html =~ "Enter your donation amount"
+    assert html =~ "Masukkan nominal donasi"
   end
 
   test "accepts a valid custom amount", %{conn: conn} do
@@ -89,8 +89,8 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert html =~ "Could not create a QR right now"
-    refute html =~ "Enter your donation amount"
-    refute html =~ "Enter an amount in multiples of 1000"
+    assert html =~ "QR belum bisa dibuat sekarang"
+    refute html =~ "Masukkan nominal donasi"
+    refute html =~ "Harus kelipatan 1000"
   end
 end

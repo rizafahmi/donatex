@@ -28,12 +28,16 @@ defmodule DonatexWeb.DonateLive do
     preset_amounts =
       Enum.map(@preset_amounts, fn amount ->
         option = Integer.to_string(amount)
+        {title, hint, recommended?} = preset_amount_copy(amount)
 
         %{
           value: amount,
           option: option,
           id: amount_option_id(amount),
-          formatted: DonationPresenter.format_idr(amount)
+          formatted: DonationPresenter.format_idr(amount),
+          title: title,
+          hint: hint,
+          recommended?: recommended?
         }
       end)
 
@@ -43,7 +47,9 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
-     |> assign_form(donation_form_changeset(%{}, validate_required?: false))}
+     |> assign_form(
+       donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
+     )}
   end
 
   @impl Phoenix.LiveView
@@ -92,7 +98,9 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
-     |> assign_form(donation_form_changeset(%{}, validate_required?: false))}
+     |> assign_form(
+       donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
+     )}
   end
 
   @impl Phoenix.LiveView
@@ -109,40 +117,48 @@ defmodule DonatexWeb.DonateLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} show_header={false}>
       <%= if @step == :payment do %>
-        <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
-          <div class="space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
-              Almost there
+        <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8">
+          <div class="absolute inset-0 bg-linear-to-br from-accent/12 via-transparent to-accent-2/10" />
+          <div class="absolute -left-20 top-10 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
+          <div class="absolute -right-24 bottom-0 h-64 w-64 rounded-full bg-accent-2/10 blur-3xl" />
+
+          <div class="relative space-y-3">
+            <p class="text-xs font-semibold uppercase tracking-[0.34em] text-text-muted">
+              Tinggal sedikit lagi
             </p>
             <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-              Scan the QRIS
+              Scan QRIS-nya
             </h1>
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-              Open your banking or wallet app and scan the code. This page will update when the payment is confirmed.
+              1) Buka aplikasi bank/e-wallet 2) Scan QRIS 3) Selesai—tunggu konfirmasi di halaman ini.
             </p>
+            <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/25 px-3 py-1.5 text-xs font-semibold text-text-muted">
+              <span class="hero-arrow-path motion-safe:animate-spin"></span> Menunggu konfirmasi
+            </div>
           </div>
 
-          <div class="mt-8 grid gap-6 sm:grid-cols-2 sm:items-start">
-            <div class="rounded-2xl border border-stroke/60 bg-background/35 p-6">
+          <div class="relative mt-8 grid gap-6 sm:grid-cols-2 sm:items-start">
+            <div class="relative rounded-3xl border border-stroke/60 bg-background/30 p-6">
+              <div class="absolute inset-3 rounded-2xl bg-linear-to-br from-accent/12 via-transparent to-accent-2/10 blur-xl" />
               <img
                 src={@qr.qr_image_url}
-                alt="QRIS QR code"
-                class="mx-auto w-full max-w-xs rounded-xl bg-surface/60 p-4 shadow-sm shadow-black/30"
+                alt="Kode QRIS"
+                class="relative mx-auto w-full max-w-xs rounded-2xl bg-surface/60 p-4 shadow-sm shadow-black/30 ring-1 ring-stroke/50 motion-safe:transition motion-safe:hover:scale-[1.01]"
               />
             </div>
 
             <div class="space-y-4">
-              <div class="rounded-2xl border border-stroke/60 bg-background/35 px-5 py-4">
-                <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-                  Donation
+              <div class="rounded-3xl border border-stroke/60 bg-background/25 px-5 py-5">
+                <p class="text-xs font-semibold uppercase tracking-[0.24em] text-text-muted">
+                  Ringkasan
                 </p>
-                <p class="mt-2 text-lg font-semibold text-text">
+                <p class="mt-2 text-2xl font-semibold tracking-tight text-text">
                   Rp {DonationPresenter.format_idr(@donation.amount)}
                 </p>
                 <p class="mt-2 text-sm text-text-muted">
-                  From {@donation.donor_name}
+                  Dari {@donation.donor_name}
                 </p>
                 <p
                   :if={DonationPresenter.present_message?(@donation.message)}
@@ -151,32 +167,50 @@ defmodule DonatexWeb.DonateLive do
                   "{@donation.message}"
                 </p>
               </div>
+
+              <div class="rounded-3xl border border-stroke/60 bg-background/15 px-5 py-5">
+                <p class="text-sm font-semibold text-text">Tips biar lancar</p>
+                <ul class="mt-3 space-y-2 text-sm text-text-muted">
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 size-1.5 rounded-full bg-accent/80"></span>
+                    Jangan tutup halaman ini sampai status berubah.
+                  </li>
+                  <li class="flex items-start gap-2">
+                    <span class="mt-0.5 size-1.5 rounded-full bg-accent-2/80"></span>
+                    Bayar sekali saja untuk QR ini.
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
       <% else %>
         <%= if @step == :paid do %>
-          <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
-            <div class="space-y-3">
-              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-success">
-                Payment confirmed
+          <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8">
+            <div class="absolute inset-0 bg-linear-to-br from-success/14 via-transparent to-accent/10" />
+            <div class="absolute -left-16 top-8 h-56 w-56 rounded-full bg-success/10 blur-3xl" />
+            <div class="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
+
+            <div class="relative space-y-3">
+              <p class="text-xs font-semibold uppercase tracking-[0.34em] text-success">
+                Pembayaran terkonfirmasi
               </p>
               <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-                Thank you for the support
+                Terima kasih!
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Your donation is paid and will show on stream.
+                Donasimu sudah terkonfirmasi. Notifikasi akan tampil di stream.
               </p>
             </div>
 
-            <div class="mt-8 rounded-2xl border border-stroke/60 bg-background/35 px-5 py-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-                Donation
+            <div class="relative mt-8 rounded-3xl border border-stroke/60 bg-background/20 px-5 py-5">
+              <p class="text-xs font-semibold uppercase tracking-[0.24em] text-text-muted">
+                Ringkasan
               </p>
-              <p class="mt-2 text-lg font-semibold text-text">
+              <p class="mt-2 text-2xl font-semibold tracking-tight text-text">
                 Rp {DonationPresenter.format_idr(@donation.amount)}
               </p>
-              <p class="mt-2 text-sm text-text-muted">From {@donation.donor_name}</p>
+              <p class="mt-2 text-sm text-text-muted">Dari {@donation.donor_name}</p>
               <p
                 :if={DonationPresenter.present_message?(@donation.message)}
                 class="mt-3 text-sm text-text-muted"
@@ -185,9 +219,12 @@ defmodule DonatexWeb.DonateLive do
               </p>
             </div>
 
-            <div class="mt-6">
+            <div class="relative mt-6 flex flex-wrap items-center gap-3">
               <.button type="button" phx-click="new_donation">
-                Make another donation
+                Donasi lagi
+              </.button>
+              <.button navigate={~p"/"} variant="ghost">
+                Kembali ke beranda
               </.button>
             </div>
           </section>
@@ -195,167 +232,169 @@ defmodule DonatexWeb.DonateLive do
           <% selected_amount_option = selected_amount_option(@form) %>
           <% amount_option_error = amount_option_error(@form) %>
 
-          <section class="relative isolate overflow-hidden rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-8 shadow-lg shadow-black/25 sm:px-8">
-            <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-r from-accent/14 via-transparent to-accent-2/12" />
-            <div class="absolute -right-16 bottom-0 h-32 w-32 rounded-full bg-accent/10 blur-2xl" />
+          <section class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35">
+            <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/8" />
+            <div class="absolute -right-32 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
 
-            <div class="relative space-y-4">
-              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
-                Support the stream
-              </p>
-              <div class="space-y-3">
-                <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                  Donate
-                </h1>
-                <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                  Send a quick QRIS tip from your phone. Your alert appears on stream after payment
-                  confirmation lands.
+            <div class="relative mx-auto max-w-3xl space-y-8 px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
+              <header class="mx-auto space-y-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.34em] text-text-muted">
+                  Dukung live stream
                 </p>
-              </div>
+                <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
+                  Donasi cepat. Biar stream makin sering tayang.
+                </h1>
+                <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
+                  Pilih nominal, buat QRIS, lalu scan. Notifikasi tampil di stream setelah pembayaran terkonfirmasi.
+                </p>
+              </header>
 
-              <div class="grid gap-3 pt-2 sm:grid-cols-3">
-                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-                    Mobile ready
-                  </p>
-                  <p class="mt-2 text-sm text-text-muted">
-                    Fast form, large tap targets, no account needed.
-                  </p>
-                </div>
-                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-                    QRIS only
-                  </p>
-                  <p class="mt-2 text-sm text-text-muted">
-                    Pay with any QRIS-compatible banking or wallet app.
-                  </p>
-                </div>
-                <div class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-3">
-                  <p class="text-xs font-semibold uppercase tracking-[0.22em] text-text-muted">
-                    Live alert
-                  </p>
-                  <p class="mt-2 text-sm text-text-muted">
-                    Name, amount, and message show after Mayar confirms payment.
-                  </p>
-                </div>
+              <div class="mx-auto max-w-xl rounded-[2.25rem] border border-stroke/60 bg-background/14 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
+                <.form
+                  for={@form}
+                  id="donation-form"
+                  phx-change="validate"
+                  phx-submit="submit"
+                  class="space-y-6"
+                >
+                  <div class="space-y-2">
+                    <p class="text-sm font-medium text-text-muted">
+                      Isi nama, pilih nominal, lalu lanjut.
+                    </p>
+                    <div class="h-px bg-stroke/60" />
+                  </div>
+
+                  <.input
+                    field={@form[:donor_name]}
+                    label="Nama kamu"
+                    placeholder="Riza"
+                    autocomplete="name"
+                    required
+                  />
+
+                  <fieldset class="space-y-3">
+                    <legend class="w-full">
+                      <span class="flex items-center justify-between gap-3">
+                        <span class="text-sm font-semibold text-text">Pilih nominal</span>
+                        <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
+                      </span>
+                    </legend>
+
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <label
+                        :for={preset <- @preset_amounts}
+                        for={preset.id}
+                        class={
+                          amount_option_classes(
+                            selected_amount_option == preset.option,
+                            preset.recommended?
+                          )
+                        }
+                      >
+                        <input
+                          id={preset.id}
+                          type="radio"
+                          name={@form[:amount_option].name}
+                          value={preset.value}
+                          checked={selected_amount_option == preset.option}
+                          class="sr-only"
+                        />
+
+                        <div class="flex items-start justify-between gap-3">
+                          <div class="space-y-1.5">
+                            <span class="text-lg font-semibold tracking-tight text-text">
+                              Rp {preset.formatted}
+                            </span>
+                          </div>
+                          <span
+                            :if={selected_amount_option == preset.option}
+                            class="mt-0.5 text-accent"
+                          >
+                            <span class="hero-check-circle"></span>
+                          </span>
+                        </div>
+                        <span :if={preset.recommended?} class="text-xs text-text-muted">
+                          Paling sering dipilih
+                        </span>
+                      </label>
+
+                      <label
+                        for="donation_form_amount_option_custom"
+                        class={amount_option_classes(selected_amount_option == "custom", false)}
+                      >
+                        <input
+                          id="donation_form_amount_option_custom"
+                          type="radio"
+                          name={@form[:amount_option].name}
+                          value="custom"
+                          checked={selected_amount_option == "custom"}
+                          class="sr-only"
+                        />
+                        <div class="space-y-1.5">
+                          <span class="text-base font-semibold text-text">Nominal lain</span>
+                        </div>
+                        <span class="text-xs text-text-muted">Masukkan angka</span>
+                      </label>
+                    </div>
+
+                    <p :if={amount_option_error} class="text-sm font-medium text-danger">
+                      {amount_option_error}
+                    </p>
+                  </fieldset>
+
+                  <div
+                    :if={selected_amount_option == "custom"}
+                    class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-4"
+                  >
+                    <.input
+                      field={@form[:custom_amount]}
+                      type="number"
+                      label="Nominal custom"
+                      placeholder="15000"
+                      min="1000"
+                      step="1000"
+                      required
+                    />
+                    <p class="text-xs text-text-muted">
+                      Masukkan angka rupiah tanpa titik atau koma.
+                    </p>
+                  </div>
+
+                  <.input
+                    field={@form[:message]}
+                    type="textarea"
+                    label="Pesan (opsional)"
+                    rows="4"
+                    maxlength="160"
+                    placeholder="Tulis pesan singkat untuk dibacakan."
+                  />
+
+                  <div class="space-y-3 pt-2">
+                    <button
+                      type="submit"
+                      class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70"
+                    >
+                      <span class="space-y-0.5">
+                        <span class="block">Lanjut ke QRIS</span>
+                        <span class="block text-xs font-semibold text-background/70">
+                          Pembayaran via QRIS (Mayar)
+                        </span>
+                      </span>
+                      <span class="inline-flex items-center gap-2">
+                        <span class="phx-submit-loading:hidden" aria-hidden="true">&rarr;</span>
+                        <span class="hidden phx-submit-loading:inline-flex items-center gap-2 text-xs font-semibold">
+                          <span class="hero-arrow-path motion-safe:animate-spin"></span> Memproses
+                        </span>
+                      </span>
+                    </button>
+
+                    <p class="text-xs leading-5 text-text-muted">
+                      Berikutnya kamu akan lihat QR untuk discan (belum membayar).
+                    </p>
+                  </div>
+                </.form>
               </div>
             </div>
-          </section>
-
-          <section class="rounded-[2rem] border border-stroke/60 bg-surface/55 px-6 py-6 shadow-lg shadow-black/25 sm:px-8 sm:py-8">
-            <.form
-              for={@form}
-              id="donation-form"
-              phx-change="validate"
-              phx-submit="submit"
-              class="space-y-6"
-            >
-              <div class="space-y-2">
-                <p class="text-sm font-medium text-text-muted">
-                  Fill in your name, pick an amount, and add a message if you want one on stream.
-                </p>
-                <div class="h-px bg-stroke/60" />
-              </div>
-
-              <.input
-                field={@form[:donor_name]}
-                label="Your name"
-                placeholder="Riza"
-                autocomplete="name"
-                required
-              />
-
-              <fieldset class="space-y-3">
-                <legend class="w-full">
-                  <span class="flex items-center justify-between gap-3">
-                    <span class="text-sm font-semibold text-text">Choose an amount</span>
-                    <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
-                  </span>
-                </legend>
-
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <label
-                    :for={preset <- @preset_amounts}
-                    for={preset.id}
-                    class={amount_option_classes(selected_amount_option == preset.option)}
-                  >
-                    <input
-                      id={preset.id}
-                      type="radio"
-                      name={@form[:amount_option].name}
-                      value={preset.value}
-                      checked={selected_amount_option == preset.option}
-                      class="sr-only"
-                    />
-                    <span class="text-base font-semibold text-text">
-                      Rp {preset.formatted}
-                    </span>
-                    <span class="text-xs text-text-muted">Quick tap</span>
-                  </label>
-
-                  <label
-                    for="donation_form_amount_option_custom"
-                    class={amount_option_classes(selected_amount_option == "custom")}
-                  >
-                    <input
-                      id="donation_form_amount_option_custom"
-                      type="radio"
-                      name={@form[:amount_option].name}
-                      value="custom"
-                      checked={selected_amount_option == "custom"}
-                      class="sr-only"
-                    />
-                    <span class="text-base font-semibold text-text">Custom</span>
-                    <span class="text-xs text-text-muted">Set your own</span>
-                  </label>
-                </div>
-
-                <p :if={amount_option_error} class="text-sm font-medium text-danger">
-                  {amount_option_error}
-                </p>
-              </fieldset>
-
-              <div
-                :if={selected_amount_option == "custom"}
-                class="rounded-2xl border border-stroke/60 bg-background/35 px-4 py-4"
-              >
-                <.input
-                  field={@form[:custom_amount]}
-                  type="number"
-                  label="Custom amount"
-                  placeholder="15000"
-                  min="1000"
-                  step="1000"
-                  required
-                />
-                <p class="text-xs text-text-muted">
-                  Enter the amount in rupiah, without dots or commas.
-                </p>
-              </div>
-
-              <.input
-                field={@form[:message]}
-                type="textarea"
-                label="Message (optional)"
-                rows="4"
-                maxlength="160"
-                placeholder="Say something kind, funny, or hype for the stream."
-              />
-
-              <div class="space-y-3 pt-2">
-                <button
-                  type="submit"
-                  class="inline-flex w-full items-center justify-between rounded-2xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/20 ring-1 ring-accent/30 transition hover:bg-accent/92 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                >
-                  <span>Create your QRIS</span>
-                  <span aria-hidden="true">&rarr;</span>
-                </button>
-
-                <p class="text-xs leading-5 text-text-muted">
-                  You will review the QR code on the next step before paying.
-                </p>
-              </div>
-            </.form>
           </section>
         <% end %>
       <% end %>
@@ -376,10 +415,10 @@ defmodule DonatexWeb.DonateLive do
 
   defp maybe_validate_required(changeset, true) do
     changeset
-    |> validate_required([:donor_name], message: "Please enter your name")
-    |> validate_length(:donor_name, max: 40, message: "Name must be at most 40 characters")
+    |> validate_required([:donor_name], message: "Tulis namamu dulu")
+    |> validate_length(:donor_name, max: 40, message: "Maksimal 40 karakter")
     |> validate_amount()
-    |> validate_length(:message, max: 160, message: "Message must be at most 160 characters")
+    |> validate_length(:message, max: 160, message: "Pesan maksimal 160 karakter")
   end
 
   defp validate_amount(changeset) do
@@ -389,17 +428,17 @@ defmodule DonatexWeb.DonateLive do
 
       "custom" ->
         changeset
-        |> validate_required([:custom_amount], message: "Enter your donation amount")
+        |> validate_required([:custom_amount], message: "Masukkan nominal donasi")
         |> validate_number(:custom_amount,
           greater_than_or_equal_to: 1_000,
-          message: "Enter a donation amount of at least 1000"
+          message: "Minimal 1000"
         )
         |> validate_change(:custom_amount, fn :custom_amount, amount ->
           validate_custom_amount_step(amount)
         end)
 
       _ ->
-        add_error(changeset, :amount_option, "Choose a donation amount")
+        add_error(changeset, :amount_option, "Pilih nominal donasi")
     end
   end
 
@@ -408,7 +447,7 @@ defmodule DonatexWeb.DonateLive do
        do: []
 
   defp validate_custom_amount_step(_amount),
-    do: [custom_amount: "Enter an amount in multiples of 1000"]
+    do: [custom_amount: "Harus kelipatan 1000"]
 
   defp assign_form(socket, changeset) do
     assign(socket, :form, to_form(changeset, as: :donation_form))
@@ -425,17 +464,32 @@ defmodule DonatexWeb.DonateLive do
 
   defp amount_option_id(amount), do: "donation_form_amount_option_#{amount}"
 
-  defp amount_option_classes(true) do
+  defp preset_amount_copy(5_000), do: {"Ringan", "Dukungan kecil", false}
+  defp preset_amount_copy(10_000), do: {"Pas", "Paling cepat", true}
+  defp preset_amount_copy(25_000), do: {"Lebih", "Buat bantu lebih", false}
+
+  defp preset_amount_copy(_amount), do: {"Support", "Terima kasih", false}
+
+  defp amount_option_classes(selected?, recommended?)
+
+  defp amount_option_classes(true, _recommended?) do
     [
-      "flex min-h-28 cursor-pointer flex-col justify-between rounded-2xl border px-4 py-4 transition",
-      "border-accent/50 bg-accent/10 shadow-sm shadow-black/30"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
+      "border-accent/50 bg-linear-to-br from-accent/16 via-background/12 to-accent-2/12 shadow-sm shadow-black/30 ring-1 ring-accent/25 active:scale-[0.99]"
     ]
   end
 
-  defp amount_option_classes(false) do
+  defp amount_option_classes(false, true) do
     [
-      "flex min-h-28 cursor-pointer flex-col justify-between rounded-2xl border px-4 py-4 transition",
-      "border-stroke/60 bg-background/25 hover:border-stroke hover:bg-background/35"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
+      "border-stroke/60 bg-background/14 ring-1 ring-accent/10 hover:border-accent/35 hover:bg-background/18 active:scale-[0.99]"
+    ]
+  end
+
+  defp amount_option_classes(false, false) do
+    [
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
+      "border-stroke/60 bg-background/14 hover:border-stroke hover:bg-background/18 active:scale-[0.99]"
     ]
   end
 
@@ -518,7 +572,7 @@ defmodule DonatexWeb.DonateLive do
   defp donation_match?(_donation, _payload), do: false
 
   defp qr_error_message(reason) do
-    base_message = "Could not create a QR right now. Please try again."
+    base_message = "QR belum bisa dibuat sekarang. Coba lagi ya."
 
     if show_mayar_error_reason?() do
       "#{base_message} (#{mayar_reason(reason)})"
@@ -543,7 +597,7 @@ defmodule DonatexWeb.DonateLive do
   end
 
   defp donation_persist_error_message do
-    "Could not save your donation. Please try again. If you already scanned a QR code, please do not complete payment."
+    "Donasi belum bisa disimpan. Coba lagi ya. Kalau kamu sudah sempat scan QR, jangan lanjutkan pembayarannya."
   end
 
   defp log_failed_donation_persist(%Client.DynamicQr{} = qr, amount, donation_changeset) do
