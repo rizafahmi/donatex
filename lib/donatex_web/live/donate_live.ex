@@ -135,7 +135,13 @@ defmodule DonatexWeb.DonateLive do
               1) Buka aplikasi bank/e-wallet 2) Scan QRIS 3) Selesai—tunggu konfirmasi di halaman ini.
             </p>
             <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/25 px-3 py-1.5 text-xs font-semibold text-text-muted">
-              <span class="hero-arrow-path motion-safe:animate-spin"></span> Menunggu konfirmasi
+              <span class="hero-arrow-path motion-safe:animate-spin"></span>
+              Menunggu konfirmasi
+              <span class="relative flex size-2 items-center justify-center">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75">
+                </span>
+                <span class="relative inline-flex size-1.5 rounded-full bg-accent"></span>
+              </span>
             </div>
           </div>
 
@@ -186,7 +192,7 @@ defmodule DonatexWeb.DonateLive do
         </section>
       <% else %>
         <%= if @step == :paid do %>
-          <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8">
+          <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8 transition-all duration-700 ease-out starting:scale-95 starting:opacity-0">
             <div class="absolute inset-0 bg-linear-to-br from-success/14 via-transparent to-accent/10" />
             <div class="absolute -left-16 top-8 h-56 w-56 rounded-full bg-success/10 blur-3xl" />
             <div class="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
@@ -196,7 +202,7 @@ defmodule DonatexWeb.DonateLive do
                 Pembayaran terkonfirmasi
               </p>
               <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-                Terima kasih!
+                Terima kasih! 🎉
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
                 Donasimu sudah terkonfirmasi. Notifikasi akan tampil di stream.
@@ -242,7 +248,7 @@ defmodule DonatexWeb.DonateLive do
                   Dukung live stream
                 </p>
                 <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                  Donasi cepat. Biar stream makin sering tayang.
+                  Bikin stream makin seru & kasih semangat!
                 </h1>
                 <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
                   Pilih nominal, buat QRIS, lalu scan. Notifikasi tampil di stream setelah pembayaran terkonfirmasi.
@@ -269,6 +275,7 @@ defmodule DonatexWeb.DonateLive do
                     label="Nama kamu"
                     placeholder="Riza"
                     autocomplete="name"
+                    autofocus
                     required
                   />
 
@@ -301,8 +308,11 @@ defmodule DonatexWeb.DonateLive do
                         />
 
                         <div class="flex items-start justify-between gap-3">
-                          <div class="space-y-1.5">
-                            <span class="text-lg font-semibold tracking-tight text-text">
+                          <div class="space-y-1">
+                            <span class="block text-sm font-semibold text-text">
+                              {preset.title}
+                            </span>
+                            <span class="block text-lg font-bold tracking-tight text-text">
                               Rp {preset.formatted}
                             </span>
                           </div>
@@ -313,8 +323,8 @@ defmodule DonatexWeb.DonateLive do
                             <span class="hero-check-circle"></span>
                           </span>
                         </div>
-                        <span :if={preset.recommended?} class="text-xs text-text-muted">
-                          Paling sering dipilih
+                        <span class="text-xs text-text-muted">
+                          {preset.hint}
                         </span>
                       </label>
 
@@ -355,9 +365,17 @@ defmodule DonatexWeb.DonateLive do
                       step="1000"
                       required
                     />
-                    <p class="text-xs text-text-muted">
-                      Masukkan angka rupiah tanpa titik atau koma.
-                    </p>
+                    <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                      <span class="text-text-muted">Masukkan angka tanpa titik atau koma.</span>
+                      <span
+                        :if={parse_custom_amount(@form[:custom_amount].value) > 0}
+                        class="font-semibold text-accent"
+                      >
+                        Nominal: Rp {DonationPresenter.format_idr(
+                          parse_custom_amount(@form[:custom_amount].value)
+                        )}
+                      </span>
+                    </div>
                   </div>
 
                   <.input
@@ -366,7 +384,7 @@ defmodule DonatexWeb.DonateLive do
                     label="Pesan (opsional)"
                     rows="4"
                     maxlength="160"
-                    placeholder="Tulis pesan singkat untuk dibacakan."
+                    placeholder="Tulis pesan, request lagu, atau kasih semangat..."
                   />
 
                   <div class="space-y-3 pt-2">
@@ -375,9 +393,9 @@ defmodule DonatexWeb.DonateLive do
                       class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70"
                     >
                       <span class="space-y-0.5">
-                        <span class="block">Lanjut ke QRIS</span>
-                        <span class="block text-xs font-semibold text-background/70">
-                          Pembayaran via QRIS (Mayar)
+                        <span class="block text-base">Dukung Sekarang</span>
+                        <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
+                          Pembayaran via QRIS
                         </span>
                       </span>
                       <span class="inline-flex items-center gap-2">
@@ -388,9 +406,11 @@ defmodule DonatexWeb.DonateLive do
                       </span>
                     </button>
 
-                    <p class="text-xs leading-5 text-text-muted">
-                      Berikutnya kamu akan lihat QR untuk discan (belum membayar).
-                    </p>
+                    <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30">
+                      <span class="text-xs font-medium text-text-muted">
+                        Bisa bayar pakai GoPay, OVO, DANA, ShopeePay & semua M-Banking
+                      </span>
+                    </div>
                   </div>
                 </.form>
               </div>
@@ -464,9 +484,9 @@ defmodule DonatexWeb.DonateLive do
 
   defp amount_option_id(amount), do: "donation_form_amount_option_#{amount}"
 
-  defp preset_amount_copy(5_000), do: {"Ringan", "Dukungan kecil", false}
-  defp preset_amount_copy(10_000), do: {"Pas", "Paling cepat", true}
-  defp preset_amount_copy(25_000), do: {"Lebih", "Buat bantu lebih", false}
+  defp preset_amount_copy(5_000), do: {"Traktir Kopi ☕", "Biar melek terus", false}
+  defp preset_amount_copy(10_000), do: {"Cemilan Stream 🍟", "Paling sering dipilih", true}
+  defp preset_amount_copy(25_000), do: {"Sponsor Sultan 👑", "Support maksimal!", false}
 
   defp preset_amount_copy(_amount), do: {"Support", "Terima kasih", false}
 
@@ -474,23 +494,34 @@ defmodule DonatexWeb.DonateLive do
 
   defp amount_option_classes(true, _recommended?) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
-      "border-accent/50 bg-linear-to-br from-accent/16 via-background/12 to-accent-2/12 shadow-sm shadow-black/30 ring-1 ring-accent/25 active:scale-[0.99]"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
+      "scale-[1.02] border-accent/50 bg-linear-to-br from-accent/16 via-background/12 to-accent-2/12 shadow-md shadow-accent/25 ring-1 ring-accent/30 active:scale-100"
     ]
   end
 
   defp amount_option_classes(false, true) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
       "border-stroke/60 bg-background/14 ring-1 ring-accent/10 hover:border-accent/35 hover:bg-background/18 active:scale-[0.99]"
     ]
   end
 
   defp amount_option_classes(false, false) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition",
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
       "border-stroke/60 bg-background/14 hover:border-stroke hover:bg-background/18 active:scale-[0.99]"
     ]
+  end
+
+  defp parse_custom_amount(nil), do: 0
+  defp parse_custom_amount(""), do: 0
+  defp parse_custom_amount(val) when is_integer(val), do: val
+
+  defp parse_custom_amount(val) when is_binary(val) do
+    case Integer.parse(val) do
+      {num, _} -> num
+      :error -> 0
+    end
   end
 
   defp trim(value) when is_binary(value), do: String.trim(value)

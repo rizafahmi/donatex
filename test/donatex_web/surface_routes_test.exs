@@ -6,7 +6,7 @@ defmodule DonatexWeb.SurfaceRoutesTest do
   test "GET /donate", %{conn: conn} do
     conn
     |> visit("/donate")
-    |> assert_has("h1", "Donasi cepat. Biar stream makin sering tayang.")
+    |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
   end
 
   test "GET /overlay/:token", %{conn: conn} do

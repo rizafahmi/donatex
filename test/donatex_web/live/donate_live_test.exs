@@ -6,7 +6,7 @@ defmodule DonatexWeb.DonateLiveTest do
   test "renders the donor form with preset amounts and optional message", %{conn: conn} do
     {:ok, view, html} = live(conn, ~p"/donate")
 
-    assert html =~ "Donasi cepat. Biar stream makin sering tayang."
+    assert html =~ "Bikin stream makin seru &amp; kasih semangat!"
     assert html =~ "Nama kamu"
     assert html =~ "Rp 5.000"
     assert html =~ "Rp 10.000"

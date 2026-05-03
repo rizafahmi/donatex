@@ -55,7 +55,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> visit(~p"/donate")
     |> fill_in("Nama kamu", with: "Riza")
     |> choose("Rp 10.000", exact: false)
-    |> click_button("Lanjut ke QRIS")
+    |> click_button("Dukung Sekarang")
     |> assert_has("h1", "Scan QRIS-nya")
     |> unwrap(fn view ->
       html = Phoenix.LiveViewTest.render(view)
@@ -89,7 +89,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/donate")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut ke QRIS")
+      |> click_button("Dukung Sekarang")
       |> assert_has("h1", "Scan QRIS-nya")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-2")
@@ -112,7 +112,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     session
     |> click_button("Donasi lagi")
-    |> assert_has("h1", "Donasi cepat. Biar stream makin sering tayang.")
+    |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
   end
 
   test "webhook correlation works when QR create response omits transaction id and the UUID is derived from the QR URL",
@@ -137,7 +137,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/donate")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 25.000", exact: false)
-      |> click_button("Lanjut ke QRIS")
+      |> click_button("Dukung Sekarang")
       |> assert_has("h1", "Scan QRIS-nya")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: transaction_id)
@@ -169,8 +169,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/donate")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut ke QRIS")
-      |> assert_has("h1", "Donasi cepat. Biar stream makin sering tayang.")
+      |> click_button("Dukung Sekarang")
+      |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
     end)
   end
 
@@ -197,8 +197,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/donate")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut ke QRIS")
-      |> assert_has("h1", "Donasi cepat. Biar stream makin sering tayang.")
+      |> click_button("Dukung Sekarang")
+      |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)
         assert html =~ "Donasi belum bisa disimpan"
