@@ -61,16 +61,25 @@ defmodule DonatexWeb.OverlayLive do
             class="hidden"
           >
           </audio>
-          <div class="obs-overlay-line">
+          <div class="obs-overlay-line drop-shadow-[0_0_20px_var(--color-accent)]">
             <div class="obs-overlay-box"></div>
-            <div class="obs-overlay-main-text font-display">
-              {@current.donor_name} memberikan
-              <span class="obs-overlay-amount font-display">
+            <div class="obs-overlay-main-text font-display font-bold tracking-tight">
+              <span class="text-accent drop-shadow-md">{@current.donor_name}</span>
+              <span class="mx-3 font-sans text-4xl font-semibold uppercase tracking-widest text-text-muted/80">
+                memberikan
+              </span>
+              <span class="bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent drop-shadow-sm">
                 Rp {DonationPresenter.format_idr(@current.amount)}!!
               </span>
             </div>
-            <div class="obs-overlay-sub-text">
-              {@current.message}
+            <div
+              :if={DonationPresenter.present_message?(@current.message)}
+              class="obs-overlay-sub-text font-sans font-medium italic text-text-muted"
+            >
+              <.icon
+                name="hero-chat-bubble-left-ellipsis-solid"
+                class="-mt-1 mr-2 inline-block h-8 w-8 text-accent/70"
+              /> "{@current.message}"
             </div>
           </div>
         <% else %>
