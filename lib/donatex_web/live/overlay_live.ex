@@ -105,7 +105,7 @@ defmodule DonatexWeb.OverlayLive do
   defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do
     case :queue.out(queue) do
       {{:value, next}, rest} ->
-        Process.send_after(self(), {:dismiss_current, next.id}, 5_000)
+        Process.send_after(self(), {:dismiss_current, next.id}, 7_000)
 
         socket
         |> assign(:current, next)

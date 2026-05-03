@@ -27,6 +27,7 @@
 - [x] Confirm webhook transaction id matches the QR create identifier (observed `id_source=url` create response correlated with webhook `transactionId` in real traffic)
 - [x] Audit and enhance the OBS overlay design to be celebratory, fun, and engaging with CSS animations
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
+- [x] Increase the display duration to 7 seconds so 6-second audio files aren't cut off
 
 ## In Progress
 - [ ] Document setup and deployment details (env vars, webhook registration, private URLs)
