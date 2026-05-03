@@ -65,12 +65,11 @@ defmodule Donatex.Mayar.ClientTest do
             }} = Client.create_qr(10_000)
   end
 
-  test "create_qr/1 resolves mayar_transaction_id from QR image URL when the response omits it" do
+  test "create_qr/1 resolves mayar_transaction_id from unpaid transactions when the response omits it, even if the QR image URL contains a different UUID" do
     qr_url =
       "`https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png`"
 
-    # The UUID extracted from the URL
-    resolved_transaction_id = "ce50314d-52fe-4cfe-8488-0ccc8a0393a8"
+    resolved_transaction_id = "f15c4b02-749f-4ab7-a1b8-a9ed6fe5d8ee"
 
     Req.Test.expect(__MODULE__, fn conn ->
       assert conn.method == "POST"
@@ -84,7 +83,21 @@ defmodule Donatex.Mayar.ClientTest do
       })
     end)
 
-    # Should NOT call unpaid transactions - URL extraction should succeed
+    Req.Test.expect(__MODULE__, fn conn ->
+      assert conn.method == "GET"
+      assert conn.request_path == "/hl/v1/transactions/unpaid"
+
+      Req.Test.json(conn, %{
+        "data" => [
+          %{
+            "id" => resolved_transaction_id,
+            "amount" => 25_000,
+            "createdAt" => System.system_time(:millisecond)
+          }
+        ]
+      })
+    end)
+
     assert {:ok,
             %Client.DynamicQr{
               mayar_transaction_id: ^resolved_transaction_id,
@@ -95,16 +108,15 @@ defmodule Donatex.Mayar.ClientTest do
             }} = Client.create_qr(25_000)
   end
 
-  test "create_qr/1 fails closed when it cannot resolve a unique Mayar transaction id" do
-    # Use a URL without a valid UUID pattern so URL extraction fails,
-    # forcing the unpaid transactions fallback which also fails due to ambiguity
-    qr_url_without_uuid = "https://media.mayar.club/images/qr/static.png"
+  test "create_qr/1 fails closed when unpaid transaction lookup is ambiguous, even if the QR image URL contains a UUID" do
+    qr_url =
+      "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png"
 
     Req.Test.expect(__MODULE__, fn conn ->
       Req.Test.json(conn, %{
         "data" => %{
           "amount" => 25_000,
-          "url" => qr_url_without_uuid
+          "url" => qr_url
         }
       })
     end)
@@ -132,7 +144,7 @@ defmodule Donatex.Mayar.ClientTest do
                %{
                  "data" => %{
                    "amount" => 25_000,
-                   "url" => ^qr_url_without_uuid
+                   "url" => ^qr_url
                  }
                }}} = Client.create_qr(25_000)
     end)

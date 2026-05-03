@@ -115,12 +115,13 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
   end
 
-  test "webhook correlation works when QR create response omits transaction id and unpaid transaction lookup resolves it",
+  test "webhook correlation uses the unpaid transaction id when QR create omits transaction id and the QR image URL UUID differs",
        %{
          conn: conn
        } do
-    # Use a URL without a UUID pattern to force fallback to unpaid transactions
-    qr_url_without_uuid = "https://media.mayar.club/images/qr/static.png"
+    qr_url =
+      "https://media.mayar.club/images/resized/480/ce50314d-52fe-4cfe-8488-0ccc8a0393a8.png"
+
     transaction_id = "c7c96ac3-5d19-49cb-beea-dd236218b001"
 
     Req.Test.expect(__MODULE__, fn conn ->
@@ -132,7 +133,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
         "messages" => "Success",
         "data" => %{
           "amount" => 25_000,
-          "url" => qr_url_without_uuid
+          "url" => qr_url
         }
       })
     end)
@@ -161,6 +162,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> assert_has("h1", "Scan QRIS-nya")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: transaction_id)
+    assert donation.mayar_transaction_id == transaction_id
 
     conn
     |> recycle()

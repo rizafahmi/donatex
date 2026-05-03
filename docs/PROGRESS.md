@@ -25,6 +25,7 @@
 - [x] Stabilize SQLite DB tests by running donations DataCase tests non-async
 - [x] Validate donation query indexes (`donations_recovery_queue_idx`, `donations_order_idx`) via migration tests
 - [x] Fix live Mayar correlation failure where the QR image UUID differed from the webhook `transactionId` by resolving the real transaction id from `/transactions/unpaid` and failing closed when it cannot be uniquely determined
+- [x] Remove the stale QR asset UUID fallback in code so omitted `transactionId`/`id` responses always resolve correlation via `/transactions/unpaid` instead of trusting the QR filename
 - [x] Apply custom HTML/CSS alert design from user requirements
 - [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
@@ -42,7 +43,8 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. No open implementation tasks in the current plan; deploy when ready.
+1. Deploy the build containing the removed QR-URL transaction-id fallback.
+2. On the next live payment, compare `Mayar create_qr ok ... id_source=... mayar_transaction_id=...`, `Pending donation created ... mayar_transaction_id=...`, and webhook logs to confirm the same transaction id flows end to end.
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

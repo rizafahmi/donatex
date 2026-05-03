@@ -245,17 +245,7 @@ defmodule Donatex.Mayar.Client do
           {:ok, mayar_transaction_id, "response"}
 
         :error ->
-          fetch_mayar_transaction_id_from_url_fallback(data, amount)
-      end
-    end
-
-    defp fetch_mayar_transaction_id_from_url_fallback(data, amount) do
-      with {:ok, url} <- fetch_binary(data, ["url", "qrImageUrl", "qr_image_url"]),
-           normalized_url <- normalize_qr_image_url(url),
-           {:ok, mayar_transaction_id} <- extract_transaction_id_from_url(normalized_url) do
-        {:ok, mayar_transaction_id, "url"}
-      else
-        _ -> fetch_mayar_transaction_id_from_unpaid_transactions(amount)
+          fetch_mayar_transaction_id_from_unpaid_transactions(amount)
       end
     end
 

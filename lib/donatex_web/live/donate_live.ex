@@ -561,8 +561,15 @@ defmodule DonatexWeb.DonateLive do
            amount: amount,
            message: message
          }) do
-      {:ok, donation} -> {:ok, donation}
-      {:error, %Ecto.Changeset{} = donation_changeset} -> {:error, donation_changeset, qr}
+      {:ok, donation} ->
+        Logger.info(
+          "Pending donation created donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id} amount=#{donation.amount}"
+        )
+
+        {:ok, donation}
+
+      {:error, %Ecto.Changeset{} = donation_changeset} ->
+        {:error, donation_changeset, qr}
     end
   end
 
