@@ -53,6 +53,14 @@ defmodule DonatexWeb.OverlayLive do
     <Layouts.app flash={@flash} variant="overlay">
       <div class="flex min-h-dvh items-center justify-center p-6">
         <%= if @current do %>
+          <audio
+            phx-hook="PlaySound"
+            id={"audio-#{@current.id}"}
+            src="/smb_stage_clear.wav"
+            preload="auto"
+            class="hidden"
+          >
+          </audio>
           <div class="relative w-full max-w-xl animate-overlay-show">
             <!-- Decorative background glow -->
             <div class="absolute -inset-1 rounded-[2.5rem] bg-gradient-to-r from-accent/50 to-accent-2/50 opacity-40 blur-xl">
