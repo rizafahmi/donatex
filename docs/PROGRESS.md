@@ -35,6 +35,7 @@
 - [x] Polish `/overlay` visual styling, typography, layout, and transitions (smooth 60fps compositor animation, glow borders, flexbox alignment, and zero gradient text)
 - [x] Document setup and deployment details (env vars, webhook registration, private webhook URL)
 - [x] Run a final end-to-end verification pass (manual smoke test)
+- [x] Polish `/admin` dashboard layout, typography, telemetry stats, and real-time PubSub updates (new pending, paid status changes, alerted updates, empty state, donor message display, and semantic color matching)
 
 ## In Progress
 

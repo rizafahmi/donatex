@@ -226,10 +226,18 @@ defmodule DonatexWeb.DonateLive do
             </div>
 
             <div class="relative mt-6 flex flex-wrap items-center gap-3">
-              <.button type="button" phx-click="new_donation" class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]">
+              <.button
+                type="button"
+                phx-click="new_donation"
+                class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]"
+              >
                 Donasi lagi
               </.button>
-              <.button navigate={~p"/"} variant="ghost" class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]">
+              <.button
+                navigate={~p"/"}
+                variant="ghost"
+                class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]"
+              >
                 Kembali ke beranda
               </.button>
             </div>
@@ -599,6 +607,12 @@ defmodule DonatexWeb.DonateLive do
       {:ok, donation} ->
         Logger.info(
           "Pending donation created donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id} amount=#{donation.amount}"
+        )
+
+        Phoenix.PubSub.broadcast(
+          Donatex.PubSub,
+          "donations:created",
+          {:donation_created, donation}
         )
 
         {:ok, donation}

@@ -8,7 +8,19 @@ defmodule DonatexWeb.AdminLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :donations, Donations.list_donations())}
+    if connected?(socket) do
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:created")
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
+    end
+
+    donations = Donations.list_donations()
+
+    {:ok,
+     socket
+     |> assign(:has_donations?, not Enum.empty?(donations))
+     |> assign(:stats, Donations.get_donation_stats())
+     |> stream(:donations, donations)}
   end
 
   @impl Phoenix.LiveView
@@ -38,10 +50,13 @@ defmodule DonatexWeb.AdminLive do
       {:ok, donation, true} ->
         Logger.info("Admin marked paid donation_id=#{id}")
 
-        {:noreply,
-         socket
-         |> put_flash(:info, "Marked as paid")
-         |> stream_insert(:donations, donation)}
+        Phoenix.PubSub.broadcast(
+          Donatex.PubSub,
+          "donations:paid",
+          {:donation_paid, DonationPresenter.payload(donation)}
+        )
+
+        {:noreply, put_flash(socket, :info, "Marked as paid")}
 
       {:ok, _donation, false} ->
         {:noreply, put_flash(socket, :info, "Already paid")}
@@ -56,91 +71,176 @@ defmodule DonatexWeb.AdminLive do
   end
 
   @impl Phoenix.LiveView
+  def handle_info({:donation_created, donation}, socket) do
+    {:noreply,
+     socket
+     |> assign(:has_donations?, true)
+     |> assign(:stats, Donations.get_donation_stats())
+     |> stream_insert(:donations, donation, at: 0)}
+  end
+
+  def handle_info({:donation_paid, %{id: id}}, socket) do
+    case Donations.get_donation_by_id(id) do
+      nil ->
+        {:noreply, socket}
+
+      donation ->
+        {:noreply,
+         socket
+         |> assign(:has_donations?, true)
+         |> assign(:stats, Donations.get_donation_stats())
+         |> stream_insert(:donations, donation)}
+    end
+  end
+
+  def handle_info({:donation_alerted, donation}, socket) do
+    {:noreply, stream_insert(socket, :donations, donation)}
+  end
+
+  @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash}>
-      <h1 class="font-display text-2xl font-semibold text-text">Admin</h1>
-
-      <div class="mt-8">
-        <div id="donations" phx-update="stream" class="grid gap-4 sm:gap-5">
-          <article
-            :for={{dom_id, donation} <- @streams.donations}
-            id={dom_id}
-            class="relative isolate overflow-hidden rounded-[2.25rem] border border-stroke/60 bg-surface/45 px-5 py-5 text-text shadow-xl shadow-black/30 sm:px-6"
-          >
-            <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/10" />
-            <div class="absolute -left-24 top-10 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-            <div class="absolute -right-24 -bottom-12 h-64 w-64 rounded-full bg-accent-2/10 blur-3xl" />
-
-            <div class="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div class="min-w-0">
-                <div id={"donation-#{donation.id}"} class="text-base font-semibold leading-6">
-                  {donation.donor_name}
-                </div>
-                <div class="mt-1 break-all text-[11px] font-semibold tracking-[0.22em] text-text-muted/90">
-                  {donation.mayar_transaction_id}
-                </div>
-              </div>
-
-              <div class="sm:text-right">
-                <div class="text-xl font-semibold tracking-tight">
-                  Rp {DonationPresenter.format_idr(donation.amount)}
-                </div>
-
-                <div class="mt-2 flex flex-wrap items-center gap-2 sm:justify-end">
-                  <div class={[
-                    "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
-                    donation.status == "paid" && "border-accent/30 bg-accent/10 text-text",
-                    donation.status == "pending" &&
-                      "border-stroke/60 bg-background/20 text-text-muted"
-                  ]}>
-                    {donation.status}
-                  </div>
-
-                  <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
-                    <span class="relative flex size-2 items-center justify-center">
-                      <span
-                        :if={donation.alerted}
-                        class="relative inline-flex size-1.5 rounded-full bg-accent-2"
-                      >
-                      </span>
-                      <span
-                        :if={!donation.alerted}
-                        class="relative inline-flex size-1.5 rounded-full bg-text-muted/40"
-                      >
-                      </span>
-                    </span>
-                    <span>Alerted</span>
-                    <span class="text-text">{if donation.alerted, do: "Yes", else: "No"}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="relative mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-              <.button
-                type="button"
-                variant="primary"
-                phx-click="replay"
-                phx-value-id={donation.id}
-                class="w-full px-5 py-2.5 text-xs sm:w-auto"
-              >
-                Replay Alert
-              </.button>
-
-              <.button
-                :if={donation.status == "pending"}
-                type="button"
-                variant="ghost"
-                phx-click="mark_paid"
-                phx-value-id={donation.id}
-                class="w-full px-5 py-2.5 text-xs sm:w-auto"
-              >
-                Mark Paid
-              </.button>
-            </div>
-          </article>
+      <.header>
+        Admin Panel
+        <:subtitle>Manage livestream donations, mark manual payments, and replay alerts.</:subtitle>
+      </.header>
+      
+    <!-- Status telemetry bar -->
+      <div class="border border-stroke/50 bg-surface/30 rounded-2xl p-4 mb-8">
+        <div class="flex flex-wrap items-center justify-between gap-4 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
+          <div class="flex items-center gap-6">
+            <span class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-accent"></span>
+              Paid:
+              <strong class="text-text">Rp {DonationPresenter.format_idr(@stats.paid_sum)}</strong>
+              ({@stats.paid_count})
+            </span>
+            <span class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-accent-2"></span>
+              Pending: <strong class="text-text">{@stats.pending_count}</strong>
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="h-1.5 w-1.5 rounded-full bg-accent animate-pulse"></span>
+            OBS URL:
+            <a
+              href={~p"/overlay"}
+              target="_blank"
+              class="text-text underline lowercase tracking-normal hover:text-accent transition"
+            >
+              /overlay
+            </a>
+          </div>
         </div>
+      </div>
+      
+    <!-- Empty State -->
+      <div
+        id="donations-empty"
+        class={[
+          if(@has_donations?, do: "hidden"),
+          "flex flex-col items-center justify-center rounded-[2rem] border border-dashed border-stroke/50 bg-surface/25 px-6 py-16 text-center"
+        ]}
+      >
+        <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-2/60 text-text-muted">
+          <.icon name="hero-currency-rupiah" class="h-6 w-6" />
+        </div>
+        <h3 class="mt-4 text-sm font-semibold text-text">No donations yet</h3>
+        <p class="mt-1 text-xs text-text-muted/80 max-w-sm">
+          When donors tip via QRIS, their contributions and messages will appear here in real-time.
+        </p>
+        <div class="mt-6">
+          <.button navigate={~p"/"} variant="ghost" class="text-xs">
+            Go to Donation Page
+          </.button>
+        </div>
+      </div>
+      
+    <!-- Donations Stream -->
+      <div
+        id="donations"
+        phx-update="stream"
+        class={[if(not @has_donations?, do: "hidden"), "grid gap-4 sm:gap-5"]}
+      >
+        <article
+          :for={{dom_id, donation} <- @streams.donations}
+          id={dom_id}
+          class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-6 text-text shadow-xl shadow-black/30 sm:px-8 sm:py-7 transition-all duration-300 hover:border-stroke hover:bg-surface/60"
+        >
+          <div class="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="min-w-0 flex-1">
+              <div id={"donation-#{donation.id}"} class="text-base font-semibold leading-6">
+                {donation.donor_name}
+              </div>
+              <div class="mt-1 break-all text-[10px] font-semibold tracking-[0.22em] text-text-muted/80">
+                {donation.mayar_transaction_id}
+              </div>
+              <p
+                :if={DonationPresenter.present_message?(donation.message)}
+                class="mt-4 text-sm italic text-text-muted font-medium bg-background/25 border border-stroke/20 rounded-xl px-4 py-3 max-w-[65ch]"
+              >
+                "{donation.message}"
+              </p>
+            </div>
+
+            <div class="sm:text-right shrink-0">
+              <div class="text-xl font-bold tracking-tight text-text">
+                Rp {DonationPresenter.format_idr(donation.amount)}
+              </div>
+
+              <div class="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
+                <div class={[
+                  "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
+                  donation.status == "paid" && "border-accent/30 bg-accent/10 text-accent",
+                  donation.status == "pending" && "border-accent-2/30 bg-accent-2/10 text-accent-2"
+                ]}>
+                  {donation.status}
+                </div>
+
+                <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                  <span class="relative flex size-2 items-center justify-center">
+                    <span
+                      :if={donation.alerted}
+                      class="relative inline-flex size-1.5 rounded-full bg-accent"
+                    >
+                    </span>
+                    <span
+                      :if={!donation.alerted}
+                      class="relative inline-flex size-1.5 rounded-full bg-accent-2 animate-pulse"
+                    >
+                    </span>
+                  </span>
+                  <span>Alerted</span>
+                  <span class="text-text">{if donation.alerted, do: "Yes", else: "No"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <.button
+              type="button"
+              variant="primary"
+              phx-click="replay"
+              phx-value-id={donation.id}
+              class="w-full px-5 py-2.5 text-xs sm:w-auto phx-click-loading:opacity-60 phx-click-loading:pointer-events-none"
+            >
+              Replay Alert
+            </.button>
+
+            <.button
+              :if={donation.status == "pending"}
+              type="button"
+              variant="ghost"
+              phx-click="mark_paid"
+              phx-value-id={donation.id}
+              class="w-full px-5 py-2.5 text-xs sm:w-auto phx-click-loading:opacity-60 phx-click-loading:pointer-events-none"
+            >
+              Mark Paid
+            </.button>
+          </div>
+        </article>
       </div>
     </Layouts.app>
     """

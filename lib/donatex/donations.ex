@@ -150,4 +150,23 @@ defmodule Donatex.Donations do
   end
 
   def mark_donation_alerted_by_id(_id), do: {:error, :invalid_id}
+
+  def get_donation_stats do
+    results =
+      Donation
+      |> group_by([d], d.status)
+      |> select([d], {d.status, count(d.id), sum(d.amount)})
+      |> Repo.all()
+
+    Enum.reduce(results, %{paid_count: 0, paid_sum: 0, pending_count: 0}, fn
+      {"paid", count, sum}, acc ->
+        %{acc | paid_count: count, paid_sum: sum || 0}
+
+      {"pending", count, _sum}, acc ->
+        %{acc | pending_count: count}
+
+      _, acc ->
+        acc
+    end)
+  end
 end

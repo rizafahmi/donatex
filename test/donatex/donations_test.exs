@@ -228,4 +228,37 @@ defmodule Donatex.DonationsTest do
       assert Enum.map(result, & &1.id) == [second.id, first.id]
     end
   end
+
+  describe "get_donation_stats/0" do
+    test "calculates paid and pending counts and paid sum" do
+      {:ok, _pending1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-stats-1",
+          donor_name: "A",
+          amount: 10_000
+        })
+
+      {:ok, _paid1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-stats-2",
+          donor_name: "B",
+          amount: 20_000
+        })
+
+      {:ok, _paid2} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-stats-3",
+          donor_name: "C",
+          amount: 30_000
+        })
+
+      {:ok, _} = Donations.mark_paid_by_mayar_transaction_id("tx-stats-2")
+      {:ok, _} = Donations.mark_paid_by_mayar_transaction_id("tx-stats-3")
+
+      stats = Donations.get_donation_stats()
+      assert stats.paid_count == 2
+      assert stats.paid_sum == 50_000
+      assert stats.pending_count == 1
+    end
+  end
 end

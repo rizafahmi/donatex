@@ -34,9 +34,19 @@ defmodule DonatexWeb.OverlayLive do
     socket =
       case socket.assigns.current do
         %{id: ^id} ->
-          _ = Donations.mark_donation_alerted_by_id(id)
+          case Donations.mark_donation_alerted_by_id(id) do
+            {:ok, donation} ->
+              Phoenix.PubSub.broadcast(
+                Donatex.PubSub,
+                "donations:alerted",
+                {:donation_alerted, donation}
+              )
 
-          socket
+              socket
+
+            _ ->
+              socket
+          end
           |> assign(:current, nil)
           |> start_next_alert()
 
@@ -65,7 +75,9 @@ defmodule DonatexWeb.OverlayLive do
             <div class="obs-overlay-box"></div>
             <div class="relative z-10 flex h-full flex-col justify-center items-center gap-4 py-6">
               <div class="obs-overlay-main-text font-display font-bold tracking-tight">
-                <span class="text-accent drop-shadow-[0_2px_8px_rgba(75,250,165,0.4)]">{@current.donor_name}</span>
+                <span class="text-accent drop-shadow-[0_2px_8px_rgba(75,250,165,0.4)]">
+                  {@current.donor_name}
+                </span>
                 <span class="mx-4 font-sans text-4xl font-semibold uppercase tracking-widest text-text-muted/80">
                   memberikan
                 </span>
