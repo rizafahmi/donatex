@@ -32,6 +32,7 @@
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
 - [x] Refresh `/` donor page copy/layout and `/overlay` idle prompt to make donation more inviting
+- [x] Polish `/overlay` visual styling, typography, layout, and transitions (smooth 60fps compositor animation, glow borders, flexbox alignment, and zero gradient text)
 - [x] Document setup and deployment details (env vars, webhook registration, private webhook URL)
 - [x] Run a final end-to-end verification pass (manual smoke test)
 

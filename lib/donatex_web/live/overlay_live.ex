@@ -61,25 +61,27 @@ defmodule DonatexWeb.OverlayLive do
             class="hidden"
           >
           </audio>
-          <div class="obs-overlay-line drop-shadow-[0_0_20px_var(--color-accent)]">
+          <div class="obs-overlay-line">
             <div class="obs-overlay-box"></div>
-            <div class="obs-overlay-main-text font-display font-bold tracking-tight">
-              <span class="text-accent drop-shadow-md">{@current.donor_name}</span>
-              <span class="mx-3 font-sans text-4xl font-semibold uppercase tracking-widest text-text-muted/80">
-                memberikan
-              </span>
-              <span class="bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent drop-shadow-sm">
-                Rp {DonationPresenter.format_idr(@current.amount)}!!
-              </span>
-            </div>
-            <div
-              :if={DonationPresenter.present_message?(@current.message)}
-              class="obs-overlay-sub-text font-sans font-medium italic text-text-muted"
-            >
-              <.icon
-                name="hero-chat-bubble-left-ellipsis-solid"
-                class="-mt-1 mr-2 inline-block h-8 w-8 text-accent/70"
-              /> "{@current.message}"
+            <div class="relative z-10 flex h-full flex-col justify-center items-center gap-4 py-6">
+              <div class="obs-overlay-main-text font-display font-bold tracking-tight">
+                <span class="text-accent drop-shadow-[0_2px_8px_rgba(75,250,165,0.4)]">{@current.donor_name}</span>
+                <span class="mx-4 font-sans text-4xl font-semibold uppercase tracking-widest text-text-muted/80">
+                  memberikan
+                </span>
+                <span class="text-accent-2 drop-shadow-[0_2px_8px_rgba(250,165,75,0.4)]">
+                  Rp {DonationPresenter.format_idr(@current.amount)}!!
+                </span>
+              </div>
+              <div
+                :if={DonationPresenter.present_message?(@current.message)}
+                class="obs-overlay-sub-text font-sans font-medium italic text-text-muted/90"
+              >
+                <.icon
+                  name="hero-chat-bubble-left-ellipsis-solid"
+                  class="-mt-1 mr-2 inline-block h-8 w-8 text-accent/80"
+                /> "{@current.message}"
+              </div>
             </div>
           </div>
         <% else %>

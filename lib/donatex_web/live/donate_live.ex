@@ -134,7 +134,7 @@ defmodule DonatexWeb.DonateLive do
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
               1) Buka aplikasi bank/e-wallet 2) Scan QRIS 3) Selesai—tunggu konfirmasi di halaman ini.
             </p>
-            <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/25 px-3 py-1.5 text-xs font-semibold text-text-muted">
+            <div class="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent shadow-[0_0_12px_rgba(75,250,165,0.15)]">
               <span class="hero-arrow-path motion-safe:animate-spin"></span>
               Menunggu konfirmasi
               <span class="relative flex size-2 items-center justify-center">
@@ -146,7 +146,7 @@ defmodule DonatexWeb.DonateLive do
           </div>
 
           <div class="relative mt-8 grid gap-6 sm:grid-cols-2 sm:items-start">
-            <div class="relative rounded-3xl border border-stroke/60 bg-background/30 p-6">
+            <div class="relative rounded-3xl border bg-background/30 p-6 animate-neon-pulse">
               <div class="absolute inset-3 rounded-2xl bg-linear-to-br from-accent/12 via-transparent to-accent-2/10 blur-xl" />
               <img
                 src={@qr.qr_image_url}
@@ -192,7 +192,7 @@ defmodule DonatexWeb.DonateLive do
         </section>
       <% else %>
         <%= if @step == :paid do %>
-          <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8 transition-all duration-700 ease-out starting:scale-95 starting:opacity-0">
+          <section class="relative isolate overflow-hidden rounded-[2.5rem] border bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8 transition-all duration-700 ease-out starting:scale-95 starting:opacity-0 animate-success-glow">
             <div class="absolute inset-0 bg-linear-to-br from-success/14 via-transparent to-accent/10" />
             <div class="absolute -left-16 top-8 h-56 w-56 rounded-full bg-success/10 blur-3xl" />
             <div class="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
@@ -226,10 +226,10 @@ defmodule DonatexWeb.DonateLive do
             </div>
 
             <div class="relative mt-6 flex flex-wrap items-center gap-3">
-              <.button type="button" phx-click="new_donation">
+              <.button type="button" phx-click="new_donation" class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]">
                 Donasi lagi
               </.button>
-              <.button navigate={~p"/"} variant="ghost">
+              <.button navigate={~p"/"} variant="ghost" class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]">
                 Kembali ke beranda
               </.button>
             </div>
@@ -240,7 +240,7 @@ defmodule DonatexWeb.DonateLive do
 
           <section
             id="donor-page"
-            class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35"
+            class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35 animate-border-glow"
           >
             <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/8" />
             <div class="absolute right-0 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
@@ -425,7 +425,7 @@ defmodule DonatexWeb.DonateLive do
                   <div class="space-y-3 pt-2">
                     <button
                       type="submit"
-                      class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70"
+                      class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
                     >
                       <span class="space-y-0.5">
                         <span class="block text-base">Kirim dukungan ke stream</span>
@@ -529,22 +529,22 @@ defmodule DonatexWeb.DonateLive do
 
   defp amount_option_classes(true, _recommended?) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
-      "scale-[1.02] border-accent/50 bg-linear-to-br from-accent/16 via-background/12 to-accent-2/12 shadow-md shadow-accent/25 ring-1 ring-accent/30 active:scale-100"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200 outline-none",
+      "scale-[1.02] border-accent/50 bg-linear-to-br from-accent/16 via-background/12 to-accent-2/12 shadow-md shadow-accent/25 ring-1 ring-accent/30 active:scale-100 focus-within:ring-4 focus-within:ring-accent/20 focus-within:border-accent/40"
     ]
   end
 
   defp amount_option_classes(false, true) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
-      "border-stroke/60 bg-background/14 ring-1 ring-accent/10 hover:border-accent/35 hover:bg-background/18 active:scale-[0.99]"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200 outline-none",
+      "border-stroke/60 bg-background/14 ring-1 ring-accent/10 hover:border-accent/35 hover:bg-background/18 active:scale-[0.99] focus-within:ring-4 focus-within:ring-accent/20 focus-within:border-accent/40"
     ]
   end
 
   defp amount_option_classes(false, false) do
     [
-      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200",
-      "border-stroke/60 bg-background/14 hover:border-stroke hover:bg-background/18 active:scale-[0.99]"
+      "group relative flex min-h-28 cursor-pointer flex-col justify-between overflow-hidden rounded-3xl border px-4 py-4 transition-all duration-200 outline-none",
+      "border-stroke/60 bg-background/14 hover:border-stroke hover:bg-background/18 active:scale-[0.99] focus-within:ring-4 focus-within:ring-accent/20 focus-within:border-accent/40"
     ]
   end
 

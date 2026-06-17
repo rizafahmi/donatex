@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-18T03:14:00Z",
+  "title": "Design System: Donatex",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Arcade Neon Green",
+        "canonical": "oklch(75% 0.14 165)",
+        "tonalRamp": [
+          "oklch(15% 0.04 165)",
+          "oklch(25% 0.08 165)",
+          "oklch(40% 0.12 165)",
+          "oklch(55% 0.14 165)",
+          "oklch(70% 0.14 165)",
+          "oklch(80% 0.14 165)",
+          "oklch(90% 0.08 165)",
+          "oklch(96% 0.03 165)"
+        ]
+      },
+      "accent-orange": {
+        "role": "secondary",
+        "displayName": "Solar Neon Orange",
+        "canonical": "oklch(75% 0.14 65)",
+        "tonalRamp": [
+          "oklch(15% 0.04 65)",
+          "oklch(25% 0.08 65)",
+          "oklch(40% 0.12 65)",
+          "oklch(55% 0.14 65)",
+          "oklch(70% 0.14 65)",
+          "oklch(80% 0.14 65)",
+          "oklch(90% 0.08 65)",
+          "oklch(96% 0.03 65)"
+        ]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Deep Slate Void",
+        "canonical": "oklch(13% 0.02 255)",
+        "tonalRamp": [
+          "oklch(13% 0.02 255)",
+          "oklch(20% 0.02 255)",
+          "oklch(35% 0.02 255)",
+          "oklch(50% 0.02 255)",
+          "oklch(65% 0.02 255)",
+          "oklch(80% 0.02 255)",
+          "oklch(90% 0.01 255)",
+          "oklch(96% 0.005 255)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Console Surface",
+        "canonical": "oklch(17% 0.025 255)",
+        "tonalRamp": [
+          "oklch(17% 0.025 255)",
+          "oklch(25% 0.025 255)",
+          "oklch(40% 0.025 255)",
+          "oklch(55% 0.025 255)",
+          "oklch(70% 0.025 255)",
+          "oklch(80% 0.025 255)",
+          "oklch(90% 0.015 255)",
+          "oklch(96% 0.005 255)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display Font",
+        "purpose": "Large on-stream overlay texts and major hero headings."
+      },
+      "body": {
+        "displayName": "Body Font",
+        "purpose": "Descriptions, messages, forms, and general content."
+      }
+    },
+    "shadows": [
+      {
+        "name": "neon-glow",
+        "value": "0 0 40px rgba(0, 0, 0, 0.6)",
+        "purpose": "Isolation glow under container cards."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 4px oklch(75% 0.14 165 / 10%)",
+        "purpose": "Focus rings for interactive components."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-exponential",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "State changes, transitions, and slide reveals."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Form submit CTA button for checkout.",
+      "html": "<button class=\"ds-btn-primary\"><span class=\"ds-btn-text-main\">Kirim dukungan ke stream</span><span class=\"ds-btn-text-sub\">Pembayaran via QRIS</span></button>",
+      "css": ".ds-btn-primary { display: flex; flex-direction: column; width: 100%; border-radius: 24px; background: oklch(75% 0.14 165); padding: 16px 20px; text-align: left; border: 1px solid oklch(75% 0.14 165 / 30%); box-shadow: 0 4px 6px -1px oklch(75% 0.14 165 / 25%); cursor: pointer; transition: background 0.2s, transform 0.1s; } .ds-btn-primary:hover { background: oklch(78% 0.14 165); transform: translateY(-1px); } .ds-btn-primary:active { background: oklch(72% 0.14 165); transform: translateY(0); } .ds-btn-text-main { font-size: 14px; font-weight: 600; color: oklch(13% 0.02 255); } .ds-btn-text-sub { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: oklch(13% 0.02 255 / 70%); margin-top: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Standard form text input with arcade glow focus.",
+      "html": "<div class=\"ds-field-group\"><label class=\"ds-field-label\">Nama kamu</label><input type=\"text\" class=\"ds-input-text\" placeholder=\"Riza\" /></div>",
+      "css": ".ds-field-group { display: flex; flex-direction: column; gap: 6px; width: 100%; } .ds-field-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: oklch(78% 0.02 90); } .ds-input-text { width: 100%; border-radius: 16px; border: 1px solid oklch(32% 0.03 255 / 70%); background: oklch(17% 0.025 255 / 60%); padding: 12px 16px; font-size: 14px; color: oklch(96% 0.02 90); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); outline: none; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input-text::placeholder { color: oklch(78% 0.02 90 / 60%); } .ds-input-text:focus { border-color: oklch(75% 0.14 165 / 60%); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 4px oklch(75% 0.14 165 / 10%); }"
+    },
+    {
+      "name": "Preset Amount Card",
+      "kind": "chip",
+      "refersTo": "amount-card",
+      "description": "Quick select amount radio cards.",
+      "html": "<div class=\"ds-amount-card ds-amount-card-selected\"><div class=\"ds-amount-card-header\"><span class=\"ds-amount-title\">Kopi Hangat</span><span class=\"ds-amount-check\">✓</span></div><span class=\"ds-amount-value\">Rp 10.000</span><span class=\"ds-amount-hint\">Kopi biar tetep melek</span></div>",
+      "css": ".ds-amount-card { display: flex; flex-direction: column; justify-content: space-between; border-radius: 24px; border: 1px solid oklch(32% 0.03 255 / 60%); background: oklch(13% 0.02 255 / 14%); padding: 16px; min-height: 112px; cursor: pointer; transition: all 0.2s; } .ds-amount-card:hover { border-color: oklch(32% 0.03 255); background: oklch(13% 0.02 255 / 18%); } .ds-amount-card-selected { border-color: oklch(75% 0.14 165 / 50%); background: linear-gradient(135deg, oklch(75% 0.14 165 / 16%), oklch(13% 0.02 255 / 12%), oklch(75% 0.14 65 / 12%)); box-shadow: 0 4px 6px -1px oklch(75% 0.14 165 / 25%); transform: scale(1.02); } .ds-amount-card-header { display: flex; justify-content: space-between; align-items: flex-start; } .ds-amount-title { font-size: 14px; font-weight: 600; color: oklch(96% 0.02 90); } .ds-amount-check { font-size: 14px; color: oklch(75% 0.14 165); } .ds-amount-value { font-size: 18px; font-weight: 700; color: oklch(96% 0.02 90); margin-top: 4px; } .ds-amount-hint { font-size: 12px; color: oklch(78% 0.02 90); margin-top: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Neon Arcade Console",
+    "overview": "Donatex is styled with a high-energy, gamer-centric visual theme inspired by the retro-futurism of arcade cabinets and dark mode creator consoles. The interface is optimized to feel alive, responsive, and tactile. By combining deep slate backdrops with vibrant neon accents and responsive fluid typography, the design creates a feeling of presence and immediate feedback.",
+    "keyCharacteristics": [
+      "Dark, high-contrast console theme",
+      "Vivid neon-oklch accents (green/teal and orange/amber)",
+      "Generous, rounded corner styles (40px/24px) for cards and inputs",
+      "Kinetic state transitions (hover, active, loading) that feel instant"
+    ],
+    "rules": [
+      {
+        "name": "The Neon Rarity Rule",
+        "body": "Neon accents are restricted to primary interactive elements and active states. Inactive or passive surfaces must remain dark and neutral to prevent visual clutter and maintain high on-stream readability.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tinted Neutral Rule",
+        "body": "Every neutral shade is tinted toward the blue-grey brand hue (chroma 0.02–0.035). Pure black or pure white are strictly forbidden.",
+        "section": "colors"
+      },
+      {
+        "name": "The Title Contrast Rule",
+        "body": "Display and title headings must use a bold weight (600) and negative tracking to contrast sharply with the clean, airy system-ui body copy.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Console Rule",
+        "body": "All cards and inputs sit flat on the grid. Depth is defined by stroke contrast and background tint changes, not by physical offset shadows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use OKLCH colors for all new styling declarations.",
+      "Do ensure all form controls have hover, focus-visible, and active state transitions.",
+      "Do constrain custom display fonts to headers, labels, and overlays.",
+      "Do use the synced canvas confetti burst for all overlay success confirmations."
+    ],
+    "donts": [
+      "Don't use standard side-stripe borders (e.g., border-left-4) as a colored highlight on alert cards.",
+      "Don't use gradient text under any circumstances.",
+      "Don't use modals as a first resort; keep checkout and confirmation flows inline.",
+      "Don't introduce generic un-tinted neutrals (e.g., #fafafa or #121212).",
+      "Don't use decorative animations that do not correspond to a status transition or user feedback trigger."
+    ]
+  }
+}
