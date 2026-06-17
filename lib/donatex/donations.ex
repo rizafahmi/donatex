@@ -8,11 +8,33 @@ defmodule Donatex.Donations do
   alias Donatex.Donations.Donation
   alias Donatex.Repo
 
-  def list_donations do
+  def list_donations(filter \\ :paid)
+
+  def list_donations(:all) do
     Donation
     |> order_by([d], desc: d.inserted_at, desc: d.id)
     |> Repo.all()
   end
+
+  def list_donations("all"), do: list_donations(:all)
+
+  def list_donations(:paid) do
+    Donation
+    |> where([d], d.status == "paid")
+    |> order_by([d], desc: d.inserted_at, desc: d.id)
+    |> Repo.all()
+  end
+
+  def list_donations("paid"), do: list_donations(:paid)
+
+  def list_donations(:pending) do
+    Donation
+    |> where([d], d.status == "pending")
+    |> order_by([d], desc: d.inserted_at, desc: d.id)
+    |> Repo.all()
+  end
+
+  def list_donations("pending"), do: list_donations(:pending)
 
   def create_pending_donation(attrs) when is_map(attrs) do
     attrs = Map.drop(attrs, [:status, :alerted, "status", "alerted"])

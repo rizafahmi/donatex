@@ -190,8 +190,61 @@ defmodule Donatex.DonationsTest do
     end
   end
 
-  describe "list_donations/0" do
-    test "lists all donations for admin page ordered by newest first" do
+  describe "list_donations/1" do
+    test "defaults to paid donations" do
+      {:ok, _pending} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-pending-1",
+          donor_name: "Pending Donor",
+          amount: 10_000
+        })
+
+      {:ok, paid} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-paid-1",
+          donor_name: "Paid Donor",
+          amount: 20_000
+        })
+
+      {:ok, paid, _} = Donations.mark_paid_with_change(paid)
+
+      result = Donations.list_donations()
+      assert Enum.map(result, & &1.id) == [paid.id]
+    end
+
+    test "lists all, paid, or pending donations based on filter" do
+      {:ok, pending} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-pending-2",
+          donor_name: "Pending Donor",
+          amount: 10_000
+        })
+
+      {:ok, paid} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-paid-2",
+          donor_name: "Paid Donor",
+          amount: 20_000
+        })
+
+      {:ok, paid, _} = Donations.mark_paid_with_change(paid)
+
+      # Test atom filters
+      assert Enum.map(Donations.list_donations(:all), & &1.id) |> Enum.sort() ==
+               Enum.sort([pending.id, paid.id])
+
+      assert Enum.map(Donations.list_donations(:paid), & &1.id) == [paid.id]
+      assert Enum.map(Donations.list_donations(:pending), & &1.id) == [pending.id]
+
+      # Test string filters
+      assert Enum.map(Donations.list_donations("all"), & &1.id) |> Enum.sort() ==
+               Enum.sort([pending.id, paid.id])
+
+      assert Enum.map(Donations.list_donations("paid"), & &1.id) == [paid.id]
+      assert Enum.map(Donations.list_donations("pending"), & &1.id) == [pending.id]
+    end
+
+    test "lists all donations ordered by newest first" do
       {:ok, first} =
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-7",
@@ -217,13 +270,7 @@ defmodule Donatex.DonationsTest do
         set: [inserted_at: newer, updated_at: newer]
       )
 
-      first_reloaded = Repo.get!(Donation, first.id)
-      second_reloaded = Repo.get!(Donation, second.id)
-
-      assert DateTime.compare(first_reloaded.inserted_at, older) == :eq
-      assert DateTime.compare(second_reloaded.inserted_at, newer) == :eq
-
-      result = Donations.list_donations()
+      result = Donations.list_donations(:all)
 
       assert Enum.map(result, & &1.id) == [second.id, first.id]
     end

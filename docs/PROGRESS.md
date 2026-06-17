@@ -36,6 +36,7 @@
 - [x] Document setup and deployment details (env vars, webhook registration, private webhook URL)
 - [x] Run a final end-to-end verification pass (manual smoke test)
 - [x] Polish `/admin` dashboard layout, typography, telemetry stats, and real-time PubSub updates (new pending, paid status changes, alerted updates, empty state, donor message display, and semantic color matching)
+- [x] Add status filters (all, paid, pending) to `/admin` dashboard with paid as default
 
 ## In Progress
 

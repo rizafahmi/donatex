@@ -14,16 +14,28 @@ defmodule DonatexWeb.AdminLive do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
     end
 
-    donations = Donations.list_donations()
+    donations = Donations.list_donations("paid")
 
     {:ok,
      socket
+     |> assign(:filter, "paid")
      |> assign(:has_donations?, not Enum.empty?(donations))
      |> assign(:stats, Donations.get_donation_stats())
      |> stream(:donations, donations)}
   end
 
   @impl Phoenix.LiveView
+  def handle_event("set_filter", %{"filter" => filter}, socket)
+      when filter in ["all", "paid", "pending"] do
+    donations = Donations.list_donations(filter)
+
+    {:noreply,
+     socket
+     |> assign(:filter, filter)
+     |> assign(:has_donations?, not Enum.empty?(donations))
+     |> stream(:donations, donations, reset: true)}
+  end
+
   def handle_event("replay", %{"id" => id}, socket) do
     case Donations.get_donation_by_id(id) do
       nil ->
@@ -72,11 +84,20 @@ defmodule DonatexWeb.AdminLive do
 
   @impl Phoenix.LiveView
   def handle_info({:donation_created, donation}, socket) do
+    filter = socket.assigns.filter
+
+    socket =
+      if filter in ["all", "pending"] do
+        socket
+        |> assign(:has_donations?, true)
+        |> stream_insert(:donations, donation, at: 0)
+      else
+        socket
+      end
+
     {:noreply,
      socket
-     |> assign(:has_donations?, true)
-     |> assign(:stats, Donations.get_donation_stats())
-     |> stream_insert(:donations, donation, at: 0)}
+     |> assign(:stats, Donations.get_donation_stats())}
   end
 
   def handle_info({:donation_paid, %{id: id}}, socket) do
@@ -85,16 +106,41 @@ defmodule DonatexWeb.AdminLive do
         {:noreply, socket}
 
       donation ->
+        filter = socket.assigns.filter
+
+        socket =
+          cond do
+            filter == "pending" ->
+              has_any? = Enum.any?(Donations.list_donations("pending"))
+
+              socket
+              |> assign(:has_donations?, has_any?)
+              |> stream_delete(:donations, donation)
+
+            filter in ["paid", "all"] ->
+              socket
+              |> assign(:has_donations?, true)
+              |> stream_insert(:donations, donation)
+
+            true ->
+              socket
+          end
+
         {:noreply,
          socket
-         |> assign(:has_donations?, true)
-         |> assign(:stats, Donations.get_donation_stats())
-         |> stream_insert(:donations, donation)}
+         |> assign(:stats, Donations.get_donation_stats())}
     end
   end
 
   def handle_info({:donation_alerted, donation}, socket) do
-    {:noreply, stream_insert(socket, :donations, donation)}
+    socket =
+      if socket.assigns.filter in ["paid", "all"] do
+        stream_insert(socket, :donations, donation)
+      else
+        socket
+      end
+
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -107,7 +153,7 @@ defmodule DonatexWeb.AdminLive do
       </.header>
       
     <!-- Status telemetry bar -->
-      <div class="border border-stroke/50 bg-surface/30 rounded-2xl p-4 mb-8">
+      <div class="border border-stroke/50 bg-surface/30 rounded-2xl p-4 mb-6">
         <div class="flex flex-wrap items-center justify-between gap-4 text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
           <div class="flex items-center gap-6">
             <span class="flex items-center gap-2">
@@ -132,6 +178,25 @@ defmodule DonatexWeb.AdminLive do
               /overlay
             </a>
           </div>
+        </div>
+      </div>
+      
+    <!-- Filters -->
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-1.5 bg-surface-2/40 border border-stroke/40 rounded-full p-1">
+          <button
+            :for={f <- ["paid", "pending", "all"]}
+            type="button"
+            phx-click="set_filter"
+            phx-value-filter={f}
+            class={[
+              "px-5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.24em] rounded-full transition-all duration-200 focus:outline-hidden cursor-pointer",
+              @filter == f && "bg-accent text-background shadow-md shadow-accent/20",
+              @filter != f && "text-text-muted hover:text-text hover:bg-surface-3/30"
+            ]}
+          >
+            {f}
+          </button>
         </div>
       </div>
       
