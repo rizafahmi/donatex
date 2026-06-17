@@ -4,14 +4,15 @@ defmodule DonatexWeb.DonateLiveTest do
   import Phoenix.LiveViewTest
 
   test "renders the donor form with preset amounts and optional message", %{conn: conn} do
-    {:ok, view, html} = live(conn, ~p"/")
+    {:ok, view, _html} = live(conn, ~p"/")
 
-    assert html =~ "Bikin stream makin seru &amp; kasih semangat!"
-    assert html =~ "Nama kamu"
-    assert html =~ "Rp 5.000"
-    assert html =~ "Rp 10.000"
-    assert html =~ "Rp 25.000"
-    assert html =~ "Pesan (opsional)"
+    assert has_element?(view, "#donor-page")
+    assert has_element?(view, "#donation-form")
+    assert has_element?(view, "#donation-form", "Nama kamu")
+    assert has_element?(view, "#donation-form", "Rp 5.000")
+    assert has_element?(view, "#donation-form", "Rp 10.000")
+    assert has_element?(view, "#donation-form", "Rp 25.000")
+    assert has_element?(view, "#donation-form", "Pesan (opsional)")
 
     refute has_element?(view, "#donation_form_custom_amount")
   end

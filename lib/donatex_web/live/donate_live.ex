@@ -202,10 +202,10 @@ defmodule DonatexWeb.DonateLive do
                 Pembayaran terkonfirmasi
               </p>
               <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-                Terima kasih! 🎉
+                Terima kasih. Alert-mu masuk ke stream.
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Donasimu sudah terkonfirmasi. Notifikasi akan tampil di stream.
+                Donasimu sudah terkonfirmasi. Kalau ingin menaikkan hype lagi, kamu bisa kirim dukungan berikutnya.
               </p>
             </div>
 
@@ -238,24 +238,59 @@ defmodule DonatexWeb.DonateLive do
           <% selected_amount_option = selected_amount_option(@form) %>
           <% amount_option_error = amount_option_error(@form) %>
 
-          <section class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35">
+          <section
+            id="donor-page"
+            class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35"
+          >
             <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/8" />
-            <div class="absolute -right-32 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+            <div class="absolute right-0 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
 
-            <div class="relative mx-auto max-w-3xl space-y-8 px-6 py-8 sm:px-8 lg:px-10 lg:py-10">
-              <header class="mx-auto space-y-3">
-                <p class="text-xs font-semibold uppercase tracking-[0.34em] text-text-muted">
-                  Dukung live stream
-                </p>
-                <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                  Bikin stream makin seru & kasih semangat!
-                </h1>
-                <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                  Pilih nominal, buat QRIS, lalu scan. Notifikasi tampil di stream setelah pembayaran terkonfirmasi.
-                </p>
-              </header>
+            <div class="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-10">
+              <div class="min-w-0 flex flex-col justify-between gap-8">
+                <header class="space-y-4">
+                  <div class="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                    <span class="relative flex size-2">
+                      <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70">
+                      </span>
+                      <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
+                    </span>
+                    Sedang live
+                  </div>
+                  <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
+                    Bikin stream makin seru dan nama kamu muncul di layar.
+                  </h1>
+                  <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
+                    Pilih nominal, tulis pesan, lalu bayar via QRIS. Setelah pembayaran terkonfirmasi, alert donasimu masuk antrean overlay.
+                  </p>
+                </header>
 
-              <div class="mx-auto max-w-xl rounded-[2.25rem] border border-stroke/60 bg-background/14 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
+                <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                  <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                      Instan
+                    </p>
+                    <p class="mt-2 text-sm font-semibold text-text">QRIS unik untuk setiap donasi.</p>
+                  </div>
+                  <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                      Aman
+                    </p>
+                    <p class="mt-2 text-sm font-semibold text-text">
+                      Alert tampil setelah pembayaran valid.
+                    </p>
+                  </div>
+                  <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                      Favorit
+                    </p>
+                    <p class="mt-2 text-sm font-semibold text-text">
+                      Rp 10.000 pas buat memanaskan chat.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="min-w-0 rounded-[2.25rem] border border-stroke/60 bg-background/18 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
                 <.form
                   for={@form}
                   id="donation-form"
@@ -265,7 +300,7 @@ defmodule DonatexWeb.DonateLive do
                 >
                   <div class="space-y-2">
                     <p class="text-sm font-medium text-text-muted">
-                      Isi nama, pilih nominal, lalu lanjut.
+                      Siapkan dukunganmu
                     </p>
                     <div class="h-px bg-stroke/60" />
                   </div>
@@ -287,7 +322,7 @@ defmodule DonatexWeb.DonateLive do
                       </span>
                     </legend>
 
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div class="grid grid-cols-2 gap-3">
                       <label
                         :for={preset <- @preset_amounts}
                         for={preset.id}
@@ -393,7 +428,7 @@ defmodule DonatexWeb.DonateLive do
                       class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70"
                     >
                       <span class="space-y-0.5">
-                        <span class="block text-base">Dukung Sekarang</span>
+                        <span class="block text-base">Kirim dukungan ke stream</span>
                         <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
                           Pembayaran via QRIS
                         </span>
@@ -484,9 +519,9 @@ defmodule DonatexWeb.DonateLive do
 
   defp amount_option_id(amount), do: "donation_form_amount_option_#{amount}"
 
-  defp preset_amount_copy(5_000), do: {"Traktir Kopi ☕", "Biar melek terus", false}
-  defp preset_amount_copy(10_000), do: {"Cemilan Stream 🍟", "Paling sering dipilih", true}
-  defp preset_amount_copy(25_000), do: {"Sponsor Sultan 👑", "Support maksimal!", false}
+  defp preset_amount_copy(5_000), do: {"Pemantik chat", "Buka dukungan", false}
+  defp preset_amount_copy(10_000), do: {"Naikkan energi", "Paling sering dipilih", true}
+  defp preset_amount_copy(25_000), do: {"Masuk spotlight", "Support maksimal", false}
 
   defp preset_amount_copy(_amount), do: {"Support", "Terima kasih", false}
 

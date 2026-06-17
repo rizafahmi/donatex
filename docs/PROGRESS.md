@@ -2,8 +2,8 @@
 
 ## Current State
 - Latest commit: f163748 (feat(overlay): add synced canvas confetti burst for maximum celebration)
-- Working tree: has uncommitted changes
-- Test status: 73 tests, 0 failures
+- Working tree: has uncommitted changes for the donor/overlay engagement refresh, plus an existing `.gitignore` change
+- Test status: 74 tests, 0 failures
 - Lint: `mix credo` passing
 - Dialyzer: `mix dialyzer` passing
 - Full verification: `mix precommit` passing
@@ -31,6 +31,7 @@
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
+- [x] Refresh `/` donor page copy/layout and `/overlay` idle prompt to make donation more inviting
 - [x] Document setup and deployment details (env vars, webhook registration, private webhook URL)
 - [x] Run a final end-to-end verification pass (manual smoke test)
 

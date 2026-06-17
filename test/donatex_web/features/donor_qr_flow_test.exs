@@ -55,7 +55,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> visit(~p"/")
     |> fill_in("Nama kamu", with: "Riza")
     |> choose("Rp 10.000", exact: false)
-    |> click_button("Dukung Sekarang")
+    |> click_button("Kirim dukungan ke stream")
     |> assert_has("h1", "Scan QRIS-nya")
     |> unwrap(fn view ->
       html = Phoenix.LiveViewTest.render(view)
@@ -89,7 +89,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Dukung Sekarang")
+      |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Scan QRIS-nya")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-2")
@@ -108,11 +108,11 @@ defmodule DonatexWeb.DonorQrFlowTest do
     })
 
     session
-    |> assert_has("h1", "Terima kasih!")
+    |> assert_has("h1", "Terima kasih. Alert-mu masuk ke stream.")
 
     session
     |> click_button("Donasi lagi")
-    |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
+    |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
   end
 
   test "webhook correlation uses the QR image URL UUID when transaction id is omitted from QR create response",
@@ -144,7 +144,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 25.000", exact: false)
-      |> click_button("Dukung Sekarang")
+      |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Scan QRIS-nya")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: transaction_id)
@@ -164,7 +164,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     })
 
     session
-    |> assert_has("h1", "Terima kasih!")
+    |> assert_has("h1", "Terima kasih. Alert-mu masuk ke stream.")
   end
 
   test "shows an error and stays on the form when QR creation fails", %{conn: conn} do
@@ -177,8 +177,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Dukung Sekarang")
-      |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
+      |> click_button("Kirim dukungan ke stream")
+      |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
     end)
   end
 
@@ -205,8 +205,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Dukung Sekarang")
-      |> assert_has("h1", "Bikin stream makin seru & kasih semangat!")
+      |> click_button("Kirim dukungan ke stream")
+      |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)
         assert html =~ "Donasi belum bisa disimpan"

@@ -88,21 +88,26 @@ defmodule DonatexWeb.AdminLive do
                 </div>
 
                 <div class="mt-2 flex flex-wrap items-center gap-2 sm:justify-end">
-                  <div
-                    class={[
-                      "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
-                      donation.status == "paid" && "border-accent/30 bg-accent/10 text-text",
-                      donation.status == "pending" && "border-stroke/60 bg-background/20 text-text-muted"
-                    ]}
-                  >
+                  <div class={[
+                    "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
+                    donation.status == "paid" && "border-accent/30 bg-accent/10 text-text",
+                    donation.status == "pending" &&
+                      "border-stroke/60 bg-background/20 text-text-muted"
+                  ]}>
                     {donation.status}
                   </div>
 
                   <div class="inline-flex items-center gap-2 rounded-full border border-stroke/60 bg-background/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
                     <span class="relative flex size-2 items-center justify-center">
-                      <span :if={donation.alerted} class="relative inline-flex size-1.5 rounded-full bg-accent-2">
+                      <span
+                        :if={donation.alerted}
+                        class="relative inline-flex size-1.5 rounded-full bg-accent-2"
+                      >
                       </span>
-                      <span :if={!donation.alerted} class="relative inline-flex size-1.5 rounded-full bg-text-muted/40">
+                      <span
+                        :if={!donation.alerted}
+                        class="relative inline-flex size-1.5 rounded-full bg-text-muted/40"
+                      >
                       </span>
                     </span>
                     <span>Alerted</span>
