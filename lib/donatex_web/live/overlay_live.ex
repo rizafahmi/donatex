@@ -84,10 +84,9 @@ defmodule DonatexWeb.OverlayLive do
               <div class="select-none">donatex-terminal — alert</div>
               <div class="w-12"></div>
             </div>
-            
-    <!-- Terminal Console Content -->
+            <!-- Terminal Console Content -->
             <div class="relative z-10 flex h-full flex-col justify-center items-center gap-3 pt-14 pb-5 px-8">
-              <div class="obs-overlay-main-text font-mono tracking-tight text-3xl font-bold">
+              <div class="obs-overlay-main-text font-mono tracking-tight text-2xl font-bold">
                 <span class="text-accent select-none font-bold">~ $</span>
                 <span class="text-text font-semibold ml-1">tip-alert</span>
                 <span class="text-text-muted/70 font-medium font-sans">--from=</span>
@@ -102,7 +101,7 @@ defmodule DonatexWeb.OverlayLive do
               </div>
               <div
                 :if={DonationPresenter.present_message?(@current.message)}
-                class="obs-overlay-sub-text font-mono text-lg text-text-muted/95 italic bg-background/55 border border-stroke/45 px-5 py-1.5 rounded-xl flex items-center gap-3 max-w-[85ch] shadow-inner"
+                class="obs-overlay-sub-text font-mono text-base text-text-muted/95 italic bg-background/55 border border-stroke/45 px-5 py-1.5 rounded-xl flex items-center gap-3 max-w-[85ch] shadow-inner"
               >
                 <span class="text-accent font-bold select-none">&gt;</span>
                 <span>"{@current.message}"</span>
