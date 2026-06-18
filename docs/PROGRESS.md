@@ -37,6 +37,7 @@
 - [x] Run a final end-to-end verification pass (manual smoke test)
 - [x] Polish `/admin` dashboard layout, typography, telemetry stats, and real-time PubSub updates (new pending, paid status changes, alerted updates, empty state, donor message display, and semantic color matching)
 - [x] Add status filters (all, paid, pending) to `/admin` dashboard with paid as default
+- [x] Align the overall color scheme and vibe with the user's livestream overlay (cyan and purple developer-terminal aesthetic, terminal window alert layout on `/overlay`)
 
 ## In Progress
 

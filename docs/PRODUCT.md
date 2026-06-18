@@ -18,8 +18,8 @@ Donatex is a self-hosted, single-user livestream donation system for the Indones
 
 ## Brand Personality
 
-- **Maximalist & Energetic**: High-energy, gaming-inspired aesthetic utilizing vivid neon accent colors and dynamic, animated borders.
-- **Fluid & Immersive**: Engaging layout with smooth responsive typography that commands attention without cluttering.
+- **Developer-Console & Livestream-Native**: Tech-forward, terminal-inspired aesthetic utilizing vivid cyan/sky-blue and purple accents, structured as clean, high-contrast overlay alerts.
+- **Structured & Minimalist**: Engaging layout using monospace details, pill-shaped social badges, and smooth transitions that command attention without cluttering.
 - **Earned Trust**: Fast, functional, and highly reliable.
 
 ## Anti-references

@@ -2,17 +2,17 @@
 name: Donatex
 description: Self-hosted livestream donation app for a single streamer
 colors:
-  primary: "oklch(75% 0.14 165)" # Neon green/teal accent
-  accent-orange: "oklch(75% 0.14 65)" # Neon orange/amber secondary accent
-  neutral-bg: "oklch(13% 0.02 255)" # Deep slate background
-  surface: "oklch(17% 0.025 255)" # Dark surface card
-  surface-2: "oklch(20% 0.03 255)" # Medium dark surface container
-  surface-3: "oklch(24% 0.035 255)" # Light dark surface container
-  stroke: "oklch(32% 0.03 255)" # Medium border/stroke
-  text: "oklch(96% 0.02 90)" # Bright cream text
-  text-muted: "oklch(78% 0.02 90)" # Dimmed text
-  success: "oklch(74% 0.14 160)" # Success green
-  danger: "oklch(68% 0.2 25)" # Danger/error red
+  primary: "oklch(76% 0.14 205)" # Cyan/Teal terminal prompt accent
+  accent-purple: "oklch(64% 0.18 300)" # Livestream overlay purple accent
+  neutral-bg: "oklch(14% 0.015 240)" # Deep slate-gray background
+  surface: "oklch(17% 0.02 240)" # Dark surface card
+  surface-2: "oklch(21% 0.025 240)" # Medium dark surface container
+  surface-3: "oklch(25% 0.03 240)" # Light dark surface container
+  stroke: "oklch(31% 0.025 240)" # Medium border/stroke
+  text: "oklch(96% 0.015 240)" # Bright slate text
+  text-muted: "oklch(78% 0.02 240)" # Dimmed text
+  success: "oklch(74% 0.12 185)" # Success cyan/green
+  danger: "oklch(62% 0.18 25)" # Danger/error red-orange
 typography:
   display:
     fontFamily: "Donatex Display, system-ui, sans-serif"
@@ -33,9 +33,9 @@ components:
     rounded: "{rounded.md}"
     padding: "16px 20px"
   button-primary-hover:
-    backgroundColor: "oklch(78% 0.14 165)"
+    backgroundColor: "oklch(79% 0.14 205)"
   card-donation:
-    backgroundColor: "oklch(17% 0.025 255 / 45%)"
+    backgroundColor: "oklch(17% 0.02 240 / 45%)"
     rounded: "{rounded.lg}"
     padding: "24px 32px"
 ---
@@ -44,40 +44,40 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "The Neon Arcade Console"**
+**Creative North Star: "The Developer Console & Livestream Overlay"**
 
-Donatex is styled with a high-energy, gamer-centric visual theme inspired by the retro-futurism of arcade cabinets and dark mode creator consoles. The interface is optimized to feel alive, responsive, and tactile. By combining deep slate backdrops with vibrant neon accents and responsive fluid typography, the design creates a feeling of presence and immediate feedback.
+Donatex is styled with a tech-forward, terminal-inspired dark theme that aligns with the developer streamer's overlay aesthetic. The interface is optimized to feel integrated, clean, and highly legible. By combining deep cool-slate backdrops with vibrant cyan/sky-blue prompts and rich chat purple accents, the design feels like a natural extension of the stream's command-line setup.
 
-The layout prioritizes visual density and high contrast for stream legibility. Subtle glassmorphism and blurred ambient background circles are used to build depth, making the page feel like a physical, illuminated console.
+The layout prioritizes visual density and high contrast for stream legibility. Subtle glassmorphism and terminal title bar controls are used to build structure, making alerts feel like console notification outputs.
 
 This design system explicitly rejects flat SaaS-cream aesthetics, generic blue corporate dashboards, and unstyled form defaults.
 
 **Key Characteristics:**
-- Dark, high-contrast console theme
-- Vivid neon-oklch accents (green/teal and orange/amber)
+- Dark, high-contrast cool-slate theme
+- Vivid cyan/sky-blue terminal prompts (`oklch(76% 0.14 205)`) and purple accents (`oklch(64% 0.18 300)`)
 - Generous, rounded corner styles (40px/24px) for cards and inputs
 - Kinetic state transitions (hover, active, loading) that feel instant
 
 ## 2. Colors
 
-The color palette is built around deep, cold-tinted neutrals paired with glowing neon accents. All colors are specified in the OKLCH space to ensure consistent lightness, saturation, and vibrancy.
+The color palette is built around deep, slate-tinted neutrals paired with glowing console accents. All colors are specified in the OKLCH space to ensure consistent lightness, saturation, and vibrancy.
 
 ### Primary
-- **Arcade Neon Green** (oklch(75% 0.14 165)): Used for primary interactive actions, successful state highlights, and confirmation indicators.
+- **Console Cyan/Sky-Blue** (oklch(76% 0.14 205)): Used for primary interactive actions, command prompts, successful state highlights, and confirmation indicators.
 
 ### Secondary
-- **Solar Neon Orange** (oklch(75% 0.14 65)): Used for secondary accents, recommendations, and highlighting special options to create a visual hierarchy.
+- **Livestream Purple** (oklch(64% 0.18 300)): Used for secondary accents, pending states, operator badges, and highlighting special options to create a visual hierarchy matching the live chat badges.
 
 ### Neutral
-- **Deep Slate Void** (oklch(13% 0.02 255)): The primary background color of the application.
-- **Console Surface** (oklch(17% 0.025 255)): Used for cards, containers, and primary content structures.
-- **Stroke Border** (oklch(32% 0.03 255)): Used for structural dividers and card borders.
-- **Cream Text** (oklch(96% 0.02 90)): Primary text color for high contrast and readability.
-- **Muted Dust** (oklch(78% 0.02 90)): Subtitle, hint, and utility label text.
+- **Deep Slate Void** (oklch(14% 0.015 240)): The primary background color of the application.
+- **Console Surface** (oklch(17% 0.02 240)): Used for cards, containers, and primary content structures.
+- **Stroke Border** (oklch(31% 0.025 240)): Used for structural dividers and card borders.
+- **Cool Slate Text** (oklch(96% 0.015 240)): Primary text color for high contrast and readability.
+- **Muted Slate** (oklch(78% 0.02 240)): Subtitle, hint, and utility label text.
 
 ### Named Rules
-**The Neon Rarity Rule.** Neon accents are restricted to primary interactive elements and active states. Inactive or passive surfaces must remain dark and neutral to prevent visual clutter and maintain high on-stream readability.
-**The Tinted Neutral Rule.** Every neutral shade is tinted toward the blue-grey brand hue (chroma 0.02–0.035). Pure black or pure white are strictly forbidden.
+**The Console Rarity Rule.** Glowing accents are restricted to primary interactive elements, prompt lines, and active states. Inactive or passive surfaces must remain dark and neutral to prevent visual clutter and maintain high on-stream readability.
+**The Tinted Neutral Rule.** Every neutral shade is tinted toward the cool blue-gray slate brand hue (chroma 0.015–0.03). Pure black or pure white are strictly forbidden.
 
 ## 3. Typography
 
@@ -115,8 +115,8 @@ Components are styled to match the arcade console aesthetic, using consistent co
 
 ### Buttons
 - **Shape:** Rounded-3xl (24px)
-- **Primary:** Neon Green background (`bg-accent`), deep neutral text (`text-background`), and a matching accent glow ring.
-- **Hover / Focus:** Lighter green state (`hover:bg-accent/92`), scaling up to `scale-[1.01]` for instant visual feedback.
+- **Primary:** Cyan/Sky-Blue background (`bg-accent`), deep neutral text (`text-background`), and a matching accent glow ring.
+- **Hover / Focus:** Lighter cyan/sky-blue state (`hover:bg-accent/92`), scaling up to `scale-[1.01]` for instant visual feedback.
 
 ### Preset Cards
 - **Shape:** Rounded-3xl (24px)

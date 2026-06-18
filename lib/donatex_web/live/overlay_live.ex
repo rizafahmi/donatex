@@ -73,26 +73,39 @@ defmodule DonatexWeb.OverlayLive do
           </audio>
           <div class="obs-overlay-line">
             <div class="obs-overlay-box"></div>
-            <div class="relative z-10 flex h-full flex-col justify-center items-center gap-4 py-6">
-              <div class="obs-overlay-main-text font-display font-bold tracking-tight">
-                <span class="text-accent drop-shadow-[0_2px_8px_rgba(75,250,165,0.4)]">
+            
+    <!-- Terminal Header Title Bar -->
+            <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between border-b border-stroke/40 bg-surface-2/65 px-6 py-2.5 rounded-t-2xl font-mono text-[11px] font-semibold tracking-wider text-text-muted/70 uppercase">
+              <div class="flex items-center gap-1.5 select-none">
+                <span class="h-3 w-3 rounded-full bg-[#ff5f56]"></span>
+                <span class="h-3 w-3 rounded-full bg-[#ffbd2e]"></span>
+                <span class="h-3 w-3 rounded-full bg-[#27c93f]"></span>
+              </div>
+              <div class="select-none">donatex-terminal — alert</div>
+              <div class="w-12"></div>
+            </div>
+            
+    <!-- Terminal Console Content -->
+            <div class="relative z-10 flex h-full flex-col justify-center items-center gap-3 pt-14 pb-5 px-8">
+              <div class="obs-overlay-main-text font-mono tracking-tight text-3xl font-bold">
+                <span class="text-accent select-none font-bold">~ $</span>
+                <span class="text-text font-semibold ml-1">tip-alert</span>
+                <span class="text-text-muted/70 font-medium font-sans">--from=</span>
+                <span class="text-accent drop-shadow-[0_2px_10px_rgba(56,189,248,0.45)] font-bold">
                   {@current.donor_name}
                 </span>
-                <span class="mx-4 font-sans text-4xl font-semibold uppercase tracking-widest text-text-muted/80">
-                  memberikan
+                <span class="text-text-muted/70 font-medium font-sans">--amount=</span>
+                <span class="text-accent-2 drop-shadow-[0_2px_10px_rgba(192,132,252,0.45)] font-extrabold">
+                  Rp {DonationPresenter.format_idr(@current.amount)}
                 </span>
-                <span class="text-accent-2 drop-shadow-[0_2px_8px_rgba(250,165,75,0.4)]">
-                  Rp {DonationPresenter.format_idr(@current.amount)}!!
-                </span>
+                <span class="text-accent animate-pulse font-bold select-none ml-1">_</span>
               </div>
               <div
                 :if={DonationPresenter.present_message?(@current.message)}
-                class="obs-overlay-sub-text font-sans font-medium italic text-text-muted/90"
+                class="obs-overlay-sub-text font-mono text-lg text-text-muted/95 italic bg-background/55 border border-stroke/45 px-5 py-1.5 rounded-xl flex items-center gap-3 max-w-[85ch] shadow-inner"
               >
-                <.icon
-                  name="hero-chat-bubble-left-ellipsis-solid"
-                  class="-mt-1 mr-2 inline-block h-8 w-8 text-accent/80"
-                /> "{@current.message}"
+                <span class="text-accent font-bold select-none">&gt;</span>
+                <span>"{@current.message}"</span>
               </div>
             </div>
           </div>
