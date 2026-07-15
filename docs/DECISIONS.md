@@ -2,6 +2,10 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
+## 2026-07-15: Pivot From Donation-First To Feedback-First With Optional Tips (ADR-023)
+- Reason: Donation framing created negative audience sentiment and suppressed engagement. Pivoting to feedback-first with optional tips lowers the participation barrier and removes the "asking for money" stigma.
+- Reference: [ADR-023](file:///Users/riza/code/donatex/docs/decisions/ADR-023-pivot-feedback-first-with-optional-tips.md)
+
 ## 2026-05-03: Remove Overlay Token Route (ADR-022)
 - Reason: This is a single-user system; the overlay no longer needs a token-gated route and should be reachable at `/overlay`.
 - Reference: [ADR-022](file:///Users/riza/code/donatex/docs/decisions/ADR-022-remove-overlay-token-route.md)
