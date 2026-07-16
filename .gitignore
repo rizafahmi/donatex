@@ -49,7 +49,7 @@ npm-debug.log
 
 /config/*.secret.exs
 /.agent-shell/
-/.claude/plans/*
+/.claude/*
 /.cursor/hooks.json
 /.entire/
 /.pi/extensions/entire/
