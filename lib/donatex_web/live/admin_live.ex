@@ -204,15 +204,15 @@ defmodule DonatexWeb.AdminLive do
         ]}
       >
         <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-2/60 text-text-muted">
-          <.icon name="hero-currency-rupiah" class="h-6 w-6" />
+          <.icon name="hero-chat-bubble-left-right" class="h-6 w-6" />
         </div>
-        <h3 class="mt-4 text-sm font-semibold text-text">No donations yet</h3>
+        <h3 class="mt-4 text-sm font-semibold text-text">No notes yet</h3>
         <p class="mt-1 text-xs text-text-muted/80 max-w-sm">
-          When donors tip via QRIS, their contributions and messages will appear here in real-time.
+          Free feedback and appreciation tips will show up here in real time.
         </p>
         <div class="mt-6">
           <.button navigate={~p"/"} variant="ghost" class="text-xs">
-            Go to Donation Page
+            Go to Feedback Page
           </.button>
         </div>
       </div>

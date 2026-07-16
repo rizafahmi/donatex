@@ -3,6 +3,8 @@ defmodule DonatexWeb.AdminFiltersTest do
 
   alias Donatex.Config
   alias Donatex.Donations
+  alias Donatex.Donations.Donation
+  alias Donatex.Repo
 
   setup do
     # Create one paid and one pending donation for testing filters
@@ -35,6 +37,16 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> visit(~p"/admin")
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
     |> assert_has("#donation-#{pending.id}", "Pending Donor")
+  end
+
+  test "empty state uses notes-oriented copy", %{conn: conn} do
+    Repo.delete_all(Donation)
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donations-empty", "No notes yet")
+    |> refute_has("#donations-empty", "No donations yet")
   end
 
   test "default view includes free notes", %{conn: conn} do
@@ -226,6 +238,52 @@ defmodule DonatexWeb.AdminFiltersTest do
     session
     |> assert_has("#donation-#{new_pending.id}", "Live Pending Tip")
     |> assert_has("#donation-#{pending.id}", "Pending Donor")
+  end
+
+  test "feedback filter inserts live free notes and ignores tips", %{conn: conn} do
+    session =
+      conn
+      |> put_req_header("authorization", basic_auth_header())
+      |> visit(~p"/admin")
+      |> click_button("feedback")
+
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Live Feedback Note",
+        reaction: "great",
+        message: "should appear on feedback"
+      })
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    Process.sleep(50)
+
+    session
+    |> assert_has("#donation-#{feedback.id}", "Live Feedback Note")
+
+    {:ok, tip} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-live-tip-on-feedback",
+        donor_name: "Live Tip Ignored",
+        reaction: "good",
+        amount: 12_000
+      })
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, tip}
+    )
+
+    Process.sleep(50)
+
+    session
+    |> refute_has("#donation-#{tip.id}", "Live Tip Ignored")
+    |> assert_has("#donation-#{feedback.id}", "Live Feedback Note")
   end
 
   test "real-time payment updates tip cards on the tips filter", %{
