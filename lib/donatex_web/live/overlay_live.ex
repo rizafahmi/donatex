@@ -2,12 +2,14 @@ defmodule DonatexWeb.OverlayLive do
   use DonatexWeb, :live_view
 
   alias Donatex.Donations
+  alias Donatex.Reactions
   alias DonatexWeb.DonationPresenter
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:created")
     end
 
     queue =
@@ -19,6 +21,7 @@ defmodule DonatexWeb.OverlayLive do
      socket
      |> assign(:queue, queue)
      |> assign(:current, nil)
+     |> assign(:floats, %{})
      |> start_next_alert()}
   end
 
@@ -28,6 +31,24 @@ defmodule DonatexWeb.OverlayLive do
      socket
      |> update(:queue, &:queue.in(donation_payload, &1))
      |> start_next_alert()}
+  end
+
+  def handle_info({:donation_created, %{status: "sent"} = donation}, socket) do
+    case build_float(donation) do
+      nil ->
+        {:noreply, socket}
+
+      float ->
+        Process.send_after(self(), {:dismiss_float, float.id}, float.duration_ms)
+
+        {:noreply, update(socket, :floats, &Map.put(&1, float.id, float))}
+    end
+  end
+
+  def handle_info({:donation_created, _donation}, socket), do: {:noreply, socket}
+
+  def handle_info({:dismiss_float, id}, socket) do
+    {:noreply, update(socket, :floats, &Map.delete(&1, id))}
   end
 
   def handle_info({:dismiss_current, id}, socket) do
@@ -62,6 +83,15 @@ defmodule DonatexWeb.OverlayLive do
     ~H"""
     <Layouts.app flash={@flash} variant="overlay">
       <div class="obs-overlay-container">
+        <div
+          :for={{id, float} <- @floats}
+          id={"obs-float-#{id}"}
+          class="obs-float-emoji"
+          style={float_style(float)}
+          aria-hidden="true"
+        >
+          {float.emoji}
+        </div>
         <%= if @current do %>
           <audio
             phx-hook="PlaySound"
@@ -114,6 +144,30 @@ defmodule DonatexWeb.OverlayLive do
       </div>
     </Layouts.app>
     """
+  end
+
+  defp build_float(%{id: id, reaction: reaction}) do
+    case Reactions.pick_emoji(reaction) do
+      nil ->
+        nil
+
+      emoji ->
+        %{
+          id: id,
+          emoji: emoji,
+          start_x: Enum.random(8..85),
+          drift_x: Enum.random(-18..18),
+          duration_ms: Enum.random(6_000..8_000)
+        }
+    end
+  end
+
+  defp float_style(float) do
+    [
+      "--float-start-x: #{float.start_x}%;",
+      "--float-drift-x: #{float.drift_x}vw;",
+      "--float-duration: #{float.duration_ms}ms;"
+    ]
   end
 
   defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do

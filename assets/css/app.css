@@ -99,12 +99,43 @@
   height: 100vh;
 }
 
+.obs-float-emoji {
+  position: absolute;
+  bottom: 8%;
+  left: var(--float-start-x, 50%);
+  z-index: 5;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform, opacity;
+  animation: obs-float-path var(--float-duration, 7000ms) ease-out forwards;
+}
+
+@keyframes obs-float-path {
+  0% {
+    transform: translate3d(0, 12vh, 0) scale(0.7);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--float-drift-x, 0vw), -78vh, 0) scale(1.15);
+    opacity: 0;
+  }
+}
+
 .obs-overlay-line {
   width: 2200px;
   height: 200px;
   position: absolute;
   top: 300px;
   left: 50%;
+  z-index: 10;
   margin-left: -1100px;
   display: block;
   transform: rotate(-5deg) scale3d(0, 0.02, 1);

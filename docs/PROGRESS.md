@@ -1,8 +1,8 @@
 # Project Progress
 
 ## Current State
-- Milestone 2 (Free Notes with Safe Submission): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
-- Test status: 95 tests, 0 failures
+- Milestone 3 (Floating Overlay Reactions): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
+- Test status: 105 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -35,6 +35,7 @@
 - [x] Add status filters (all, paid, pending) to `/admin` dashboard with paid as default
 - [x] Align the overall color scheme and vibe with the user's livestream overlay (cyan and purple developer-terminal aesthetic, terminal window alert layout on `/overlay`)
 - [x] Milestone 2 — Free Notes with Safe Submission: free submit + thank-you, 10s peer-IP cooldown, tip secondary path, admin default `all`, nil-amount display, live insert, no replay for sent
+- [x] Milestone 3 — Floating Overlay Reactions: free Notes float emoji-only on `/overlay` (3–4s, simultaneous, no recovery); tip celebrations unchanged
 
 ## In Progress
 
@@ -45,8 +46,8 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Milestone 3 — Floating Overlay Reactions (ephemeral emoji floats for free Notes on `/overlay`)
-2. Keep tip celebration + recovery path unchanged while adding concurrent free floats
+1. Milestone 4 — Optional Appreciation Experience (collapsed appreciation toggle; free feedback default)
+2. Keep tip QR path and overlay float plumbing intact while redesigning the donor form default path
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
@@ -54,4 +55,5 @@
 - [ARCHITECTURE.md](file:///Users/riza/code/donatex/docs/ARCHITECTURE.md)
 - [PRD.md](file:///Users/riza/code/donatex/docs/PRD.md)
 - Milestone 2 log: [docs/milestones/2-free-notes-safe-submission/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
+- Milestone 3 log: [docs/milestones/3-floating-overlay-reactions/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

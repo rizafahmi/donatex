@@ -6,6 +6,7 @@ defmodule DonatexWeb.OverlayLiveTest do
 
   alias Donatex.Donations
   alias Donatex.Donations.Donation
+  alias Donatex.Reactions
   alias Donatex.Repo
 
   test "replays paid and unalerted donations on mount and advances after dismiss", %{conn: conn} do
@@ -106,6 +107,134 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert has_element?(view, "div.obs-overlay-main-text", "D")
   end
 
+  test "shows an emoji-only float for an accepted free Note", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "FloatSender",
+        reaction: "good",
+        message: "secret note body"
+      })
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    html = render(view)
+    assert html =~ ~s(id="obs-float-#{feedback.id}")
+    assert float_emoji(html, feedback.id) in Reactions.pool("good")
+    refute html =~ "FloatSender"
+    refute html =~ "secret note body"
+  end
+
+  test "does not float pending tip creations on donations:created", %{conn: conn} do
+    {:ok, pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-no-float",
+        donor_name: "Tipper",
+        reaction: "great",
+        amount: 10_000,
+        message: "please tip celebrate"
+      })
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, pending}
+    )
+
+    html = render(view)
+    refute html =~ ~s(id="obs-float-#{pending.id}")
+    refute html =~ "Tipper"
+  end
+
+  test "shows multiple free Note floats simultaneously", %{conn: conn} do
+    {:ok, first} =
+      Donations.create_feedback(%{donor_name: "One", reaction: "ok", message: nil})
+
+    {:ok, second} =
+      Donations.create_feedback(%{donor_name: "Two", reaction: "bad", message: nil})
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, first}
+    )
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, second}
+    )
+
+    html = render(view)
+    assert html =~ ~s(id="obs-float-#{first.id}")
+    assert html =~ ~s(id="obs-float-#{second.id}")
+    assert float_emoji(html, first.id) in Reactions.pool("ok")
+    assert float_emoji(html, second.id) in Reactions.pool("bad")
+  end
+
+  test "dismisses a free Note float after the float timer", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{donor_name: "Gone", reaction: "great", message: nil})
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    assert render(view) =~ ~s(id="obs-float-#{feedback.id}")
+
+    send(view.pid, {:dismiss_float, feedback.id})
+    refute render(view) =~ ~s(id="obs-float-#{feedback.id}")
+  end
+
+  test "free Note float does not become a tip celebration", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "NoCelebrate",
+        reaction: "good",
+        message: "keep ambient"
+      })
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    html = render(view)
+    assert html =~ ~s(id="obs-float-#{feedback.id}")
+    refute has_element?(view, "div.obs-overlay-main-text", "NoCelebrate")
+    assert has_element?(view, "h1", "Overlay")
+  end
+
+  test "does not recover free Notes as floats on overlay mount", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "MissedFloat",
+        reaction: "ok",
+        message: "already stored"
+      })
+
+    {:ok, _view, html} = live(conn, ~p"/overlay")
+
+    refute html =~ ~s(id="obs-float-#{feedback.id}")
+    refute html =~ "MissedFloat"
+  end
+
   defp donation_payload(donation) do
     %{
       id: donation.id,
@@ -116,5 +245,12 @@ defmodule DonatexWeb.OverlayLiveTest do
       message: donation.message,
       inserted_at: donation.inserted_at
     }
+  end
+
+  defp float_emoji(html, id) do
+    pattern = ~r/id="obs-float-#{id}"[^>]*>\s*([^\s<]+)/u
+
+    assert [_, emoji] = Regex.run(pattern, html)
+    emoji
   end
 end
