@@ -13,6 +13,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-overlay-1",
         donor_name: "A",
+        reaction: "good",
         amount: 10_000
       })
 
@@ -20,6 +21,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-overlay-2",
         donor_name: "B",
+        reaction: "great",
         amount: 20_000
       })
 
@@ -59,6 +61,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-overlay-3",
         donor_name: "C",
+        reaction: "ok",
         amount: 15_000
       })
 
@@ -66,6 +69,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-overlay-4",
         donor_name: "D",
+        reaction: "bad",
         amount: 25_000
       })
 
@@ -107,6 +111,7 @@ defmodule DonatexWeb.OverlayLiveTest do
       id: donation.id,
       mayar_transaction_id: donation.mayar_transaction_id,
       donor_name: donation.donor_name,
+      reaction: donation.reaction,
       amount: donation.amount,
       message: donation.message,
       inserted_at: donation.inserted_at

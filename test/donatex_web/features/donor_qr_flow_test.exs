@@ -54,6 +54,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     conn
     |> visit(~p"/")
     |> fill_in("Nama kamu", with: "Riza")
+    |> choose("Great", exact: false)
     |> choose("Rp 10.000", exact: false)
     |> click_button("Kirim dukungan ke stream")
     |> assert_has("h1", "Scan QRIS-nya")
@@ -66,6 +67,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-1")
     assert donation.status == "pending"
     assert donation.donor_name == "Riza"
+    assert donation.reaction == "great"
     assert donation.amount == 10_000
   end
 
@@ -88,6 +90,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       conn
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
+      |> choose("Good", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Scan QRIS-nya")
@@ -143,6 +146,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       conn
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
+      |> choose("Okay", exact: false)
       |> choose("Rp 25.000", exact: false)
       |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Scan QRIS-nya")
@@ -176,6 +180,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       conn
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
+      |> choose("Good", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
@@ -204,6 +209,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       conn
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
+      |> choose("Good", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Kirim dukungan ke stream")
       |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")

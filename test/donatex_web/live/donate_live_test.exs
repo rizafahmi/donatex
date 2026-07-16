@@ -17,6 +17,32 @@ defmodule DonatexWeb.DonateLiveTest do
     refute has_element?(view, "#donation_form_custom_amount")
   end
 
+  test "renders the four approved reaction choices", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    assert has_element?(view, "#donation_form_reaction_bad[value=bad]")
+    assert has_element?(view, "#donation_form_reaction_ok[value=ok]")
+    assert has_element?(view, "#donation_form_reaction_good[value=good]")
+    assert has_element?(view, "#donation_form_reaction_great[value=great]")
+  end
+
+  test "requires a reaction before continuing", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      view
+      |> form("#donation-form",
+        donation_form: %{
+          "donor_name" => "Riza",
+          "amount_option" => "10000",
+          "message" => ""
+        }
+      )
+      |> render_submit()
+
+    assert html =~ "Pilih satu reaksi"
+  end
+
   test "requires a donor name before continuing", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
@@ -32,6 +58,42 @@ defmodule DonatexWeb.DonateLiveTest do
       |> render_submit()
 
     assert html =~ "Tulis namamu dulu"
+  end
+
+  test "limits donor names to 64 characters", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      view
+      |> form("#donation-form",
+        donation_form: %{
+          "donor_name" => String.duplicate("a", 65),
+          "reaction" => "good",
+          "amount_option" => "10000",
+          "message" => ""
+        }
+      )
+      |> render_submit()
+
+    assert html =~ "Maksimal 64 karakter"
+  end
+
+  test "limits optional messages to 280 characters", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      view
+      |> form("#donation-form",
+        donation_form: %{
+          "donor_name" => "Riza",
+          "reaction" => "good",
+          "amount_option" => "10000",
+          "message" => String.duplicate("a", 281)
+        }
+      )
+      |> render_submit()
+
+    assert html =~ "Pesan maksimal 280 karakter"
   end
 
   test "requires choosing a preset or custom amount", %{conn: conn} do
@@ -84,6 +146,7 @@ defmodule DonatexWeb.DonateLiveTest do
       render_submit(view, "submit", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "reaction" => "good",
           "amount_option" => "custom",
           "custom_amount" => "150000",
           "message" => ""

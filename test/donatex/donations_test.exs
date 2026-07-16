@@ -12,6 +12,7 @@ defmodule Donatex.DonationsTest do
       attrs = %{
         mayar_transaction_id: "tx-1",
         donor_name: "Riza",
+        reaction: "great",
         amount: 10_000,
         message: "semangat"
       }
@@ -30,6 +31,7 @@ defmodule Donatex.DonationsTest do
                Donations.create_pending_donation(%{
                  mayar_transaction_id: "tx-duplicate",
                  donor_name: "Riza",
+                 reaction: "good",
                  amount: 10_000
                })
 
@@ -37,6 +39,7 @@ defmodule Donatex.DonationsTest do
                Donations.create_pending_donation(%{
                  mayar_transaction_id: "tx-duplicate",
                  donor_name: "Riza",
+                 reaction: "good",
                  amount: 10_000
                })
 
@@ -50,6 +53,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-2",
           donor_name: "Donor",
+          reaction: "good",
           amount: 25_000
         })
 
@@ -67,6 +71,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-2b",
           donor_name: "Donor",
+          reaction: "good",
           amount: 25_000
         })
 
@@ -94,6 +99,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-3",
           donor_name: "A",
+          reaction: "bad",
           amount: 10_000
         })
 
@@ -104,6 +110,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-4",
           donor_name: "B",
+          reaction: "ok",
           amount: 10_000
         })
 
@@ -111,6 +118,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-5",
           donor_name: "C",
+          reaction: "great",
           amount: 10_000
         })
 
@@ -129,6 +137,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-6",
           donor_name: "D",
+          reaction: "good",
           amount: 50_000
         })
 
@@ -144,6 +153,7 @@ defmodule Donatex.DonationsTest do
                Donations.create_pending_donation(%{
                  mayar_transaction_id: "tx-6b",
                  donor_name: "D",
+                 reaction: "good",
                  amount: 50_000
                })
 
@@ -155,6 +165,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-6c",
           donor_name: "D",
+          reaction: "good",
           amount: 50_000
         })
 
@@ -174,6 +185,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-alerted-by-id-1",
           donor_name: "D",
+          reaction: "good",
           amount: 50_000
         })
 
@@ -196,6 +208,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-list-pending-1",
           donor_name: "Pending Donor",
+          reaction: "ok",
           amount: 10_000
         })
 
@@ -203,6 +216,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-list-paid-1",
           donor_name: "Paid Donor",
+          reaction: "great",
           amount: 20_000
         })
 
@@ -217,6 +231,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-list-pending-2",
           donor_name: "Pending Donor",
+          reaction: "ok",
           amount: 10_000
         })
 
@@ -224,6 +239,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-list-paid-2",
           donor_name: "Paid Donor",
+          reaction: "great",
           amount: 20_000
         })
 
@@ -249,6 +265,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-7",
           donor_name: "E",
+          reaction: "good",
           amount: 15_000
         })
 
@@ -256,6 +273,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-8",
           donor_name: "F",
+          reaction: "great",
           amount: 20_000
         })
 
@@ -282,6 +300,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-stats-1",
           donor_name: "A",
+          reaction: "bad",
           amount: 10_000
         })
 
@@ -289,6 +308,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-stats-2",
           donor_name: "B",
+          reaction: "ok",
           amount: 20_000
         })
 
@@ -296,6 +316,7 @@ defmodule Donatex.DonationsTest do
         Donations.create_pending_donation(%{
           mayar_transaction_id: "tx-stats-3",
           donor_name: "C",
+          reaction: "great",
           amount: 30_000
         })
 

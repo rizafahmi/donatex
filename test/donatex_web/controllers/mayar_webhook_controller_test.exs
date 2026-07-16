@@ -34,6 +34,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: "tx-webhook-1",
                donor_name: "Donor",
+               reaction: "good",
                amount: 10_000
              })
 
@@ -77,6 +78,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: "tx-webhook-success-1",
                donor_name: "Donor",
+               reaction: "great",
                amount: 10_000
              })
 
@@ -104,6 +106,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: "tx-webhook-2",
                donor_name: "Donor",
+               reaction: "ok",
                amount: 10_000
              })
 
@@ -131,6 +134,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: "tx-webhook-3",
                donor_name: "Donor",
+               reaction: "bad",
                amount: 10_000
              })
 
@@ -160,6 +164,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: transaction_id,
                donor_name: "Donor",
+               reaction: "good",
                amount: 25_000
              })
 
@@ -203,6 +208,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
              Donations.create_pending_donation(%{
                mayar_transaction_id: original_tx_id,
                donor_name: "Maya",
+               reaction: "great",
                amount: 15_000
              })
 

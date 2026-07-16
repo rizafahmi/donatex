@@ -15,6 +15,7 @@ defmodule DonatexWeb.AdminReplayTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-admin-1",
         donor_name: "E",
+        reaction: "good",
         amount: 15_000
       })
 

@@ -11,9 +11,10 @@ defmodule DonatexWeb.DonateLive do
 
   @preset_amounts [5_000, 10_000, 25_000]
   @preset_amount_options Enum.map(@preset_amounts, &Integer.to_string/1)
-  @form_fields [:donor_name, :amount_option, :custom_amount, :message]
+  @form_fields [:donor_name, :reaction, :amount_option, :custom_amount, :message]
   @form_types %{
     donor_name: :string,
+    reaction: :string,
     amount_option: :string,
     custom_amount: :integer,
     message: :string
@@ -244,7 +245,8 @@ defmodule DonatexWeb.DonateLive do
           </section>
         <% else %>
           <% selected_amount_option = selected_amount_option(@form) %>
-          <% amount_option_error = amount_option_error(@form) %>
+          <% reaction_error = field_error(@form, :reaction) %>
+          <% amount_option_error = field_error(@form, :amount_option) %>
 
           <section
             id="donor-page"
@@ -321,6 +323,38 @@ defmodule DonatexWeb.DonateLive do
                     autofocus
                     required
                   />
+
+                  <fieldset class="space-y-3">
+                    <legend class="text-sm font-semibold text-text">Pilih reaksimu</legend>
+                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                      <label
+                        :for={
+                          {reaction, emoji, label} <- [
+                            {"bad", "😅", "Bad"},
+                            {"ok", "😐", "Okay"},
+                            {"good", "😊", "Good"},
+                            {"great", "🤩", "Great"}
+                          ]
+                        }
+                        for={"donation_form_reaction_#{reaction}"}
+                        class="cursor-pointer rounded-2xl border border-stroke/60 bg-background/20 px-3 py-4 text-center text-sm font-semibold text-text"
+                      >
+                        <input
+                          id={"donation_form_reaction_#{reaction}"}
+                          type="radio"
+                          name={@form[:reaction].name}
+                          value={reaction}
+                          checked={@form[:reaction].value == reaction}
+                          class="sr-only"
+                        />
+                        <span class="block text-2xl" aria-hidden="true">{emoji}</span>
+                        <span class="mt-1 block">{label}</span>
+                      </label>
+                    </div>
+                    <p :if={reaction_error} class="text-sm font-medium text-danger">
+                      {reaction_error}
+                    </p>
+                  </fieldset>
 
                   <fieldset class="space-y-3">
                     <legend class="w-full">
@@ -479,9 +513,10 @@ defmodule DonatexWeb.DonateLive do
   defp maybe_validate_required(changeset, true) do
     changeset
     |> validate_required([:donor_name], message: "Tulis namamu dulu")
-    |> validate_length(:donor_name, max: 40, message: "Maksimal 40 karakter")
+    |> validate_required([:reaction], message: "Pilih satu reaksi")
+    |> validate_length(:donor_name, max: 64, message: "Maksimal 64 karakter")
     |> validate_amount()
-    |> validate_length(:message, max: 160, message: "Pesan maksimal 160 karakter")
+    |> validate_length(:message, max: 280, message: "Pesan maksimal 280 karakter")
   end
 
   defp validate_amount(changeset) do
@@ -518,8 +553,8 @@ defmodule DonatexWeb.DonateLive do
 
   defp selected_amount_option(form), do: form[:amount_option].value
 
-  defp amount_option_error(form) do
-    case form[:amount_option].errors do
+  defp field_error(form, field) do
+    case form[field].errors do
       [{message, _opts} | _rest] -> message
       _ -> nil
     end
@@ -572,6 +607,7 @@ defmodule DonatexWeb.DonateLive do
 
   defp create_pending_donation_with_qr(changeset) do
     donor_name = get_field(changeset, :donor_name)
+    reaction = get_field(changeset, :reaction)
     amount = donation_amount(changeset)
     message = blank_to_nil(get_field(changeset, :message))
 
@@ -579,6 +615,7 @@ defmodule DonatexWeb.DonateLive do
          {:ok, donation} <-
            create_pending_donation_from_qr(qr, %{
              donor_name: donor_name,
+             reaction: reaction,
              amount: amount,
              message: message
            }) do
@@ -595,12 +632,14 @@ defmodule DonatexWeb.DonateLive do
 
   defp create_pending_donation_from_qr(%Client.DynamicQr{} = qr, %{
          donor_name: donor_name,
+         reaction: reaction,
          amount: amount,
          message: message
        }) do
     case Donations.create_pending_donation(%{
            mayar_transaction_id: qr.mayar_transaction_id,
            donor_name: donor_name,
+           reaction: reaction,
            amount: amount,
            message: message
          }) do

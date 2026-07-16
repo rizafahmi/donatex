@@ -15,6 +15,7 @@ defmodule Donatex.DonationsMigrationTest do
                "id",
                "mayar_transaction_id",
                "donor_name",
+               "reaction",
                "amount",
                "message",
                "status",
@@ -30,6 +31,7 @@ defmodule Donatex.DonationsMigrationTest do
 
     assert by_name["mayar_transaction_id"].notnull == 1
     assert by_name["donor_name"].notnull == 1
+    assert by_name["reaction"].notnull == 0
     assert by_name["amount"].notnull == 1
     assert by_name["status"].notnull == 1
     assert by_name["alerted"].notnull == 1

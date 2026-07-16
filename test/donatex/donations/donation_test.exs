@@ -13,10 +13,38 @@ defmodule Donatex.Donations.DonationTest do
     assert "can't be blank" in errors_on(changeset).amount
   end
 
+  test "changeset requires a reaction" do
+    attrs = %{
+      mayar_transaction_id: "tx_123",
+      donor_name: "Riza",
+      amount: 10_000
+    }
+
+    changeset = Donation.changeset(%Donation{}, attrs)
+
+    refute changeset.valid?
+    assert "can't be blank" in errors_on(changeset).reaction
+  end
+
+  test "changeset only accepts approved reactions" do
+    attrs = %{
+      mayar_transaction_id: "tx_123",
+      donor_name: "Riza",
+      reaction: "amazing",
+      amount: 10_000
+    }
+
+    changeset = Donation.changeset(%Donation{}, attrs)
+
+    refute changeset.valid?
+    assert "is invalid" in errors_on(changeset).reaction
+  end
+
   test "changeset only accepts allowed statuses" do
     attrs = %{
       mayar_transaction_id: "tx_123",
       donor_name: "Riza",
+      reaction: "good",
       amount: 10_000,
       status: "nope"
     }
@@ -31,6 +59,7 @@ defmodule Donatex.Donations.DonationTest do
     attrs = %{
       mayar_transaction_id: "tx_123",
       donor_name: "Riza",
+      reaction: "good",
       amount: 12.5
     }
 
@@ -44,6 +73,7 @@ defmodule Donatex.Donations.DonationTest do
     attrs = %{
       mayar_transaction_id: "tx_123",
       donor_name: "Riza",
+      reaction: "good",
       amount: 10_000
     }
 

@@ -10,6 +10,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-test-pending",
         donor_name: "Pending Donor",
+        reaction: "ok",
         amount: 10_000,
         message: "hello pending"
       })
@@ -18,6 +19,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-test-paid",
         donor_name: "Paid Donor",
+        reaction: "great",
         amount: 20_000,
         message: "hello paid"
       })
@@ -79,6 +81,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-new-pending",
         donor_name: "New Pending",
+        reaction: "good",
         amount: 30_000
       })
 

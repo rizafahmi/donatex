@@ -7,10 +7,12 @@ defmodule Donatex.Donations.Donation do
   @foreign_key_type :binary_id
 
   @statuses ~w(pending paid)
+  @reactions ~w(bad ok good great)
 
   schema "donations" do
     field :mayar_transaction_id, :string
     field :donor_name, :string
+    field :reaction, :string
     field :amount, :integer
     field :message, :string
     field :status, :string, default: "pending"
@@ -23,14 +25,23 @@ defmodule Donatex.Donations.Donation do
 
   def changeset(donation, attrs) do
     donation
-    |> cast(attrs, [:mayar_transaction_id, :donor_name, :amount, :message, :status, :alerted])
+    |> cast(attrs, [
+      :mayar_transaction_id,
+      :donor_name,
+      :reaction,
+      :amount,
+      :message,
+      :status,
+      :alerted
+    ])
     |> update_change(:mayar_transaction_id, &String.trim/1)
     |> update_change(:donor_name, &String.trim/1)
     |> update_change(:message, &String.trim/1)
-    |> validate_required([:mayar_transaction_id, :donor_name, :amount])
+    |> validate_required([:mayar_transaction_id, :donor_name, :reaction, :amount])
     |> validate_length(:mayar_transaction_id, min: 1, max: 128)
     |> validate_length(:donor_name, min: 1, max: 64)
     |> validate_length(:message, max: 280)
+    |> validate_inclusion(:reaction, @reactions)
     |> validate_inclusion(:status, @statuses)
     |> validate_number(:amount, greater_than: 0)
     |> unique_constraint(:mayar_transaction_id)
