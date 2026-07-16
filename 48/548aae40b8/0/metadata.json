@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "48548aae40b8",
+  "session_id": "1ecd4687-b416-44dc-8771-720a992277d0",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T12:16:32.33863Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "docs/milestones/5-unified-admin-inbox/milestone-log.md",
+    "lib/donatex_web/live/admin_live.ex",
+    "test/donatex_web/features/admin_replay_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "c05f8b9e8c2a",
+  "checkpoint_transcript_start": 161,
+  "transcript_lines_at_start": 161,
+  "compact_transcript_start": 63,
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-loop-2026-07-16T10:46:25.12034Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "loop"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "0455994d22f9",
+      "timestamp": "2026-07-16T10:46:25.12034Z",
+      "native": {
+        "command": "/loop"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/loop",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 33
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T12:16:32.300622Z",
+    "agent_lines": 95,
+    "agent_removed": 7,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 95,
+    "total_lines_changed": 102,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
