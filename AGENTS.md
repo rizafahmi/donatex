@@ -4,36 +4,45 @@
 
 Long-running agents resume from repo artifacts, not chat memory.
 
+### Progress model
+- [PROGRESS.md](docs/PROGRESS.md) — project-level current state, known issues, next steps, and pointers into milestone folders
+- [docs/milestones/](docs/milestones/) — one folder per milestone (`N-slug/`); detailed work lives in that folder’s `milestone-log.md` (example: [5-unified-admin-inbox/milestone-log.md](docs/milestones/5-unified-admin-inbox/milestone-log.md))
+- Milestone folders may also contain a `prompt.md` for scope; treat `milestone-log.md` as the durable per-milestone progress record
+
 ### Startup workflow
 1. `pwd` and confirm repository root
-2. Read [PROGRESS.md](docs/PROGRESS.md) and [PLAN.md](docs/PLAN.md)
-3. Inspect recent commits (`git log --oneline -5`) and working tree (`git status --short`)
-4. Run `./init.sh` (setup + `mix ci`) before feature work
-5. Continue from the highest-priority unfinished item in PLAN.md / PROGRESS.md “Next Steps”
+2. Read [PROGRESS.md](docs/PROGRESS.md) for current milestone and next steps
+3. Open the active milestone’s `docs/milestones/<N-slug>/milestone-log.md` (and `prompt.md` if present)
+4. Skim [PLAN.md](docs/PLAN.md) / [DECISIONS.md](docs/DECISIONS.md) when the milestone needs broader context
+5. Inspect recent commits (`git log --oneline -5`) and working tree (`git status --short`)
+6. Run `./init.sh` (setup + `mix ci`) before feature work
+7. Continue from PROGRESS.md “Next Steps” and the active milestone log
 
 ### Working rules
-- One feature or issue at a time
+- One milestone (or one slice within it) at a time
 - No completion claim without verification evidence
 - Keep supporting fixes narrow; do not silently weaken or change verification rules
-- Prefer durable updates to `docs/PROGRESS.md` and `docs/PLAN.md` over chat-only status
+- Prefer durable updates to the active `milestone-log.md` plus a short rollup in `docs/PROGRESS.md` over chat-only status
 
 ### Required artifacts
-- [PLAN.md](docs/PLAN.md) — source of truth for feature/issue state
-- [PROGRESS.md](docs/PROGRESS.md) — verified state and session log
+- [PROGRESS.md](docs/PROGRESS.md) — project rollup and navigation into milestones
+- Active milestone log under [docs/milestones/](docs/milestones/) — detailed session/milestone progress
+- [PLAN.md](docs/PLAN.md) — plan index / feature orientation when needed
 - [`init.sh`](init.sh) — setup + baseline verification (`mix setup`, then `mix ci`)
 - Optional: `session-handoff.md` for compact cross-session resume notes
 
 ### Definition of done
 - Intended behavior implemented
 - Verification ran (`./init.sh`, or a documented narrower command when appropriate)
-- Evidence recorded in PROGRESS.md
+- Evidence recorded in the active `milestone-log.md`, with PROGRESS.md current-state/next-steps kept in sync
 - Repo left restartable for the next session
 
 ### End-of-session requirements
-1. Update [PROGRESS.md](docs/PROGRESS.md) (and PLAN.md status if issue state changed)
-2. Record risks/blockers
-3. Leave `./init.sh` runnable
-4. Commit a safe coherent state when the user asks for a commit
+1. Update the active `docs/milestones/<N-slug>/milestone-log.md`
+2. Update [PROGRESS.md](docs/PROGRESS.md) current state, next steps, and milestone pointers
+3. Record risks/blockers in PROGRESS.md (and the milestone log when milestone-specific)
+4. Leave `./init.sh` runnable
+5. Commit a safe coherent state when the user asks for a commit
 
 ## Project Overview
 
@@ -92,7 +101,8 @@ mix ex_ast.diff lib/old.ex lib/new.ex
 - [Testing Guideline](docs/test-guide.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Plan Index](docs/PLAN.md)
-- [Progress](docs/PROGRESS.md)
+- [Progress](docs/PROGRESS.md) (project rollup)
+- [Milestones](docs/milestones/) (per-milestone `milestone-log.md`)
 - [Decision Log](docs/DECISIONS.md)
 - [Architecture Decisions (ADRs)](docs/decisions)
 
