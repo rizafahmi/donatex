@@ -30,6 +30,8 @@ defmodule DonatexWeb.AdminLive do
     {:noreply, assign_filtered_donations(socket, filter, reset: true)}
   end
 
+  def handle_event("set_filter", _params, socket), do: {:noreply, socket}
+
   def handle_event("replay", %{"id" => id}, socket) do
     case Donations.get_donation_by_id(id) do
       nil ->

@@ -1,11 +1,8 @@
 # Project Progress
 
 ## Current State
-- Milestone 4 (Optional Appreciation Experience): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
-- M4 tip-path hardening (W1–W6): complete — appreciation is a form checkbox; amounts preserved while collapsed; tip submits live form values; double-submit guarded
-- M4 review follow-up (S1–S5): complete — Enter→free documented/locked; tip gated on appreciation params; paid CTA “Kirim lagi”; hero copy helper; back-reset refutes tip CTA
-- M4 appreciation warnings fix (W1–W8): complete — admin Pending live-insert gated; sticky `:tip_submitting`; free `:form` guard; tip amount preserve; GenServer `reserve`/`release` rate limiter
-- Test status: 122 tests, 0 failures
+- Milestone 5 (Unified Admin Inbox): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
+- Test status: 134 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -43,6 +40,7 @@
 - [x] M4 tip-path hardening: `<.input>` appreciation checkbox, amount preserve on validate, tip submitter `_tip`, `:tip_submitting` guard, toggle-off + free-with-appreciation tests
 - [x] M4 review follow-up (S1–S5): Enter→free product lock, tip appreciation gate, paid-step copy, back-reset tip refute, `donor_hero_headline/0`
 - [x] M4 appreciation warnings fix (W1–W8): Pending live-insert filter, sticky tip guard + tests, free step guard, tip preserve merge, atomic feedback rate limiter
+- [x] Milestone 5 — Unified Admin Inbox: All/Tips/Feedback filters; card fields (reaction, type, time, status); tip-only replay guard; live free + paid updates; Notes empty state
 
 ## In Progress
 
@@ -53,8 +51,8 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Milestone 5 — Unified Admin Inbox (Tips/Feedback filters; tip-only replay; live free + paid updates)
-2. Keep donor appreciation toggle and overlay float/tip paths intact while reshaping admin filters
+1. Milestone 6 — Notable branding / public route polish (per PRD)
+2. Optional: refresh admin header/subtitle remaining “donation” wording
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
@@ -63,4 +61,6 @@
 - [PRD.md](file:///Users/riza/code/donatex/docs/PRD.md)
 - Milestone 2 log: [docs/milestones/2-free-notes-safe-submission/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
 - Milestone 3 log: [docs/milestones/3-floating-overlay-reactions/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
+- Milestone 4 log: [docs/milestones/4-optional-appreciation-experience/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
+- Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

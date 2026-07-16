@@ -84,6 +84,31 @@ defmodule DonatexWeb.AdminReplayTest do
     assert html =~ "Only paid tips can be replayed"
   end
 
+  test "rejects forced replay events for pending tips", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    {:ok, pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-pending-replay",
+        donor_name: "Pending Tip",
+        reaction: "good",
+        amount: 15_000
+      })
+
+    {:ok, view, _html} =
+      conn
+      |> put_req_header(
+        "authorization",
+        basic_auth_header(Config.admin_username(), Config.admin_password())
+      )
+      |> live(~p"/admin")
+
+    html = render_click(view, "replay", %{"id" => pending.id})
+
+    refute_receive {:donation_paid, _}, 50
+    assert html =~ "Only paid tips can be replayed"
+  end
+
   defp basic_auth_header(username, password) do
     "Basic " <> Base.encode64("#{username}:#{password}")
   end
