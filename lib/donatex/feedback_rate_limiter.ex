@@ -10,18 +10,15 @@ defmodule Donatex.FeedbackRateLimiter do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  @spec check(tuple(), keyword()) :: :ok | {:error, :rate_limited}
-  def check(ip, opts \\ []) when is_tuple(ip) and is_list(opts) do
+  @spec reserve(tuple(), keyword()) :: :ok | {:error, :rate_limited}
+  def reserve(ip, opts \\ []) when is_tuple(ip) and is_list(opts) do
     now = Keyword.get(opts, :now, System.monotonic_time(:millisecond))
+    GenServer.call(__MODULE__, {:reserve, ip, now})
+  end
 
-    case :ets.lookup(@table, ip) do
-      [{^ip, last}] when now - last < @cooldown_ms ->
-        {:error, :rate_limited}
-
-      _ ->
-        true = :ets.insert(@table, {ip, now})
-        :ok
-    end
+  @spec release(tuple()) :: :ok
+  def release(ip) when is_tuple(ip) do
+    GenServer.call(__MODULE__, {:release, ip})
   end
 
   @impl true
@@ -36,6 +33,26 @@ defmodule Donatex.FeedbackRateLimiter do
       ])
 
     {:ok, %{}}
+  end
+
+  @impl true
+  def handle_call({:reserve, ip, now}, _from, state) do
+    reply =
+      case :ets.lookup(@table, ip) do
+        [{^ip, last}] when now - last < @cooldown_ms ->
+          {:error, :rate_limited}
+
+        _ ->
+          true = :ets.insert(@table, {ip, now})
+          :ok
+      end
+
+    {:reply, reply, state}
+  end
+
+  def handle_call({:release, ip}, _from, state) do
+    :ets.delete(@table, ip)
+    {:reply, :ok, state}
   end
 
   @doc false

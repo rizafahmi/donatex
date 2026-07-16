@@ -106,6 +106,38 @@ defmodule DonatexWeb.DonorQrFlowTest do
     assert donation.amount == 10_000
   end
 
+  test "preserves non-default tip amount after collapsing appreciation", %{conn: conn} do
+    Req.Test.expect(__MODULE__, fn conn ->
+      {:ok, body, conn} = Plug.Conn.read_body(conn)
+      assert Jason.decode!(body) == %{"amount" => 25_000}
+
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => "tx-donate-preserve-25k",
+          "amount" => 25_000,
+          "url" => "https://example.invalid/qr/preserve-25k"
+        }
+      })
+    end)
+
+    conn
+    |> visit(~p"/")
+    |> fill_in("Nama kamu", with: "Riza")
+    |> choose("Great", exact: false)
+    |> check("Tampilkan apresiasi", exact: false)
+    |> choose("Rp 25.000", exact: false)
+    |> uncheck("Tampilkan apresiasi", exact: false)
+    |> check("Tampilkan apresiasi", exact: false)
+    |> click_button("Lanjut tip")
+    |> assert_has("h1", "Scan QRIS-nya")
+
+    donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-preserve-25k")
+    assert donation.status == "pending"
+    assert donation.amount == 25_000
+  end
+
   test "webhook confirmation transitions donor page to success and supports new donation", %{
     conn: conn
   } do

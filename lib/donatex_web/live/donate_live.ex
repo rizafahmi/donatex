@@ -70,7 +70,10 @@ defmodule DonatexWeb.DonateLive do
       |> donation_form_changeset()
       |> Map.put(:action, :validate)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply,
+     socket
+     |> assign(:tip_submitting, false)
+     |> assign_form(changeset)}
   end
 
   def handle_event("submit", _params, %{assigns: %{step: step}} = socket)
@@ -97,6 +100,11 @@ defmodule DonatexWeb.DonateLive do
   # (JS.push form: is unavailable on LiveView 1.1.x).
   def handle_event("submit_feedback", %{"_tip" => _} = params, socket) do
     handle_event("submit", params, socket)
+  end
+
+  def handle_event("submit_feedback", _params, %{assigns: %{step: step}} = socket)
+      when step != :form do
+    {:noreply, socket}
   end
 
   # Enter / primary "Kirim feedback" submits without _tip → free path (M4 free-primary).
@@ -699,12 +707,15 @@ defmodule DonatexWeb.DonateLive do
   defp submit_tip(socket, form_params) do
     changeset =
       form_params
+      |> merge_preserved_amount_params(socket.assigns.form.params)
       |> put_tip_appreciation()
       |> donation_form_changeset()
 
     socket = assign(socket, :tip_submitting, true)
 
     if changeset.valid? do
+      # Keep :tip_submitting sticky across create (success and Mayar/DB errors) so a
+      # queued second tip event no-ops. Cleared on validate / invalid changeset / reset.
       create_tip_or_assign_error(socket, changeset)
     else
       {:noreply,
@@ -719,7 +730,6 @@ defmodule DonatexWeb.DonateLive do
       {:ok, donation, qr} ->
         {:noreply,
          socket
-         |> assign(:tip_submitting, false)
          |> assign(:step, :payment)
          |> assign(:donation, donation)
          |> assign(:qr, qr)
@@ -728,14 +738,12 @@ defmodule DonatexWeb.DonateLive do
       {:error, :mayar, reason} ->
         {:noreply,
          socket
-         |> assign(:tip_submitting, false)
          |> put_flash(:error, qr_error_message(reason))
          |> assign_form(changeset)}
 
       {:error, :donation, _donation_changeset} ->
         {:noreply,
          socket
-         |> assign(:tip_submitting, false)
          |> put_flash(:error, donation_persist_error_message())
          |> assign_form(changeset)}
     end
@@ -766,11 +774,16 @@ defmodule DonatexWeb.DonateLive do
     end
   end
 
-  defp check_feedback_rate_limit(nil), do: :ok
-  defp check_feedback_rate_limit(ip), do: FeedbackRateLimiter.check(ip)
+  defp reserve_feedback_rate_limit(nil), do: :ok
+  defp reserve_feedback_rate_limit(ip), do: FeedbackRateLimiter.reserve(ip)
+
+  defp release_feedback_rate_limit(nil), do: :ok
+  defp release_feedback_rate_limit(ip), do: FeedbackRateLimiter.release(ip)
 
   defp submit_valid_feedback(socket, changeset) do
-    with :ok <- check_feedback_rate_limit(socket.assigns.client_ip),
+    client_ip = socket.assigns.client_ip
+
+    with :ok <- reserve_feedback_rate_limit(client_ip),
          {:ok, feedback} <- Donations.create_feedback(feedback_attrs(changeset)) do
       broadcast_donation_created(feedback)
 
@@ -786,6 +799,8 @@ defmodule DonatexWeb.DonateLive do
          |> assign_form(Map.put(changeset, :action, :validate))}
 
       {:error, _changeset} ->
+        release_feedback_rate_limit(client_ip)
+
         {:noreply,
          socket
          |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")

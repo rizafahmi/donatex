@@ -77,6 +77,59 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> refute_has("#donation-#{pending.id}", "Pending Donor")
   end
 
+  test "pending filter ignores live free notes but inserts pending tips", %{
+    conn: conn,
+    pending: pending
+  } do
+    session =
+      conn
+      |> put_req_header("authorization", basic_auth_header())
+      |> visit(~p"/admin")
+      |> click_button("pending")
+
+    session
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Live Free Note",
+        reaction: "good",
+        message: "should not appear on pending"
+      })
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    Process.sleep(50)
+
+    session
+    |> refute_has("#donation-#{feedback.id}", "Live Free Note")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+
+    {:ok, new_pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-live-pending-tip",
+        donor_name: "Live Pending Tip",
+        reaction: "good",
+        amount: 15_000
+      })
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, new_pending}
+    )
+
+    Process.sleep(50)
+
+    session
+    |> assert_has("#donation-#{new_pending.id}", "Live Pending Tip")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+  end
+
   test "real-time updates insert/delete donations correctly based on active filter", %{
     conn: conn,
     pending: pending,

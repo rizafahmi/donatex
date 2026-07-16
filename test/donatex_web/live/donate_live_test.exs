@@ -163,6 +163,7 @@ defmodule DonatexWeb.DonateLiveTest do
         "donation_form" => %{
           "donor_name" => "Riza",
           "show_appreciation" => "true",
+          "amount_option" => "",
           "message" => ""
         }
       })
@@ -333,5 +334,37 @@ defmodule DonatexWeb.DonateLiveTest do
     refute html =~ "Scan QRIS"
     assert Donatex.Repo.aggregate(Donatex.Donations.Donation, :count) == before_count
     assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Crafted Tip") == nil
+  end
+
+  test "free submit_feedback on thanks step is a no-op", %{conn: conn} do
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 23}, port: 44_325, ssl_cert: nil})
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    render_submit(view, "submit_feedback", %{
+      "donation_form" => %{
+        "donor_name" => "Thanks Guard",
+        "reaction" => "good",
+        "message" => "first"
+      }
+    })
+
+    assert has_element?(view, "#feedback-thanks")
+    before_count = Donatex.Repo.aggregate(Donatex.Donations.Donation, :count)
+
+    html =
+      render_submit(view, "submit_feedback", %{
+        "donation_form" => %{
+          "donor_name" => "Thanks Guard 2",
+          "reaction" => "great",
+          "message" => "second should not send"
+        }
+      })
+
+    assert html =~ "Terima kasih"
+    assert has_element?(view, "#feedback-thanks")
+    assert Donatex.Repo.aggregate(Donatex.Donations.Donation, :count) == before_count
+    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Thanks Guard 2") == nil
   end
 end

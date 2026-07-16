@@ -46,4 +46,27 @@ defmodule DonatexWeb.DonateLiveFeedbackCooldownTest do
     assert has_element?(view, "#donation_form_reaction_good:checked")
     assert html =~ "Second try"
   end
+
+  test "failed persist releases cooldown so a retry can succeed", %{conn: conn} do
+    ip = {203, 0, 113, 11}
+    conn = put_peer_data(conn, %{address: ip, port: 44_322, ssl_cert: nil})
+
+    assert :ok = FeedbackRateLimiter.reserve(ip)
+    # Simulate the DonateLive failure path: reserve charged, persist failed, release.
+    assert :ok = FeedbackRateLimiter.release(ip)
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      render_submit(view, "submit_feedback", %{
+        "donation_form" => %{
+          "donor_name" => "Retry After Fail",
+          "reaction" => "good",
+          "message" => "should work"
+        }
+      })
+
+    assert html =~ "Terima kasih"
+    assert has_element?(view, "#feedback-thanks")
+  end
 end

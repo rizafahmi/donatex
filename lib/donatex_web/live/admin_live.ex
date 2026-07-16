@@ -79,7 +79,7 @@ defmodule DonatexWeb.AdminLive do
     filter = socket.assigns.filter
 
     socket =
-      if filter in ["all", "pending"] do
+      if matches_created_filter?(filter, donation.status) do
         socket
         |> assign(:has_donations?, true)
         |> stream_insert(:donations, donation, at: 0)
@@ -316,6 +316,10 @@ defmodule DonatexWeb.AdminLive do
     |> assign(:has_donations?, donations != [])
     |> stream(:donations, donations, reset: reset)
   end
+
+  defp matches_created_filter?("all", _status), do: true
+  defp matches_created_filter?("pending", "pending"), do: true
+  defp matches_created_filter?(_filter, _status), do: false
 
   defp replayable?(%{status: "paid"}), do: true
   defp replayable?(_donation), do: false

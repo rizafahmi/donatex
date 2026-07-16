@@ -4,7 +4,8 @@
 - Milestone 4 (Optional Appreciation Experience): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - M4 tip-path hardening (W1–W6): complete — appreciation is a form checkbox; amounts preserved while collapsed; tip submits live form values; double-submit guarded
 - M4 review follow-up (S1–S5): complete — Enter→free documented/locked; tip gated on appreciation params; paid CTA “Kirim lagi”; hero copy helper; back-reset refutes tip CTA
-- Test status: 113 tests, 0 failures
+- M4 appreciation warnings fix (W1–W8): complete — admin Pending live-insert gated; sticky `:tip_submitting`; free `:form` guard; tip amount preserve; GenServer `reserve`/`release` rate limiter
+- Test status: 122 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -41,6 +42,7 @@
 - [x] Milestone 4 — Optional Appreciation Experience: collapsed appreciation toggle; free feedback default; tip QR with back/reset and retryable errors
 - [x] M4 tip-path hardening: `<.input>` appreciation checkbox, amount preserve on validate, tip submitter `_tip`, `:tip_submitting` guard, toggle-off + free-with-appreciation tests
 - [x] M4 review follow-up (S1–S5): Enter→free product lock, tip appreciation gate, paid-step copy, back-reset tip refute, `donor_hero_headline/0`
+- [x] M4 appreciation warnings fix (W1–W8): Pending live-insert filter, sticky tip guard + tests, free step guard, tip preserve merge, atomic feedback rate limiter
 
 ## In Progress
 
