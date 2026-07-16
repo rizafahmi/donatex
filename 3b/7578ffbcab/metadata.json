@@ -3,10 +3,9 @@
   "checkpoint_id": "3b7578ffbcab",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 29,
+  "checkpoints_count": 2,
   "files_touched": [
     "docs/PROGRESS.md",
-    "docs/milestones/4-optional-appreciation-experience/milestone-log.md",
     "lib/donatex_web/live/donate_live.ex",
     "test/donatex_web/features/donor_qr_flow_test.exs",
     "test/donatex_web/features/home_test.exs",
@@ -21,46 +20,13 @@
       "compact_transcript": "/3b/7578ffbcab/0/transcript.jsonl",
       "content_hash": "/3b/7578ffbcab/0/content_hash.txt",
       "prompt": "/3b/7578ffbcab/0/prompt.txt"
-    },
-    {
-      "metadata": "/3b/7578ffbcab/1/metadata.json",
-      "transcript": "/3b/7578ffbcab/1/full.jsonl",
-      "compact_transcript": "/3b/7578ffbcab/1/transcript.jsonl",
-      "content_hash": "/3b/7578ffbcab/1/content_hash.txt",
-      "prompt": "/3b/7578ffbcab/1/prompt.txt"
-    },
-    {
-      "metadata": "/3b/7578ffbcab/2/metadata.json",
-      "transcript": "/3b/7578ffbcab/2/full.jsonl",
-      "compact_transcript": "/3b/7578ffbcab/2/transcript.jsonl",
-      "content_hash": "/3b/7578ffbcab/2/content_hash.txt",
-      "prompt": "/3b/7578ffbcab/2/prompt.txt"
-    },
-    {
-      "metadata": "/3b/7578ffbcab/3/metadata.json",
-      "transcript": "/3b/7578ffbcab/3/full.jsonl",
-      "compact_transcript": "/3b/7578ffbcab/3/transcript.jsonl",
-      "content_hash": "/3b/7578ffbcab/3/content_hash.txt",
-      "prompt": "/3b/7578ffbcab/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 847553,
+    "input_tokens": 69687,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 10225792,
-    "output_tokens": 89786,
-    "api_call_count": 22
-  },
-  "combined_attribution": {
-    "calculated_at": "2026-07-16T09:27:26.508989Z",
-    "agent_lines": 583,
-    "agent_removed": 163,
-    "human_added": 0,
-    "human_modified": 0,
-    "human_removed": 0,
-    "total_committed": 583,
-    "total_lines_changed": 746,
-    "agent_percentage": 100,
-    "metric_version": 2
+    "cache_read_tokens": 763264,
+    "output_tokens": 18520,
+    "api_call_count": 2
   }
 }
