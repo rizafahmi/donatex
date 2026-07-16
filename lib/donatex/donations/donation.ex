@@ -6,7 +6,7 @@ defmodule Donatex.Donations.Donation do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
 
-  @statuses ~w(pending paid)
+  @statuses ~w(pending paid sent)
   @reactions ~w(bad ok good great)
 
   schema "donations" do
@@ -37,7 +37,8 @@ defmodule Donatex.Donations.Donation do
     |> update_change(:mayar_transaction_id, &String.trim/1)
     |> update_change(:donor_name, &String.trim/1)
     |> update_change(:message, &String.trim/1)
-    |> validate_required([:mayar_transaction_id, :donor_name, :reaction, :amount])
+    |> validate_required([:donor_name, :reaction])
+    |> validate_payment_details()
     |> validate_length(:mayar_transaction_id, min: 1, max: 128)
     |> validate_length(:donor_name, min: 1, max: 64)
     |> validate_length(:message, max: 280)
@@ -45,5 +46,12 @@ defmodule Donatex.Donations.Donation do
     |> validate_inclusion(:status, @statuses)
     |> validate_number(:amount, greater_than: 0)
     |> unique_constraint(:mayar_transaction_id)
+  end
+
+  defp validate_payment_details(changeset) do
+    case get_field(changeset, :status) do
+      "sent" -> changeset
+      _status -> validate_required(changeset, [:mayar_transaction_id, :amount])
+    end
   end
 end

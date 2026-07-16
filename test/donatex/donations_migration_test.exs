@@ -29,10 +29,11 @@ defmodule Donatex.DonationsMigrationTest do
         {name, %{notnull: notnull, dflt_value: dflt_value}}
       end)
 
-    assert by_name["mayar_transaction_id"].notnull == 1
+    # Payment details are nullable so free feedback Notes can omit them.
+    assert by_name["mayar_transaction_id"].notnull == 0
     assert by_name["donor_name"].notnull == 1
     assert by_name["reaction"].notnull == 0
-    assert by_name["amount"].notnull == 1
+    assert by_name["amount"].notnull == 0
     assert by_name["status"].notnull == 1
     assert by_name["alerted"].notnull == 1
 
