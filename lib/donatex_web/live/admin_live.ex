@@ -232,6 +232,13 @@ defmodule DonatexWeb.AdminLive do
                 <span id={"donation-#{donation.id}-type"}>
                   {DonationPresenter.note_type(donation)}
                 </span>
+                <time
+                  id={"donation-#{donation.id}-time"}
+                  datetime={donation.inserted_at}
+                  class="normal-case tracking-normal text-text-muted/80"
+                >
+                  {DonationPresenter.format_timestamp(donation.inserted_at)}
+                </time>
               </div>
               <div
                 :if={donation.mayar_transaction_id}

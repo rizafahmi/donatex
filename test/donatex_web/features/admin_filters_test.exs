@@ -76,6 +76,20 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> assert_has("#donation-#{paid.id}-amount", "Rp 20.000")
   end
 
+  test "cards show the note timestamp", %{conn: conn, paid: paid} do
+    stamped = ~U[2026-01-02 15:30:00Z]
+
+    {:ok, _} =
+      paid
+      |> Ecto.Changeset.change(%{inserted_at: stamped, updated_at: stamped})
+      |> Donatex.Repo.update()
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{paid.id}-time", "2 Jan 2026, 15:30")
+  end
+
   test "tips filter shows tips and excludes feedback", %{
     conn: conn,
     pending: pending,

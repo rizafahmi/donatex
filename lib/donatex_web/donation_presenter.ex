@@ -53,4 +53,16 @@ defmodule DonatexWeb.DonationPresenter do
 
   def note_type(%{amount: amount}) when not is_nil(amount), do: "Tip"
   def note_type(_donation), do: "Feedback"
+
+  def format_timestamp(%DateTime{} = datetime) do
+    Calendar.strftime(datetime, "%-d %b %Y, %H:%M")
+  end
+
+  def format_timestamp(%NaiveDateTime{} = datetime) do
+    datetime
+    |> DateTime.from_naive!("Etc/UTC")
+    |> format_timestamp()
+  end
+
+  def format_timestamp(_datetime), do: nil
 end
