@@ -29,6 +29,7 @@ defmodule DonatexWeb.Router do
     # get "/", PageController, :home
 
     live "/", DonateLive
+    get "/donate", PageController, :redirect_to_root
     live "/overlay", OverlayLive
   end
 
