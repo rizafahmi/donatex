@@ -3,7 +3,7 @@
   "checkpoint_id": "04ee00ec9524",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 7,
+  "checkpoints_count": 2,
   "files_touched": [
     "lib/donatex/donations.ex",
     "test/donatex/donations_test.exs"
@@ -15,25 +15,6 @@
       "compact_transcript": "/04/ee00ec9524/0/transcript.jsonl",
       "content_hash": "/04/ee00ec9524/0/content_hash.txt",
       "prompt": "/04/ee00ec9524/0/prompt.txt"
-    },
-    {
-      "metadata": "/04/ee00ec9524/1/metadata.json",
-      "transcript": "/04/ee00ec9524/1/full.jsonl",
-      "compact_transcript": "/04/ee00ec9524/1/transcript.jsonl",
-      "content_hash": "/04/ee00ec9524/1/content_hash.txt",
-      "prompt": "/04/ee00ec9524/1/prompt.txt"
     }
-  ],
-  "combined_attribution": {
-    "calculated_at": "2026-07-16T04:48:28.090991Z",
-    "agent_lines": 32,
-    "agent_removed": 0,
-    "human_added": 0,
-    "human_modified": 0,
-    "human_removed": 0,
-    "total_committed": 32,
-    "total_lines_changed": 32,
-    "agent_percentage": 100,
-    "metric_version": 2
-  }
+  ]
 }
