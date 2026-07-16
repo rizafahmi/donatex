@@ -29,7 +29,7 @@ defmodule Donatex.MixProject do
 
   def cli do
     [
-      preferred_envs: [precommit: :test]
+      preferred_envs: [precommit: :test, ci: :test]
     ]
   end
 
@@ -107,6 +107,16 @@ defmodule Donatex.MixProject do
         "compile --warnings-as-errors",
         "deps.unlock --unused",
         "test"
+      ],
+      ci: [
+        "format",
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "test",
+        "credo --strict",
+        "dialyzer",
+        "ex_dna --max-clones 0",
+        "reach.check --arch --smells"
       ]
     ]
   end
