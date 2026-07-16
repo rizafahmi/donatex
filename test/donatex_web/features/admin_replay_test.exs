@@ -39,6 +39,26 @@ defmodule DonatexWeb.AdminReplayTest do
     assert Repo.get!(Donation, donation_id).alerted
   end
 
+  test "does not offer replay for free notes", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Free Replay",
+        reaction: "ok",
+        message: "no tip"
+      })
+
+    conn
+    |> put_req_header(
+      "authorization",
+      basic_auth_header(Config.admin_username(), Config.admin_password())
+    )
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{feedback.id}", "Free Replay")
+    |> within("#donations-#{feedback.id}", fn session ->
+      refute_has(session, "button", "Replay Alert")
+    end)
+  end
+
   defp basic_auth_header(username, password) do
     "Basic " <> Base.encode64("#{username}:#{password}")
   end

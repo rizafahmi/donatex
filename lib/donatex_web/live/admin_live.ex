@@ -275,8 +275,12 @@ defmodule DonatexWeb.AdminLive do
             </div>
           </div>
 
-          <div class="relative mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+          <div
+            :if={replayable?(donation) or donation.status == "pending"}
+            class="relative mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end"
+          >
             <.button
+              :if={replayable?(donation)}
               type="button"
               variant="primary"
               phx-click="replay"
@@ -312,4 +316,7 @@ defmodule DonatexWeb.AdminLive do
     |> assign(:has_donations?, donations != [])
     |> stream(:donations, donations, reset: reset)
   end
+
+  defp replayable?(%{status: "paid"}), do: true
+  defp replayable?(_donation), do: false
 end
