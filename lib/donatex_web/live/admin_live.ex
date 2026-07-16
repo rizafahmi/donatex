@@ -225,7 +225,18 @@ defmodule DonatexWeb.AdminLive do
               <div id={"donation-#{donation.id}"} class="text-base font-semibold leading-6">
                 {donation.donor_name}
               </div>
-              <div class="mt-1 break-all text-[10px] font-semibold tracking-[0.22em] text-text-muted/80">
+              <div class="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-muted">
+                <span id={"donation-#{donation.id}-reaction"} class="text-text">
+                  {DonationPresenter.reaction_label(donation.reaction)}
+                </span>
+                <span id={"donation-#{donation.id}-type"}>
+                  {DonationPresenter.note_type(donation)}
+                </span>
+              </div>
+              <div
+                :if={donation.mayar_transaction_id}
+                class="mt-1 break-all text-[10px] font-semibold tracking-[0.22em] text-text-muted/80"
+              >
                 {donation.mayar_transaction_id}
               </div>
               <p
@@ -237,7 +248,11 @@ defmodule DonatexWeb.AdminLive do
             </div>
 
             <div class="sm:text-right shrink-0">
-              <div :if={donation.amount} class="text-xl font-bold tracking-tight text-text">
+              <div
+                :if={donation.amount}
+                id={"donation-#{donation.id}-amount"}
+                class="text-xl font-bold tracking-tight text-text"
+              >
                 Rp {DonationPresenter.format_idr(donation.amount)}
               </div>
 

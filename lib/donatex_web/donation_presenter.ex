@@ -44,4 +44,13 @@ defmodule DonatexWeb.DonationPresenter do
 
   def present_message?(message) when is_binary(message), do: byte_size(String.trim(message)) > 0
   def present_message?(_message), do: false
+
+  def reaction_label("bad"), do: "Bad"
+  def reaction_label("ok"), do: "Okay"
+  def reaction_label("good"), do: "Good"
+  def reaction_label("great"), do: "Great"
+  def reaction_label(_reaction), do: nil
+
+  def note_type(%{amount: amount}) when not is_nil(amount), do: "Tip"
+  def note_type(_donation), do: "Feedback"
 end

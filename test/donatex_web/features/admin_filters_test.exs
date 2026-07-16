@@ -51,6 +51,31 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> assert_has("#donation-#{feedback.id}", "Free Sender")
   end
 
+  test "feedback cards show reaction and type without an amount", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Card Sender",
+        reaction: "good",
+        message: "hello card"
+      })
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{feedback.id}-reaction", "Good")
+    |> assert_has("#donation-#{feedback.id}-type", "Feedback")
+    |> refute_has("#donation-#{feedback.id}-amount")
+  end
+
+  test "tip cards show tip type and amount", %{conn: conn, paid: paid} do
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{paid.id}-reaction", "Great")
+    |> assert_has("#donation-#{paid.id}-type", "Tip")
+    |> assert_has("#donation-#{paid.id}-amount", "Rp 20.000")
+  end
+
   test "tips filter shows tips and excludes feedback", %{
     conn: conn,
     pending: pending,
