@@ -279,6 +279,74 @@ defmodule Donatex.DonationsTest do
       assert Enum.map(Donations.list_donations("pending"), & &1.id) == [pending.id]
     end
 
+    test "lists tips as rows with an amount, excluding feedback" do
+      {:ok, pending_tip} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-tips-pending",
+          donor_name: "Pending Tipper",
+          reaction: "ok",
+          amount: 10_000
+        })
+
+      {:ok, paid_tip} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-tips-paid",
+          donor_name: "Paid Tipper",
+          reaction: "great",
+          amount: 20_000
+        })
+
+      {:ok, paid_tip, _} = Donations.mark_paid_with_change(paid_tip)
+
+      {:ok, feedback} =
+        Donations.create_feedback(%{
+          donor_name: "Free Sender",
+          reaction: "good",
+          message: "no tip"
+        })
+
+      tip_ids = Enum.map(Donations.list_donations(:tips), & &1.id)
+      assert Enum.sort(tip_ids) == Enum.sort([pending_tip.id, paid_tip.id])
+      refute feedback.id in tip_ids
+
+      assert Enum.map(Donations.list_donations("tips"), & &1.id) |> Enum.sort() ==
+               Enum.sort([pending_tip.id, paid_tip.id])
+    end
+
+    test "lists feedback as sent notes, excluding tips" do
+      {:ok, pending_tip} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-feedback-pending",
+          donor_name: "Pending Tipper",
+          reaction: "ok",
+          amount: 10_000
+        })
+
+      {:ok, paid_tip} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-list-feedback-paid",
+          donor_name: "Paid Tipper",
+          reaction: "great",
+          amount: 20_000
+        })
+
+      {:ok, paid_tip, _} = Donations.mark_paid_with_change(paid_tip)
+
+      {:ok, feedback} =
+        Donations.create_feedback(%{
+          donor_name: "Free Sender",
+          reaction: "good",
+          message: "no tip"
+        })
+
+      feedback_ids = Enum.map(Donations.list_donations(:feedback), & &1.id)
+      assert feedback_ids == [feedback.id]
+      refute pending_tip.id in feedback_ids
+      refute paid_tip.id in feedback_ids
+
+      assert Enum.map(Donations.list_donations("feedback"), & &1.id) == [feedback.id]
+    end
+
     test "lists all donations ordered by newest first" do
       {:ok, first} =
         Donations.create_pending_donation(%{

@@ -36,6 +36,15 @@ defmodule Donatex.Donations do
 
   def list_donations("pending"), do: list_donations(:pending)
 
+  def list_donations(:tips) do
+    Donation
+    |> where([d], not is_nil(d.amount))
+    |> order_by([d], desc: d.inserted_at, desc: d.id)
+    |> Repo.all()
+  end
+
+  def list_donations("tips"), do: list_donations(:tips)
+
   def create_pending_donation(attrs) when is_map(attrs) do
     attrs = Map.drop(attrs, [:status, :alerted, "status", "alerted"])
 
