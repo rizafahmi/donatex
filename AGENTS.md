@@ -1,5 +1,40 @@
 # AGENTS.md
 
+## Agent Session Harness
+
+Long-running agents resume from repo artifacts, not chat memory.
+
+### Startup workflow
+1. `pwd` and confirm repository root
+2. Read [PROGRESS.md](docs/PROGRESS.md) and [PLAN.md](docs/PLAN.md)
+3. Inspect recent commits (`git log --oneline -5`) and working tree (`git status --short`)
+4. Run `./init.sh` (setup + `mix ci`) before feature work
+5. Continue from the highest-priority unfinished item in PLAN.md / PROGRESS.md “Next Steps”
+
+### Working rules
+- One feature or issue at a time
+- No completion claim without verification evidence
+- Keep supporting fixes narrow; do not silently weaken or change verification rules
+- Prefer durable updates to `docs/PROGRESS.md` and `docs/PLAN.md` over chat-only status
+
+### Required artifacts
+- [PLAN.md](docs/PLAN.md) — source of truth for feature/issue state
+- [PROGRESS.md](docs/PROGRESS.md) — verified state and session log
+- [`init.sh`](init.sh) — setup + baseline verification (`mix setup`, then `mix ci`)
+- Optional: `session-handoff.md` for compact cross-session resume notes
+
+### Definition of done
+- Intended behavior implemented
+- Verification ran (`./init.sh`, or a documented narrower command when appropriate)
+- Evidence recorded in PROGRESS.md
+- Repo left restartable for the next session
+
+### End-of-session requirements
+1. Update [PROGRESS.md](docs/PROGRESS.md) (and PLAN.md status if issue state changed)
+2. Record risks/blockers
+3. Leave `./init.sh` runnable
+4. Commit a safe coherent state when the user asks for a commit
+
 ## Project Overview
 
 Single-user livestream donation system.
@@ -7,21 +42,11 @@ Elixir 1.18, Phoenix 1.8, SQLite 3, Tailwind 4
 
 ## Quick Start
 
-- Install: `mix setup`
-- Start:  `mix phx.server` or inside IEx REPL with `iex -S mix phx.server`
+- Bootstrap + verify: `./init.sh`
+- Install only: `mix setup`
+- Start: `mix phx.server` or inside IEx REPL with `iex -S mix phx.server`
 - Test: `mix test`
-- Full verification: `mix precommit`
-
-## At session start (clock in)
-1. Read [PROGRESS.md](docs/PROGRESS.md) for current state
-2. Read [DECISIONS.md](docs/DECISIONS.md) for important decisions
-3. Run `mix test` to confirm the repo is in a consistent state
-4. Continue from PROGRESS.md “Next Steps”
-
-## Before session end (clock out)
-1. Update [PROGRESS.md](docs/PROGRESS.md)
-2. Run `mix test` (or `mix precommit` for full verification)
-3. Commit all completed work
+- Full local quality gate: `mix ci` (also `mix precommit` for format/credo/dialyzer/test)
 
 ## Constraints
 - The app is a single-user, single-streamer system, not multi-tenant.
