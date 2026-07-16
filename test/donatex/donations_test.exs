@@ -47,6 +47,25 @@ defmodule Donatex.DonationsTest do
     end
   end
 
+  describe "create_feedback/1" do
+    test "creates an alerted sent note without payment details" do
+      assert {:ok, %Donation{} = feedback} =
+               Donations.create_feedback(%{
+                 donor_name: "Riza",
+                 reaction: "great",
+                 message: "Stream-nya seru"
+               })
+
+      assert feedback.donor_name == "Riza"
+      assert feedback.reaction == "great"
+      assert feedback.message == "Stream-nya seru"
+      assert feedback.status == "sent"
+      assert feedback.alerted
+      assert is_nil(feedback.mayar_transaction_id)
+      assert is_nil(feedback.amount)
+    end
+  end
+
   describe "mark_paid_by_mayar_transaction_id/1" do
     test "marks donation paid by mayar transaction id" do
       {:ok, donation} =

@@ -46,6 +46,19 @@ defmodule Donatex.Donations do
 
   def create_pending_donation(_attrs), do: {:error, :invalid_attrs}
 
+  def create_feedback(attrs) when is_map(attrs) do
+    attrs =
+      attrs
+      |> Map.drop([:mayar_transaction_id, :amount, :status, :alerted])
+      |> Map.merge(%{status: "sent", alerted: true})
+
+    %Donation{}
+    |> Donation.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def create_feedback(_attrs), do: {:error, :invalid_attrs}
+
   def create_donation(attrs) do
     create_pending_donation(attrs)
   end
