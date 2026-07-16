@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "be0285c6503b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "lib/donatex_web/live/admin_live.ex",
+    "test/donatex_web/features/admin_filters_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/be/0285c6503b/0/metadata.json",
+      "transcript": "/be/0285c6503b/0/full.jsonl",
+      "compact_transcript": "/be/0285c6503b/0/transcript.jsonl",
+      "content_hash": "/be/0285c6503b/0/content_hash.txt",
+      "prompt": "/be/0285c6503b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8794,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1929600,
+    "output_tokens": 3612,
+    "api_call_count": 3
+  }
+}
