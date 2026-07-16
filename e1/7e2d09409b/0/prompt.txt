@@ -1,0 +1,8 @@
+mix precommit
+Checking 57 source files ...
+
+  Refactoring opportunities                                                     
+┃ 
+┃ [F] → Cond statements should contain at least two conditions besides `true`, 
+┃       consider using `if` instead.
+┃       lib/donatex_web/live/admin_live.ex:114:11 #(DonatexWeb.AdminLive.handle_info
