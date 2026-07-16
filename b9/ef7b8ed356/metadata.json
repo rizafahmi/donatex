@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "b9ef7b8ed356",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".credo.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b9/ef7b8ed356/0/metadata.json",
+      "transcript": "/b9/ef7b8ed356/0/full.jsonl",
+      "compact_transcript": "/b9/ef7b8ed356/0/transcript.jsonl",
+      "content_hash": "/b9/ef7b8ed356/0/content_hash.txt",
+      "prompt": "/b9/ef7b8ed356/0/prompt.txt"
+    }
+  ]
+}
