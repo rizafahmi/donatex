@@ -1,0 +1,20 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "04ee00ec9524",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "lib/donatex/donations.ex",
+    "test/donatex/donations_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/04/ee00ec9524/0/metadata.json",
+      "transcript": "/04/ee00ec9524/0/full.jsonl",
+      "compact_transcript": "/04/ee00ec9524/0/transcript.jsonl",
+      "content_hash": "/04/ee00ec9524/0/content_hash.txt",
+      "prompt": "/04/ee00ec9524/0/prompt.txt"
+    }
+  ]
+}
