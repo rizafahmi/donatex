@@ -7,6 +7,7 @@ defmodule DonatexWeb.AdminLive do
   alias DonatexWeb.DonationPresenter
 
   @default_filter "all"
+  @filters ~w(all tips feedback)
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
@@ -19,12 +20,13 @@ defmodule DonatexWeb.AdminLive do
     {:ok,
      socket
      |> assign(:stats, Donations.get_donation_stats())
+     |> assign(:filters, @filters)
      |> assign_filtered_donations(@default_filter)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("set_filter", %{"filter" => filter}, socket)
-      when filter in ["all", "paid", "pending", "tips", "feedback"] do
+      when filter in @filters do
     {:noreply, assign_filtered_donations(socket, filter, reset: true)}
   end
 
@@ -102,14 +104,7 @@ defmodule DonatexWeb.AdminLive do
 
         socket =
           cond do
-            filter == "pending" ->
-              has_any? = Enum.any?(Donations.list_donations("pending"))
-
-              socket
-              |> assign(:has_donations?, has_any?)
-              |> stream_delete(:donations, donation)
-
-            filter in ["paid", "all"] ->
+            filter in ["tips", "all"] ->
               socket
               |> assign(:has_donations?, true)
               |> stream_insert(:donations, donation)
@@ -126,7 +121,7 @@ defmodule DonatexWeb.AdminLive do
 
   def handle_info({:donation_alerted, donation}, socket) do
     socket =
-      if socket.assigns.filter in ["paid", "all"] do
+      if socket.assigns.filter in ["tips", "all"] do
         stream_insert(socket, :donations, donation)
       else
         socket
@@ -177,7 +172,7 @@ defmodule DonatexWeb.AdminLive do
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-1.5 bg-surface-2/40 border border-stroke/40 rounded-full p-1">
           <button
-            :for={f <- ["all", "tips", "feedback", "paid", "pending"]}
+            :for={f <- @filters}
             type="button"
             phx-click="set_filter"
             phx-value-filter={f}
@@ -318,7 +313,8 @@ defmodule DonatexWeb.AdminLive do
   end
 
   defp matches_created_filter?("all", _status), do: true
-  defp matches_created_filter?("pending", "pending"), do: true
+  defp matches_created_filter?("tips", "pending"), do: true
+  defp matches_created_filter?("feedback", "sent"), do: true
   defp matches_created_filter?(_filter, _status), do: false
 
   defp replayable?(%{status: "paid"}), do: true
