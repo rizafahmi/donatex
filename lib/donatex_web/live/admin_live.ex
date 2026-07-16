@@ -113,14 +113,12 @@ defmodule DonatexWeb.AdminLive do
         filter = socket.assigns.filter
 
         socket =
-          cond do
-            filter in ["tips", "all"] ->
-              socket
-              |> assign(:has_donations?, true)
-              |> stream_insert(:donations, donation)
-
-            true ->
-              socket
+          if filter in ["tips", "all"] do
+            socket
+            |> assign(:has_donations?, true)
+            |> stream_insert(:donations, donation)
+          else
+            socket
           end
 
         {:noreply,
