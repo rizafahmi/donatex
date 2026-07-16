@@ -1,0 +1,165 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "60ee6dfd3dbc",
+  "session_id": "8d6f57d4-6ec9-4340-b4c8-8c04778d8c29",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T04:48:23.212479Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 4,
+  "files_touched": [
+    "lib/donatex/donations/donation.ex",
+    "test/donatex/donations_migration_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "5c3b280abef6",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 36398,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 603008,
+    "output_tokens": 6754,
+    "api_call_count": 3
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:01.480215Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "432708bcaa1f",
+      "timestamp": "2026-07-16T04:40:01.480215Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:25.08036Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "fb7aebaea5fd",
+      "timestamp": "2026-07-16T04:40:25.08036Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-atomic-git-history-2026-07-16T04:48:06.324812Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "atomic-git-history"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "5c3b280abef6",
+      "timestamp": "2026-07-16T04:48:06.324812Z",
+      "native": {
+        "command": "/atomic-git-history"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/atomic-git-history",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T04:48:23.201473Z",
+    "agent_lines": 1,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 2,
+    "total_committed": 1,
+    "total_lines_changed": 5,
+    "agent_percentage": 60,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 256,
+      "user_lines_removed": 2,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".cursor/hooks.json": 40,
+        ".pi/extensions/entire/index.ts": 127,
+        "lib/donatex/donations.ex": 13,
+        "lib/donatex/donations/donation.ex": 10,
+        "priv/repo/migrations/20260716093000_allow_feedback_without_payment_details.exs": 47,
+        "test/donatex/donations_test.exs": 19
+      },
+      "user_removed_per_file": {
+        "lib/donatex/donations/donation.ex": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 256,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 256,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 66,
+      "user_lines_removed": 0,
+      "agent_lines_added": 256,
+      "agent_lines_removed": 2,
+      "user_added_per_file": {
+        ".claude/plans/2-free-notes-safe-submission/plan.md": 43,
+        ".claude/plans/2-free-notes-safe-submission/scratchpad.md": 23
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 66,
+      "user_lines_removed": 0,
+      "agent_lines_added": 259,
+      "agent_lines_removed": 4,
+      "user_added_per_file": {
+        ".claude/plans/2-free-notes-safe-submission/plan.md": 43,
+        ".claude/plans/2-free-notes-safe-submission/scratchpad.md": 23
+      }
+    }
+  ]
+}
