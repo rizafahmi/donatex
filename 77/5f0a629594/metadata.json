@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "775f0a629594",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "lib/donatex/feedback_rate_limiter.ex",
+    "lib/donatex_web/live/admin_live.ex",
+    "lib/donatex_web/live/donate_live.ex",
+    "test/donatex/feedback_rate_limiter_test.exs",
+    "test/donatex_web/features/admin_filters_test.exs",
+    "test/donatex_web/features/donor_qr_flow_test.exs",
+    "test/donatex_web/live/donate_live_feedback_cooldown_test.exs",
+    "test/donatex_web/live/donate_live_test.exs",
+    "test/donatex_web/live/donate_live_tip_hardening_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/77/5f0a629594/0/metadata.json",
+      "transcript": "/77/5f0a629594/0/full.jsonl",
+      "compact_transcript": "/77/5f0a629594/0/transcript.jsonl",
+      "content_hash": "/77/5f0a629594/0/content_hash.txt",
+      "prompt": "/77/5f0a629594/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 59171,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2576512,
+    "output_tokens": 23463,
+    "api_call_count": 1
+  }
+}
