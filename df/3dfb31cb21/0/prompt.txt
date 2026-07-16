@@ -1,0 +1,5 @@
+please install https://github.com/elixir-vibe/vibe_kit to this project
+
+---
+
+/atomic-git-history
