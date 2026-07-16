@@ -1,0 +1,148 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "db175c79bf3b",
+  "session_id": "8d6f57d4-6ec9-4340-b4c8-8c04778d8c29",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T04:56:36.918177Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 4,
+  "files_touched": [
+    "lib/donatex/feedback_rate_limiter.ex",
+    "test/donatex/feedback_rate_limiter_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "2258cb45a917",
+  "checkpoint_transcript_start": 34,
+  "transcript_lines_at_start": 34,
+  "compact_transcript_start": 15,
+  "token_usage": {
+    "input_tokens": 4865,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 667904,
+    "output_tokens": 2541,
+    "api_call_count": 3
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:01.480215Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "432708bcaa1f",
+      "timestamp": "2026-07-16T04:40:01.480215Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:25.08036Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "fb7aebaea5fd",
+      "timestamp": "2026-07-16T04:40:25.08036Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-atomic-git-history-2026-07-16T04:48:06.324812Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "atomic-git-history"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "5c3b280abef6",
+      "timestamp": "2026-07-16T04:48:06.324812Z",
+      "native": {
+        "command": "/atomic-git-history"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/atomic-git-history",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 14
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T04:56:36.90304Z",
+    "agent_lines": 11,
+    "agent_removed": 3,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 11,
+    "total_lines_changed": 14,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 242,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 245,
+      "agent_lines_removed": 3
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 245,
+      "agent_lines_removed": 3
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 245,
+      "agent_lines_removed": 3
+    }
+  ]
+}
