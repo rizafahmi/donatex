@@ -1,0 +1,151 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "51ac7a03c7ad",
+  "session_id": "8d6f57d4-6ec9-4340-b4c8-8c04778d8c29",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T05:26:32.659165Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "docs/milestones/2-free-notes-safe-submission/milestone-log.md"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "728de1c1e38e",
+  "checkpoint_transcript_start": 157,
+  "transcript_lines_at_start": 157,
+  "compact_transcript_start": 58,
+  "token_usage": {
+    "input_tokens": 7400,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 513024,
+    "output_tokens": 3750,
+    "api_call_count": 1
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:01.480215Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "432708bcaa1f",
+      "timestamp": "2026-07-16T04:40:01.480215Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-phx-work-2026-07-16T04:40:25.08036Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-work"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "fb7aebaea5fd",
+      "timestamp": "2026-07-16T04:40:25.08036Z",
+      "native": {
+        "command": "/phx-work"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-work",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-atomic-git-history-2026-07-16T04:48:06.324812Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "atomic-git-history"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "5c3b280abef6",
+      "timestamp": "2026-07-16T04:48:06.324812Z",
+      "native": {
+        "command": "/atomic-git-history"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/atomic-git-history",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-handoff-2026-07-16T05:13:22.266005Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "handoff"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "dbe94f72fe9a",
+      "timestamp": "2026-07-16T05:13:22.266005Z",
+      "native": {
+        "command": "/handoff"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/handoff",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 36,
+    "context_tokens": 143531,
+    "context_window_size": 256000
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T05:26:32.624399Z",
+    "agent_lines": 74,
+    "agent_removed": 8,
+    "human_added": 0,
+    "human_modified": 1,
+    "human_removed": 2,
+    "total_committed": 75,
+    "total_lines_changed": 85,
+    "agent_percentage": 96.47058823529412,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 313,
+      "agent_lines_removed": 8
+    }
+  ]
+}
