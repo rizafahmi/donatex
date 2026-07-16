@@ -1,12 +1,8 @@
 # Project Progress
 
 ## Current State
-- Latest commit: f163748 (feat(overlay): add synced canvas confetti burst for maximum celebration)
-- Working tree: has uncommitted changes for the donor/overlay engagement refresh, plus an existing `.gitignore` change
-- Test status: 74 tests, 0 failures
-- Lint: `mix credo` passing
-- Dialyzer: `mix dialyzer` passing
-- Full verification: `mix precommit` passing
+- Milestone 2 (Free Notes with Safe Submission): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
+- Test status: 95 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -38,6 +34,7 @@
 - [x] Polish `/admin` dashboard layout, typography, telemetry stats, and real-time PubSub updates (new pending, paid status changes, alerted updates, empty state, donor message display, and semantic color matching)
 - [x] Add status filters (all, paid, pending) to `/admin` dashboard with paid as default
 - [x] Align the overall color scheme and vibe with the user's livestream overlay (cyan and purple developer-terminal aesthetic, terminal window alert layout on `/overlay`)
+- [x] Milestone 2 — Free Notes with Safe Submission: free submit + thank-you, 10s peer-IP cooldown, tip secondary path, admin default `all`, nil-amount display, live insert, no replay for sent
 
 ## In Progress
 
@@ -48,12 +45,13 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Deploy the build containing the removed QR-URL transaction-id fallback.
-2. On the next live payment, compare `Mayar create_qr ok ... id_source=... mayar_transaction_id=...`, `Pending donation created ... mayar_transaction_id=...`, and webhook logs to confirm the same transaction id flows end to end.
+1. Milestone 3 — Floating Overlay Reactions (ephemeral emoji floats for free Notes on `/overlay`)
+2. Keep tip celebration + recovery path unchanged while adding concurrent free floats
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
 - [PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md)
 - [ARCHITECTURE.md](file:///Users/riza/code/donatex/docs/ARCHITECTURE.md)
 - [PRD.md](file:///Users/riza/code/donatex/docs/PRD.md)
+- Milestone 2 log: [docs/milestones/2-free-notes-safe-submission/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)
