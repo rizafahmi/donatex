@@ -1,5 +1,5 @@
-Run the following command: open @docs/prd.html
+/loop @docs/milestones/3-floating-overlay-reactions/prompt.md use tidy tdd
 
 ---
 
-make the floating emoji twice longer
+1
