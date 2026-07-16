@@ -10,9 +10,9 @@ defmodule Donatex.FeedbackRateLimiter do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  @spec check(tuple()) :: :ok | {:error, :rate_limited}
-  def check(ip) when is_tuple(ip) do
-    now = System.monotonic_time(:millisecond)
+  @spec check(tuple(), keyword()) :: :ok | {:error, :rate_limited}
+  def check(ip, opts \\ []) when is_tuple(ip) and is_list(opts) do
+    now = Keyword.get(opts, :now, System.monotonic_time(:millisecond))
 
     case :ets.lookup(@table, ip) do
       [{^ip, last}] when now - last < @cooldown_ms ->
