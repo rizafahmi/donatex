@@ -1,0 +1,5 @@
+Can you check https://github.com/oliver-kriska/claude-elixir-phoenix/ and install skills and hooks compatible with cursor in global scope?
+
+---
+
+also install subagent for cursor

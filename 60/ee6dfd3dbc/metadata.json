@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "60ee6dfd3dbc",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "lib/donatex/donations/donation.ex"
+  ],
+  "sessions": [
+    {
+      "metadata": "/60/ee6dfd3dbc/0/metadata.json",
+      "transcript": "/60/ee6dfd3dbc/0/full.jsonl",
+      "compact_transcript": "/60/ee6dfd3dbc/0/transcript.jsonl",
+      "content_hash": "/60/ee6dfd3dbc/0/content_hash.txt",
+      "prompt": "/60/ee6dfd3dbc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 108251,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2211712,
+    "output_tokens": 18064,
+    "api_call_count": 2
+  }
+}
