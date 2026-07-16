@@ -1,8 +1,8 @@
 # Project Progress
 
 ## Current State
-- Milestone 5 (Unified Admin Inbox): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
-- Test status: 134 tests, 0 failures
+- Milestone 6 (Notable Branding and Routing): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
+- Test status: 135 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -41,6 +41,8 @@
 - [x] M4 review follow-up (S1–S5): Enter→free product lock, tip appreciation gate, paid-step copy, back-reset tip refute, `donor_hero_headline/0`
 - [x] M4 appreciation warnings fix (W1–W8): Pending live-insert filter, sticky tip guard + tests, free step guard, tip preserve merge, atomic feedback rate limiter
 - [x] Milestone 5 — Unified Admin Inbox: All/Tips/Feedback filters; card fields (reaction, type, time, status); tip-only replay guard; live free + paid updates; Notes empty state
+- [x] Milestone 6 — Notable branding / public route polish (per PRD) & redirect /donate to /
+- [x] Refresh admin header/subtitle remaining "donation" wording to "notes and tips"
 
 ## In Progress
 
@@ -51,8 +53,7 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Milestone 6 — Notable branding / public route polish (per PRD)
-2. Optional: refresh admin header/subtitle remaining “donation” wording
+1. Milestone 7 — End-to-end refinement, smoke testing, and final release preparation
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
@@ -63,4 +64,5 @@
 - Milestone 3 log: [docs/milestones/3-floating-overlay-reactions/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
 - Milestone 4 log: [docs/milestones/4-optional-appreciation-experience/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
+- Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)
