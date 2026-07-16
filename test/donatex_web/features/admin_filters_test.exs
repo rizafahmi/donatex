@@ -79,6 +79,20 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> refute_has("#donation-#{feedback.id}-amount")
   end
 
+  test "feedback cards style the sent status", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Sent Status",
+        reaction: "ok",
+        message: "styled"
+      })
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{feedback.id}-status[data-status=sent]", "sent")
+  end
+
   test "tip cards show tip type and amount", %{conn: conn, paid: paid} do
     conn
     |> put_req_header("authorization", basic_auth_header())

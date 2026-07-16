@@ -272,11 +272,14 @@ defmodule DonatexWeb.AdminLive do
               </div>
 
               <div class="mt-3 flex flex-wrap items-center gap-2 sm:justify-end">
-                <div class={[
-                  "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
-                  donation.status == "paid" && "border-accent/30 bg-accent/10 text-accent",
-                  donation.status == "pending" && "border-accent-2/30 bg-accent-2/10 text-accent-2"
-                ]}>
+                <div
+                  id={"donation-#{donation.id}-status"}
+                  data-status={donation.status}
+                  class={[
+                    "inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em]",
+                    status_badge_class(donation.status)
+                  ]}
+                >
                   {donation.status}
                 </div>
 
@@ -349,4 +352,9 @@ defmodule DonatexWeb.AdminLive do
 
   defp replayable?(%{status: "paid", amount: amount}) when not is_nil(amount), do: true
   defp replayable?(_donation), do: false
+
+  defp status_badge_class("paid"), do: "border-accent/30 bg-accent/10 text-accent"
+  defp status_badge_class("pending"), do: "border-accent-2/30 bg-accent-2/10 text-accent-2"
+  defp status_badge_class("sent"), do: "border-stroke/60 bg-surface-2/40 text-text-muted"
+  defp status_badge_class(_status), do: "border-stroke/60 bg-background/20 text-text-muted"
 end
