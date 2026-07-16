@@ -637,7 +637,9 @@ defmodule DonatexWeb.DonateLive do
 
   defp submit_valid_feedback(socket, changeset) do
     with :ok <- check_feedback_rate_limit(socket.assigns.client_ip),
-         {:ok, _feedback} <- Donations.create_feedback(feedback_attrs(changeset)) do
+         {:ok, feedback} <- Donations.create_feedback(feedback_attrs(changeset)) do
+      broadcast_donation_created(feedback)
+
       {:noreply,
        socket
        |> assign(:step, :thanks)
@@ -655,6 +657,14 @@ defmodule DonatexWeb.DonateLive do
          |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")
          |> assign_form(Map.put(changeset, :action, :insert))}
     end
+  end
+
+  defp broadcast_donation_created(donation) do
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, donation}
+    )
   end
 
   defp donation_form_params(%{"donation_form" => params}, _socket) when is_map(params), do: params
@@ -765,11 +775,7 @@ defmodule DonatexWeb.DonateLive do
           "Pending donation created donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id} amount=#{donation.amount}"
         )
 
-        Phoenix.PubSub.broadcast(
-          Donatex.PubSub,
-          "donations:created",
-          {:donation_created, donation}
-        )
+        broadcast_donation_created(donation)
 
         {:ok, donation}
 

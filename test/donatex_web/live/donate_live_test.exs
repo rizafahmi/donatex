@@ -184,4 +184,26 @@ defmodule DonatexWeb.DonateLiveTest do
     assert feedback.message == "Stream-nya seru"
     assert is_nil(feedback.amount)
   end
+
+  test "broadcasts accepted free feedback for live admin insert", %{conn: conn} do
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 21}, port: 44_323, ssl_cert: nil})
+
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:created")
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    render_submit(view, "submit_feedback", %{
+      "donation_form" => %{
+        "donor_name" => "Live Admin",
+        "reaction" => "good",
+        "message" => "halo admin"
+      }
+    })
+
+    assert_receive {:donation_created, %Donatex.Donations.Donation{} = feedback}
+    assert feedback.donor_name == "Live Admin"
+    assert feedback.status == "sent"
+    assert is_nil(feedback.amount)
+  end
 end
