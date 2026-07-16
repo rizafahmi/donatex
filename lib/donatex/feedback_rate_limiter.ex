@@ -37,4 +37,14 @@ defmodule Donatex.FeedbackRateLimiter do
 
     {:ok, %{}}
   end
+
+  @doc false
+  def reset do
+    case :ets.whereis(@table) do
+      :undefined -> :ok
+      _tid -> :ets.delete_all_objects(@table)
+    end
+
+    :ok
+  end
 end

@@ -6,6 +6,7 @@ defmodule DonatexWeb.DonateLive do
   require Logger
 
   alias Donatex.Donations
+  alias Donatex.FeedbackRateLimiter
   alias Donatex.Mayar.Client
   alias DonatexWeb.DonationPresenter
 
@@ -48,6 +49,7 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
+     |> assign(:client_ip, peer_ip(socket))
      |> assign_blank_form()}
   end
 
@@ -95,19 +97,7 @@ defmodule DonatexWeb.DonateLive do
     changeset = feedback_form_changeset(params)
 
     if changeset.valid? do
-      case Donations.create_feedback(feedback_attrs(changeset)) do
-        {:ok, _feedback} ->
-          {:noreply,
-           socket
-           |> assign(:step, :thanks)
-           |> assign_blank_form()}
-
-        {:error, _changeset} ->
-          {:noreply,
-           socket
-           |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")
-           |> assign_form(Map.put(changeset, :action, :insert))}
-      end
+      submit_valid_feedback(socket, changeset)
     else
       {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
     end
@@ -533,11 +523,11 @@ defmodule DonatexWeb.DonateLive do
                         </span>
                       </button>
 
-                    <button
-                      type="button"
-                      phx-click="submit"
-                      class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
-                    >
+                      <button
+                        type="button"
+                        phx-click="submit"
+                        class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
+                      >
                         <span class="space-y-0.5">
                           <span class="block text-base">Lanjut tip</span>
                           <span class="block text-[11px] font-semibold text-text-muted uppercase tracking-wide">
@@ -633,6 +623,38 @@ defmodule DonatexWeb.DonateLive do
       socket,
       donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
     )
+  end
+
+  defp peer_ip(socket) do
+    case get_connect_info(socket, :peer_data) do
+      %{address: address} when is_tuple(address) -> address
+      _ -> nil
+    end
+  end
+
+  defp check_feedback_rate_limit(nil), do: :ok
+  defp check_feedback_rate_limit(ip), do: FeedbackRateLimiter.check(ip)
+
+  defp submit_valid_feedback(socket, changeset) do
+    with :ok <- check_feedback_rate_limit(socket.assigns.client_ip),
+         {:ok, _feedback} <- Donations.create_feedback(feedback_attrs(changeset)) do
+      {:noreply,
+       socket
+       |> assign(:step, :thanks)
+       |> assign_blank_form()}
+    else
+      {:error, :rate_limited} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Tunggu sebentar ya, coba lagi dalam beberapa detik.")
+         |> assign_form(Map.put(changeset, :action, :validate))}
+
+      {:error, _changeset} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")
+         |> assign_form(Map.put(changeset, :action, :insert))}
+    end
   end
 
   defp donation_form_params(%{"donation_form" => params}, _socket) when is_map(params), do: params

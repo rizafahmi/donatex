@@ -2,6 +2,7 @@ defmodule DonatexWeb.DonateLiveTest do
   use DonatexWeb.ConnCase, async: true
 
   import Phoenix.LiveViewTest
+  import Plug.Test, only: [put_peer_data: 2]
 
   test "renders the donor form with preset amounts and optional message", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
@@ -159,6 +160,9 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "submits free feedback and shows a thank-you reset state", %{conn: conn} do
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 20}, port: 44_322, ssl_cert: nil})
+
     {:ok, view, _html} = live(conn, ~p"/")
 
     html =

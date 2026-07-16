@@ -3,6 +3,11 @@ defmodule Donatex.FeedbackRateLimiterTest do
 
   alias Donatex.FeedbackRateLimiter
 
+  setup do
+    FeedbackRateLimiter.reset()
+    :ok
+  end
+
   test "rejects a second free feedback from the same IP within 10 seconds" do
     ip = {127, 0, 0, 1}
 
