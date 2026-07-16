@@ -1,0 +1,97 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "f85a84c422ff",
+  "session_id": "1ecd4687-b416-44dc-8771-720a992277d0",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T11:17:16.52246Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    "lib/donatex_web/live/admin_live.ex",
+    "test/donatex_web/features/admin_filters_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "f05aa99e7c9c",
+  "checkpoint_transcript_start": 51,
+  "transcript_lines_at_start": 51,
+  "compact_transcript_start": 21,
+  "token_usage": {
+    "input_tokens": 5967,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 834560,
+    "output_tokens": 2540,
+    "api_call_count": 3
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-loop-2026-07-16T10:46:25.12034Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "loop"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "0455994d22f9",
+      "timestamp": "2026-07-16T10:46:25.12034Z",
+      "native": {
+        "command": "/loop"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/loop",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 15
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T11:17:16.500279Z",
+    "agent_lines": 17,
+    "agent_removed": 2,
+    "human_added": 17,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 40,
+    "total_lines_changed": 42,
+    "agent_percentage": 45.23809523809524,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 21,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 23,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 23,
+      "agent_lines_removed": 2
+    }
+  ]
+}
