@@ -37,17 +37,25 @@ defmodule DonatexWeb.AdminLive do
         {:noreply, put_flash(socket, :error, "Donation not found")}
 
       donation ->
-        Logger.info(
-          "Admin replay sent donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id}"
-        )
+        if replayable?(donation) do
+          Logger.info(
+            "Admin replay sent donation_id=#{donation.id} mayar_transaction_id=#{donation.mayar_transaction_id}"
+          )
 
-        Phoenix.PubSub.broadcast(
-          Donatex.PubSub,
-          "donations:paid",
-          {:donation_paid, DonationPresenter.payload(donation)}
-        )
+          Phoenix.PubSub.broadcast(
+            Donatex.PubSub,
+            "donations:paid",
+            {:donation_paid, DonationPresenter.payload(donation)}
+          )
 
-        {:noreply, put_flash(socket, :info, "Replayed")}
+          {:noreply, put_flash(socket, :info, "Replayed")}
+        else
+          Logger.warning(
+            "Admin replay rejected donation_id=#{id} status=#{donation.status} amount=#{inspect(donation.amount)}"
+          )
+
+          {:noreply, put_flash(socket, :error, "Only paid tips can be replayed")}
+        end
     end
   end
 
@@ -339,6 +347,6 @@ defmodule DonatexWeb.AdminLive do
   defp matches_created_filter?("feedback", "sent"), do: true
   defp matches_created_filter?(_filter, _status), do: false
 
-  defp replayable?(%{status: "paid"}), do: true
+  defp replayable?(%{status: "paid", amount: amount}) when not is_nil(amount), do: true
   defp replayable?(_donation), do: false
 end
