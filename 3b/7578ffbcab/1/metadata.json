@@ -1,0 +1,146 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "3b7578ffbcab",
+  "session_id": "70021edd-c21c-4dae-b46d-953bced4faf4",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T09:27:26.19144Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 5,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "lib/donatex_web/live/donate_live.ex",
+    "test/donatex_web/features/donor_qr_flow_test.exs",
+    "test/donatex_web/features/home_test.exs",
+    "test/donatex_web/live/donate_live_test.exs",
+    "test/donatex_web/surface_routes_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "b99740d048a9",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 53611,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 588736,
+    "output_tokens": 8406,
+    "api_call_count": 5
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-phx-triage-2026-07-16T09:18:55.56252Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx-triage"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "ea0c4b283b5d",
+      "timestamp": "2026-07-16T09:18:55.56252Z",
+      "native": {
+        "command": "/phx-triage"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx-triage",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-phx:plan-2026-07-16T09:21:09.188797Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "phx:plan"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "6054d572aee4",
+      "timestamp": "2026-07-16T09:21:09.188797Z",
+      "native": {
+        "command": "/phx:plan"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/phx:plan",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T09:27:26.184281Z",
+    "agent_lines": 0,
+    "agent_removed": 24,
+    "human_added": 0,
+    "human_modified": 7,
+    "human_removed": 132,
+    "total_committed": 83,
+    "total_lines_changed": 163,
+    "agent_percentage": 14.723926380368098,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 591,
+      "user_lines_removed": 139,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/reviews/optional-appreciation-experience-review.md": 98,
+        "docs/PROGRESS.md": 7,
+        "docs/milestones/4-optional-appreciation-experience/milestone-log.md": 61,
+        "lib/donatex_web/live/donate_live.ex": 236,
+        "test/donatex_web/features/donor_qr_flow_test.exs": 82,
+        "test/donatex_web/features/home_test.exs": 1,
+        "test/donatex_web/live/donate_live_test.exs": 105,
+        "test/donatex_web/surface_routes_test.exs": 1
+      },
+      "user_removed_per_file": {
+        "docs/PROGRESS.md": 4,
+        "lib/donatex_web/live/donate_live.ex": 121,
+        "test/donatex_web/features/donor_qr_flow_test.exs": 3,
+        "test/donatex_web/features/home_test.exs": 1,
+        "test/donatex_web/live/donate_live_test.exs": 9,
+        "test/donatex_web/surface_routes_test.exs": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 591,
+      "agent_lines_removed": 139
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 591,
+      "agent_lines_removed": 139
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 591,
+      "agent_lines_removed": 139
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 591,
+      "agent_lines_removed": 139
+    }
+  ]
+}

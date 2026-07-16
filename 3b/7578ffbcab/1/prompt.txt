@@ -1,0 +1,17 @@
+/phx-triage
+
+---
+
+fix all
+
+---
+
+just fix
+
+---
+
+/phx:plan  .claude/plans/optional-appreciation-experience/reviews/optional-appreciation-experience-triage.md
+
+---
+
+1
