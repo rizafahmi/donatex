@@ -48,9 +48,7 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
-     |> assign_form(
-       donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
-     )}
+     |> assign_blank_form()}
   end
 
   @impl Phoenix.LiveView
@@ -63,8 +61,8 @@ defmodule DonatexWeb.DonateLive do
     {:noreply, assign_form(socket, changeset)}
   end
 
-  def handle_event("submit", %{"donation_form" => params}, socket) do
-    changeset = donation_form_changeset(params)
+  def handle_event("submit", params, socket) do
+    changeset = donation_form_changeset(donation_form_params(params, socket))
 
     if changeset.valid? do
       case create_pending_donation_with_qr(changeset) do
@@ -93,15 +91,35 @@ defmodule DonatexWeb.DonateLive do
     end
   end
 
+  def handle_event("submit_feedback", %{"donation_form" => params}, socket) do
+    changeset = feedback_form_changeset(params)
+
+    if changeset.valid? do
+      case Donations.create_feedback(feedback_attrs(changeset)) do
+        {:ok, _feedback} ->
+          {:noreply,
+           socket
+           |> assign(:step, :thanks)
+           |> assign_blank_form()}
+
+        {:error, _changeset} ->
+          {:noreply,
+           socket
+           |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")
+           |> assign_form(Map.put(changeset, :action, :insert))}
+      end
+    else
+      {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
+    end
+  end
+
   def handle_event("new_donation", _params, socket) do
     {:noreply,
      socket
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
-     |> assign_form(
-       donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
-     )}
+     |> assign_blank_form()}
   end
 
   @impl Phoenix.LiveView
@@ -244,255 +262,302 @@ defmodule DonatexWeb.DonateLive do
             </div>
           </section>
         <% else %>
-          <% selected_amount_option = selected_amount_option(@form) %>
-          <% reaction_error = field_error(@form, :reaction) %>
-          <% amount_option_error = field_error(@form, :amount_option) %>
+          <%= if @step == :thanks do %>
+            <section
+              id="feedback-thanks"
+              class="relative isolate overflow-hidden rounded-[2.5rem] border bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8"
+            >
+              <div class="absolute inset-0 bg-linear-to-br from-accent/12 via-transparent to-accent-2/10" />
 
-          <section
-            id="donor-page"
-            class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35 animate-border-glow"
-          >
-            <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/8" />
-            <div class="absolute right-0 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+              <div class="relative space-y-3">
+                <p class="text-xs font-semibold uppercase tracking-[0.34em] text-accent">
+                  Feedback terkirim
+                </p>
+                <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
+                  Terima kasih. Feedback-mu sudah masuk.
+                </h1>
+                <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
+                  Kamu bisa kirim lagi nanti, atau lanjut kasih tip kalau mau.
+                </p>
+              </div>
 
-            <div class="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-10">
-              <div class="min-w-0 flex flex-col justify-between gap-8">
-                <header class="space-y-4">
-                  <div class="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
-                    <span class="relative flex size-2">
-                      <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70">
+              <div class="relative mt-6 flex flex-wrap items-center gap-3">
+                <.button
+                  type="button"
+                  phx-click="new_donation"
+                  class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]"
+                >
+                  Kirim lagi
+                </.button>
+              </div>
+            </section>
+          <% else %>
+            <% selected_amount_option = selected_amount_option(@form) %>
+            <% reaction_error = field_error(@form, :reaction) %>
+            <% amount_option_error = field_error(@form, :amount_option) %>
+
+            <section
+              id="donor-page"
+              class="relative isolate overflow-hidden rounded-[2.75rem] border border-stroke/60 bg-surface/45 shadow-xl shadow-black/35 animate-border-glow"
+            >
+              <div class="absolute inset-0 bg-linear-to-br from-accent/10 via-transparent to-accent-2/8" />
+              <div class="absolute right-0 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
+
+              <div class="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-10">
+                <div class="min-w-0 flex flex-col justify-between gap-8">
+                  <header class="space-y-4">
+                    <div class="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
+                      <span class="relative flex size-2">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70">
+                        </span>
+                        <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
                       </span>
-                      <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
-                    </span>
-                    Sedang live
-                  </div>
-                  <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                    Bikin stream makin seru dan nama kamu muncul di layar.
-                  </h1>
-                  <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                    Pilih nominal, tulis pesan, lalu bayar via QRIS. Setelah pembayaran terkonfirmasi, alert donasimu masuk antrean overlay.
-                  </p>
-                </header>
+                      Sedang live
+                    </div>
+                    <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
+                      Bikin stream makin seru dan nama kamu muncul di layar.
+                    </h1>
+                    <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
+                      Pilih nominal, tulis pesan, lalu bayar via QRIS. Setelah pembayaran terkonfirmasi, alert donasimu masuk antrean overlay.
+                    </p>
+                  </header>
 
-                <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                  <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                      Instan
-                    </p>
-                    <p class="mt-2 text-sm font-semibold text-text">QRIS unik untuk setiap donasi.</p>
-                  </div>
-                  <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                      Aman
-                    </p>
-                    <p class="mt-2 text-sm font-semibold text-text">
-                      Alert tampil setelah pembayaran valid.
-                    </p>
-                  </div>
-                  <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                      Favorit
-                    </p>
-                    <p class="mt-2 text-sm font-semibold text-text">
-                      Rp 10.000 pas buat memanaskan chat.
-                    </p>
+                  <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                    <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
+                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                        Instan
+                      </p>
+                      <p class="mt-2 text-sm font-semibold text-text">
+                        QRIS unik untuk setiap donasi.
+                      </p>
+                    </div>
+                    <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
+                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                        Aman
+                      </p>
+                      <p class="mt-2 text-sm font-semibold text-text">
+                        Alert tampil setelah pembayaran valid.
+                      </p>
+                    </div>
+                    <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
+                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                        Favorit
+                      </p>
+                      <p class="mt-2 text-sm font-semibold text-text">
+                        Rp 10.000 pas buat memanaskan chat.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div class="min-w-0 rounded-[2.25rem] border border-stroke/60 bg-background/18 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
-                <.form
-                  for={@form}
-                  id="donation-form"
-                  phx-change="validate"
-                  phx-submit="submit"
-                  class="space-y-6"
-                >
-                  <div class="space-y-2">
-                    <p class="text-sm font-medium text-text-muted">
-                      Siapkan dukunganmu
-                    </p>
-                    <div class="h-px bg-stroke/60" />
-                  </div>
-
-                  <.input
-                    field={@form[:donor_name]}
-                    label="Nama kamu"
-                    placeholder="Riza"
-                    autocomplete="name"
-                    autofocus
-                    required
-                  />
-
-                  <fieldset class="space-y-3">
-                    <legend class="text-sm font-semibold text-text">Pilih reaksimu</legend>
-                    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      <label
-                        :for={
-                          {reaction, emoji, label} <- [
-                            {"bad", "😅", "Bad"},
-                            {"ok", "😐", "Okay"},
-                            {"good", "😊", "Good"},
-                            {"great", "🤩", "Great"}
-                          ]
-                        }
-                        for={"donation_form_reaction_#{reaction}"}
-                        class="cursor-pointer rounded-2xl border border-stroke/60 bg-background/20 px-3 py-4 text-center text-sm font-semibold text-text"
-                      >
-                        <input
-                          id={"donation_form_reaction_#{reaction}"}
-                          type="radio"
-                          name={@form[:reaction].name}
-                          value={reaction}
-                          checked={@form[:reaction].value == reaction}
-                          class="sr-only"
-                        />
-                        <span class="block text-2xl" aria-hidden="true">{emoji}</span>
-                        <span class="mt-1 block">{label}</span>
-                      </label>
-                    </div>
-                    <p :if={reaction_error} class="text-sm font-medium text-danger">
-                      {reaction_error}
-                    </p>
-                  </fieldset>
-
-                  <fieldset class="space-y-3">
-                    <legend class="w-full">
-                      <span class="flex items-center justify-between gap-3">
-                        <span class="text-sm font-semibold text-text">Pilih nominal</span>
-                        <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
-                      </span>
-                    </legend>
-
-                    <div class="grid grid-cols-2 gap-3">
-                      <label
-                        :for={preset <- @preset_amounts}
-                        for={preset.id}
-                        class={
-                          amount_option_classes(
-                            selected_amount_option == preset.option,
-                            preset.recommended?
-                          )
-                        }
-                      >
-                        <input
-                          id={preset.id}
-                          type="radio"
-                          name={@form[:amount_option].name}
-                          value={preset.value}
-                          checked={selected_amount_option == preset.option}
-                          class="sr-only"
-                        />
-
-                        <div class="flex items-start justify-between gap-3">
-                          <div class="space-y-1">
-                            <span class="block text-sm font-semibold text-text">
-                              {preset.title}
-                            </span>
-                            <span class="block text-lg font-bold tracking-tight text-text">
-                              Rp {preset.formatted}
-                            </span>
-                          </div>
-                          <span
-                            :if={selected_amount_option == preset.option}
-                            class="mt-0.5 text-accent"
-                          >
-                            <span class="hero-check-circle"></span>
-                          </span>
-                        </div>
-                        <span class="text-xs text-text-muted">
-                          {preset.hint}
-                        </span>
-                      </label>
-
-                      <label
-                        for="donation_form_amount_option_custom"
-                        class={amount_option_classes(selected_amount_option == "custom", false)}
-                      >
-                        <input
-                          id="donation_form_amount_option_custom"
-                          type="radio"
-                          name={@form[:amount_option].name}
-                          value="custom"
-                          checked={selected_amount_option == "custom"}
-                          class="sr-only"
-                        />
-                        <div class="space-y-1.5">
-                          <span class="text-base font-semibold text-text">Nominal lain</span>
-                        </div>
-                        <span class="text-xs text-text-muted">Masukkan angka</span>
-                      </label>
-                    </div>
-
-                    <p :if={amount_option_error} class="text-sm font-medium text-danger">
-                      {amount_option_error}
-                    </p>
-                  </fieldset>
-
-                  <div
-                    :if={selected_amount_option == "custom"}
-                    class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-4"
+                <div class="min-w-0 rounded-[2.25rem] border border-stroke/60 bg-background/18 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
+                  <.form
+                    for={@form}
+                    id="donation-form"
+                    phx-change="validate"
+                    phx-submit="submit_feedback"
+                    class="space-y-6"
                   >
+                    <div class="space-y-2">
+                      <p class="text-sm font-medium text-text-muted">
+                        Siapkan dukunganmu
+                      </p>
+                      <div class="h-px bg-stroke/60" />
+                    </div>
+
                     <.input
-                      field={@form[:custom_amount]}
-                      type="number"
-                      label="Nominal custom"
-                      placeholder="15000"
-                      min="1000"
-                      step="1000"
+                      field={@form[:donor_name]}
+                      label="Nama kamu"
+                      placeholder="Riza"
+                      autocomplete="name"
+                      autofocus
                       required
                     />
-                    <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                      <span class="text-text-muted">Masukkan angka tanpa titik atau koma.</span>
-                      <span
-                        :if={parse_custom_amount(@form[:custom_amount].value) > 0}
-                        class="font-semibold text-accent"
-                      >
-                        Nominal: Rp {DonationPresenter.format_idr(
-                          parse_custom_amount(@form[:custom_amount].value)
-                        )}
-                      </span>
-                    </div>
-                  </div>
 
-                  <.input
-                    field={@form[:message]}
-                    type="textarea"
-                    label="Pesan (opsional)"
-                    rows="4"
-                    maxlength="160"
-                    placeholder="Tulis pesan, request lagu, atau kasih semangat..."
-                  />
+                    <fieldset class="space-y-3">
+                      <legend class="text-sm font-semibold text-text">Pilih reaksimu</legend>
+                      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <label
+                          :for={
+                            {reaction, emoji, label} <- [
+                              {"bad", "😅", "Bad"},
+                              {"ok", "😐", "Okay"},
+                              {"good", "😊", "Good"},
+                              {"great", "🤩", "Great"}
+                            ]
+                          }
+                          for={"donation_form_reaction_#{reaction}"}
+                          class="cursor-pointer rounded-2xl border border-stroke/60 bg-background/20 px-3 py-4 text-center text-sm font-semibold text-text"
+                        >
+                          <input
+                            id={"donation_form_reaction_#{reaction}"}
+                            type="radio"
+                            name={@form[:reaction].name}
+                            value={reaction}
+                            checked={@form[:reaction].value == reaction}
+                            class="sr-only"
+                          />
+                          <span class="block text-2xl" aria-hidden="true">{emoji}</span>
+                          <span class="mt-1 block">{label}</span>
+                        </label>
+                      </div>
+                      <p :if={reaction_error} class="text-sm font-medium text-danger">
+                        {reaction_error}
+                      </p>
+                    </fieldset>
 
-                  <div class="space-y-3 pt-2">
-                    <button
-                      type="submit"
-                      class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
+                    <fieldset class="space-y-3">
+                      <legend class="w-full">
+                        <span class="flex items-center justify-between gap-3">
+                          <span class="text-sm font-semibold text-text">Pilih nominal</span>
+                          <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
+                        </span>
+                      </legend>
+
+                      <div class="grid grid-cols-2 gap-3">
+                        <label
+                          :for={preset <- @preset_amounts}
+                          for={preset.id}
+                          class={
+                            amount_option_classes(
+                              selected_amount_option == preset.option,
+                              preset.recommended?
+                            )
+                          }
+                        >
+                          <input
+                            id={preset.id}
+                            type="radio"
+                            name={@form[:amount_option].name}
+                            value={preset.value}
+                            checked={selected_amount_option == preset.option}
+                            class="sr-only"
+                          />
+
+                          <div class="flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                              <span class="block text-sm font-semibold text-text">
+                                {preset.title}
+                              </span>
+                              <span class="block text-lg font-bold tracking-tight text-text">
+                                Rp {preset.formatted}
+                              </span>
+                            </div>
+                            <span
+                              :if={selected_amount_option == preset.option}
+                              class="mt-0.5 text-accent"
+                            >
+                              <span class="hero-check-circle"></span>
+                            </span>
+                          </div>
+                          <span class="text-xs text-text-muted">
+                            {preset.hint}
+                          </span>
+                        </label>
+
+                        <label
+                          for="donation_form_amount_option_custom"
+                          class={amount_option_classes(selected_amount_option == "custom", false)}
+                        >
+                          <input
+                            id="donation_form_amount_option_custom"
+                            type="radio"
+                            name={@form[:amount_option].name}
+                            value="custom"
+                            checked={selected_amount_option == "custom"}
+                            class="sr-only"
+                          />
+                          <div class="space-y-1.5">
+                            <span class="text-base font-semibold text-text">Nominal lain</span>
+                          </div>
+                          <span class="text-xs text-text-muted">Masukkan angka</span>
+                        </label>
+                      </div>
+
+                      <p :if={amount_option_error} class="text-sm font-medium text-danger">
+                        {amount_option_error}
+                      </p>
+                    </fieldset>
+
+                    <div
+                      :if={selected_amount_option == "custom"}
+                      class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-4"
                     >
-                      <span class="space-y-0.5">
-                        <span class="block text-base">Kirim dukungan ke stream</span>
-                        <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
-                          Pembayaran via QRIS
+                      <.input
+                        field={@form[:custom_amount]}
+                        type="number"
+                        label="Nominal custom"
+                        placeholder="15000"
+                        min="1000"
+                        step="1000"
+                        required
+                      />
+                      <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <span class="text-text-muted">Masukkan angka tanpa titik atau koma.</span>
+                        <span
+                          :if={parse_custom_amount(@form[:custom_amount].value) > 0}
+                          class="font-semibold text-accent"
+                        >
+                          Nominal: Rp {DonationPresenter.format_idr(
+                            parse_custom_amount(@form[:custom_amount].value)
+                          )}
                         </span>
-                      </span>
-                      <span class="inline-flex items-center gap-2">
-                        <span class="phx-submit-loading:hidden" aria-hidden="true">&rarr;</span>
-                        <span class="hidden phx-submit-loading:inline-flex items-center gap-2 text-xs font-semibold">
-                          <span class="hero-arrow-path motion-safe:animate-spin"></span> Memproses
-                        </span>
-                      </span>
-                    </button>
-
-                    <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30">
-                      <span class="text-xs font-medium text-text-muted">
-                        Bisa bayar pakai GoPay, OVO, DANA, ShopeePay & semua M-Banking
-                      </span>
+                      </div>
                     </div>
-                  </div>
-                </.form>
+
+                    <.input
+                      field={@form[:message]}
+                      type="textarea"
+                      label="Pesan (opsional)"
+                      rows="4"
+                      maxlength="160"
+                      placeholder="Tulis pesan, request lagu, atau kasih semangat..."
+                    />
+
+                    <div class="space-y-3 pt-2">
+                      <button
+                        type="submit"
+                        class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
+                      >
+                        <span class="space-y-0.5">
+                          <span class="block text-base">Kirim feedback</span>
+                          <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
+                            Gratis, tanpa tip
+                          </span>
+                        </span>
+                        <span class="inline-flex items-center gap-2">
+                          <span class="phx-submit-loading:hidden" aria-hidden="true">&rarr;</span>
+                          <span class="hidden phx-submit-loading:inline-flex items-center gap-2 text-xs font-semibold">
+                            <span class="hero-arrow-path motion-safe:animate-spin"></span> Mengirim
+                          </span>
+                        </span>
+                      </button>
+
+                    <button
+                      type="button"
+                      phx-click="submit"
+                      class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
+                    >
+                        <span class="space-y-0.5">
+                          <span class="block text-base">Lanjut tip</span>
+                          <span class="block text-[11px] font-semibold text-text-muted uppercase tracking-wide">
+                            Pembayaran via QRIS
+                          </span>
+                        </span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+
+                      <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30">
+                        <span class="text-xs font-medium text-text-muted">
+                          Bisa bayar pakai GoPay, OVO, DANA, ShopeePay & semua M-Banking
+                        </span>
+                      </div>
+                    </div>
+                  </.form>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          <% end %>
         <% end %>
       <% end %>
     </Layouts.app>
@@ -506,6 +571,18 @@ defmodule DonatexWeb.DonateLive do
     |> cast(params, @form_fields)
     |> update_change(:donor_name, &trim/1)
     |> maybe_validate_required(validate_required?)
+  end
+
+  defp feedback_form_changeset(params) do
+    {%{}, Map.take(@form_types, [:donor_name, :reaction, :message])}
+    |> cast(params, [:donor_name, :reaction, :message])
+    |> update_change(:donor_name, &trim/1)
+    |> update_change(:message, &trim/1)
+    |> validate_required([:donor_name], message: "Tulis namamu dulu")
+    |> validate_required([:reaction], message: "Pilih satu reaksi")
+    |> validate_length(:donor_name, max: 64, message: "Maksimal 64 karakter")
+    |> validate_length(:message, max: 280, message: "Pesan maksimal 280 karakter")
+    |> validate_inclusion(:reaction, ~w(bad ok good great), message: "Pilih satu reaksi")
   end
 
   defp maybe_validate_required(changeset, false), do: changeset
@@ -549,6 +626,24 @@ defmodule DonatexWeb.DonateLive do
 
   defp assign_form(socket, changeset) do
     assign(socket, :form, to_form(changeset, as: :donation_form))
+  end
+
+  defp assign_blank_form(socket) do
+    assign_form(
+      socket,
+      donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
+    )
+  end
+
+  defp donation_form_params(%{"donation_form" => params}, _socket) when is_map(params), do: params
+  defp donation_form_params(_params, socket), do: socket.assigns.form.params
+
+  defp feedback_attrs(changeset) do
+    %{
+      donor_name: get_field(changeset, :donor_name),
+      reaction: get_field(changeset, :reaction),
+      message: blank_to_nil(get_field(changeset, :message))
+    }
   end
 
   defp selected_amount_option(form), do: form[:amount_option].value

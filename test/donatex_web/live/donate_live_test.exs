@@ -157,4 +157,27 @@ defmodule DonatexWeb.DonateLiveTest do
     refute html =~ "Masukkan nominal donasi"
     refute html =~ "Harus kelipatan 1000"
   end
+
+  test "submits free feedback and shows a thank-you reset state", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      render_submit(view, "submit_feedback", %{
+        "donation_form" => %{
+          "donor_name" => "Riza",
+          "reaction" => "great",
+          "message" => "Stream-nya seru"
+        }
+      })
+
+    assert html =~ "Terima kasih"
+    assert has_element?(view, "#feedback-thanks")
+
+    feedback =
+      Donatex.Repo.get_by!(Donatex.Donations.Donation, donor_name: "Riza", status: "sent")
+
+    assert feedback.reaction == "great"
+    assert feedback.message == "Stream-nya seru"
+    assert is_nil(feedback.amount)
+  end
 end
