@@ -22,6 +22,7 @@ defmodule DonatexWeb.OverlayLive do
      |> assign(:queue, queue)
      |> assign(:current, nil)
      |> assign(:floats, %{})
+     |> assign(:page_title, "OBS Overlay")
      |> start_next_alert()}
   end
 
@@ -111,7 +112,7 @@ defmodule DonatexWeb.OverlayLive do
                 <span class="h-3 w-3 rounded-full bg-[#ffbd2e]"></span>
                 <span class="h-3 w-3 rounded-full bg-[#27c93f]"></span>
               </div>
-              <div class="select-none">donatex-terminal — alert</div>
+              <div class="select-none">donatex-terminal | alert</div>
               <div class="w-12"></div>
             </div>
             <!-- Terminal Console Content -->

@@ -19,6 +19,7 @@ defmodule DonatexWeb.AdminLive do
 
     {:ok,
      socket
+     |> assign(:page_title, "Admin Console")
      |> assign(:stats, Donations.get_donation_stats())
      |> assign(:filters, @filters)
      |> assign_filtered_donations(@default_filter)}
@@ -144,7 +145,9 @@ defmodule DonatexWeb.AdminLive do
     <Layouts.app flash={@flash}>
       <.header>
         Admin Panel
-        <:subtitle>Manage livestream donations, mark manual payments, and replay alerts.</:subtitle>
+        <:subtitle>
+          Manage livestream notes and tips, mark manual payments, and replay alerts.
+        </:subtitle>
       </.header>
       
     <!-- Status telemetry bar -->
