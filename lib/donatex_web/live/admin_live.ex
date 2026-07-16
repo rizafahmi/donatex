@@ -24,7 +24,7 @@ defmodule DonatexWeb.AdminLive do
 
   @impl Phoenix.LiveView
   def handle_event("set_filter", %{"filter" => filter}, socket)
-      when filter in ["all", "paid", "pending"] do
+      when filter in ["all", "paid", "pending", "tips"] do
     {:noreply, assign_filtered_donations(socket, filter, reset: true)}
   end
 
@@ -177,7 +177,7 @@ defmodule DonatexWeb.AdminLive do
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-1.5 bg-surface-2/40 border border-stroke/40 rounded-full p-1">
           <button
-            :for={f <- ["all", "paid", "pending"]}
+            :for={f <- ["all", "tips", "paid", "pending"]}
             type="button"
             phx-click="set_filter"
             phx-value-filter={f}

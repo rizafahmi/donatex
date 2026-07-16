@@ -51,6 +51,27 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> assert_has("#donation-#{feedback.id}", "Free Sender")
   end
 
+  test "tips filter shows tips and excludes feedback", %{
+    conn: conn,
+    pending: pending,
+    paid: paid
+  } do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Free Sender",
+        reaction: "good",
+        message: "hello free"
+      })
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> click_button("tips")
+    |> assert_has("#donation-#{paid.id}", "Paid Donor")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+    |> refute_has("#donation-#{feedback.id}", "Free Sender")
+  end
+
   test "switching filters updates the list", %{conn: conn, pending: pending, paid: paid} do
     session =
       conn
