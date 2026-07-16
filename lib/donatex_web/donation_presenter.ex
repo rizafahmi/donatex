@@ -14,6 +14,8 @@ defmodule DonatexWeb.DonationPresenter do
     }
   end
 
+  def format_idr(nil), do: ""
+
   def format_idr(amount) when is_integer(amount) and amount >= 0 do
     amount
     |> Integer.to_string()

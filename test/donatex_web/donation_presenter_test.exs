@@ -4,6 +4,10 @@ defmodule DonatexWeb.DonationPresenterTest do
   alias DonatexWeb.DonationPresenter
 
   describe "format_idr/1" do
+    test "formats nil as an empty string" do
+      assert DonationPresenter.format_idr(nil) == ""
+    end
+
     test "formats small integers without separators" do
       assert DonationPresenter.format_idr(0) == "0"
       assert DonationPresenter.format_idr(10) == "10"

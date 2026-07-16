@@ -29,14 +29,26 @@ defmodule DonatexWeb.AdminFiltersTest do
     {:ok, pending: pending, paid: paid}
   end
 
-  test "default view displays only paid donations", %{conn: conn, pending: pending, paid: paid} do
+  test "default view displays all donations", %{conn: conn, pending: pending, paid: paid} do
     conn
     |> put_req_header("authorization", basic_auth_header())
     |> visit(~p"/admin")
-    # Should display the paid donation
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
-    # Should NOT display the pending donation
-    |> refute_has("#donation-#{pending.id}", "Pending Donor")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+  end
+
+  test "default view includes free notes", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Free Sender",
+        reaction: "good",
+        message: "hello free"
+      })
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> assert_has("#donation-#{feedback.id}", "Free Sender")
   end
 
   test "switching filters updates the list", %{conn: conn, pending: pending, paid: paid} do
@@ -45,10 +57,10 @@ defmodule DonatexWeb.AdminFiltersTest do
       |> put_req_header("authorization", basic_auth_header())
       |> visit(~p"/admin")
 
-    # 1. Under paid (default)
+    # 1. Under all (default)
     session
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
-    |> refute_has("#donation-#{pending.id}", "Pending Donor")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
 
     # 2. Click "pending" filter
     session = click_button(session, "pending")
@@ -57,12 +69,12 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> assert_has("#donation-#{pending.id}", "Pending Donor")
     |> refute_has("#donation-#{paid.id}", "Paid Donor")
 
-    # 3. Click "all" filter
-    session = click_button(session, "all")
+    # 3. Click "paid" filter
+    session = click_button(session, "paid")
 
     session
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
-    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+    |> refute_has("#donation-#{pending.id}", "Pending Donor")
   end
 
   test "real-time updates insert/delete donations correctly based on active filter", %{
@@ -70,13 +82,13 @@ defmodule DonatexWeb.AdminFiltersTest do
     pending: pending,
     paid: paid
   } do
-    # Mount session on /admin (which defaults to paid)
+    # Mount session on /admin (defaults to all)
     session =
       conn
       |> put_req_header("authorization", basic_auth_header())
       |> visit(~p"/admin")
 
-    # 1. Create a new pending donation. Since filter is "paid", it should NOT appear on screen.
+    # 1. Create a new pending donation. Since filter is "all", it should appear.
     {:ok, new_pending} =
       Donations.create_pending_donation(%{
         mayar_transaction_id: "tx-new-pending",
@@ -85,28 +97,25 @@ defmodule DonatexWeb.AdminFiltersTest do
         amount: 30_000
       })
 
-    # Broadcast creation (simulate what application does)
     Phoenix.PubSub.broadcast(
       Donatex.PubSub,
       "donations:created",
       {:donation_created, new_pending}
     )
 
-    # Allow LiveView process to handle PubSub message
     Process.sleep(50)
 
     session
-    |> refute_has("#donation-#{new_pending.id}", "New Pending")
+    |> assert_has("#donation-#{new_pending.id}", "New Pending")
 
-    # 2. Switch to pending filter, new_pending should not be in stream because we just switched (reset: true).
-    # But wait, switching filter calls list_donations("pending") which will fetch it from DB!
+    # 2. Switch to pending filter — both pending rows remain.
     session = click_button(session, "pending")
 
     session
     |> assert_has("#donation-#{new_pending.id}", "New Pending")
     |> assert_has("#donation-#{pending.id}", "Pending Donor")
 
-    # 3. Now let's pay the new_pending donation. While on "pending" filter, it should disappear!
+    # 3. Pay the new_pending donation. While on "pending" filter, it should disappear.
     {:ok, paid_new_pending, _} = Donations.mark_paid_with_change(new_pending)
 
     Phoenix.PubSub.broadcast(
@@ -117,7 +126,6 @@ defmodule DonatexWeb.AdminFiltersTest do
 
     Process.sleep(50)
 
-    # It should have disappeared from the pending view
     session
     |> refute_has("#donation-#{new_pending.id}", "New Pending")
 

@@ -6,6 +6,8 @@ defmodule DonatexWeb.AdminLive do
   alias Donatex.Donations
   alias DonatexWeb.DonationPresenter
 
+  @default_filter "all"
+
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
@@ -14,26 +16,16 @@ defmodule DonatexWeb.AdminLive do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
     end
 
-    donations = Donations.list_donations("paid")
-
     {:ok,
      socket
-     |> assign(:filter, "paid")
-     |> assign(:has_donations?, not Enum.empty?(donations))
      |> assign(:stats, Donations.get_donation_stats())
-     |> stream(:donations, donations)}
+     |> assign_filtered_donations(@default_filter)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("set_filter", %{"filter" => filter}, socket)
       when filter in ["all", "paid", "pending"] do
-    donations = Donations.list_donations(filter)
-
-    {:noreply,
-     socket
-     |> assign(:filter, filter)
-     |> assign(:has_donations?, not Enum.empty?(donations))
-     |> stream(:donations, donations, reset: true)}
+    {:noreply, assign_filtered_donations(socket, filter, reset: true)}
   end
 
   def handle_event("replay", %{"id" => id}, socket) do
@@ -185,7 +177,7 @@ defmodule DonatexWeb.AdminLive do
       <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div class="flex items-center gap-1.5 bg-surface-2/40 border border-stroke/40 rounded-full p-1">
           <button
-            :for={f <- ["paid", "pending", "all"]}
+            :for={f <- ["all", "paid", "pending"]}
             type="button"
             phx-click="set_filter"
             phx-value-filter={f}
@@ -250,7 +242,7 @@ defmodule DonatexWeb.AdminLive do
             </div>
 
             <div class="sm:text-right shrink-0">
-              <div class="text-xl font-bold tracking-tight text-text">
+              <div :if={donation.amount} class="text-xl font-bold tracking-tight text-text">
                 Rp {DonationPresenter.format_idr(donation.amount)}
               </div>
 
@@ -309,5 +301,15 @@ defmodule DonatexWeb.AdminLive do
       </div>
     </Layouts.app>
     """
+  end
+
+  defp assign_filtered_donations(socket, filter, opts \\ []) do
+    donations = Donations.list_donations(filter)
+    reset = Keyword.get(opts, :reset, false)
+
+    socket
+    |> assign(:filter, filter)
+    |> assign(:has_donations?, donations != [])
+    |> stream(:donations, donations, reset: reset)
   end
 end
