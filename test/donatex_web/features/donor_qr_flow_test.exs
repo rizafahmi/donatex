@@ -55,6 +55,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> visit(~p"/")
     |> fill_in("Nama kamu", with: "Riza")
     |> choose("Great", exact: false)
+    |> check("Tampilkan apresiasi", exact: false)
     |> choose("Rp 10.000", exact: false)
     |> click_button("Lanjut tip")
     |> assert_has("h1", "Scan QRIS-nya")
@@ -68,6 +69,40 @@ defmodule DonatexWeb.DonorQrFlowTest do
     assert donation.status == "pending"
     assert donation.donor_name == "Riza"
     assert donation.reaction == "great"
+    assert donation.amount == 10_000
+  end
+
+  test "preserves default tip amount after editing while appreciation is collapsed", %{
+    conn: conn
+  } do
+    Req.Test.expect(__MODULE__, fn conn ->
+      assert conn.method == "POST"
+      assert conn.request_path == "/hl/v1/qrcode/create"
+
+      {:ok, body, conn} = Plug.Conn.read_body(conn)
+      assert Jason.decode!(body) == %{"amount" => 10_000}
+
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => "tx-donate-preserve-amount",
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/preserve-amount"
+        }
+      })
+    end)
+
+    conn
+    |> visit(~p"/")
+    |> fill_in("Nama kamu", with: "Riza")
+    |> choose("Great", exact: false)
+    |> check("Tampilkan apresiasi", exact: false)
+    |> click_button("Lanjut tip")
+    |> assert_has("h1", "Scan QRIS-nya")
+
+    donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-preserve-amount")
+    assert donation.status == "pending"
     assert donation.amount == 10_000
   end
 
@@ -91,6 +126,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Good", exact: false)
+      |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Lanjut tip")
       |> assert_has("h1", "Scan QRIS-nya")
@@ -114,8 +150,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> assert_has("h1", "Terima kasih. Alert-mu masuk ke stream.")
 
     session
-    |> click_button("Donasi lagi")
-    |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
+    |> click_button("Kirim lagi")
+    |> assert_has("h1", donor_hero_headline())
   end
 
   test "webhook correlation uses the QR image URL UUID when transaction id is omitted from QR create response",
@@ -147,6 +183,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Okay", exact: false)
+      |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 25.000", exact: false)
       |> click_button("Lanjut tip")
       |> assert_has("h1", "Scan QRIS-nya")
@@ -171,6 +208,41 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> assert_has("h1", "Terima kasih. Alert-mu masuk ke stream.")
   end
 
+  test "back from the QR screen resets the donor form", %{conn: conn} do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => "tx-donate-back",
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/back",
+          "expiresAt" => "2030-01-01T00:00:00Z"
+        }
+      })
+    end)
+
+    conn
+    |> visit(~p"/")
+    |> fill_in("Nama kamu", with: "Riza")
+    |> choose("Great", exact: false)
+    |> check("Tampilkan apresiasi", exact: false)
+    |> choose("Rp 10.000", exact: false)
+    |> click_button("Lanjut tip")
+    |> assert_has("h1", "Scan QRIS-nya")
+    |> assert_has("#payment-expiry")
+    |> click_button("Kembali ke form")
+    |> assert_has("h1", donor_hero_headline())
+    |> refute_has("#amount-options")
+    |> refute_has("#tip-submit")
+    |> unwrap(fn view ->
+      html = Phoenix.LiveViewTest.render(view)
+      refute html =~ ~s(value="Riza")
+      refute html =~ "https://example.invalid/qr/back"
+      html
+    end)
+  end
+
   test "shows an error and stays on the form when QR creation fails", %{conn: conn} do
     Req.Test.expect(__MODULE__, fn conn ->
       Plug.Conn.send_resp(conn, 401, "unauthorized")
@@ -181,9 +253,16 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Good", exact: false)
+      |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Lanjut tip")
-      |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
+      |> assert_has("h1", donor_hero_headline())
+      |> unwrap(fn view ->
+        html = Phoenix.LiveViewTest.render(view)
+        assert html =~ ~s(value="Riza")
+        assert html =~ "QR belum bisa dibuat sekarang"
+        html
+      end)
     end)
   end
 
@@ -210,9 +289,10 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> visit(~p"/")
       |> fill_in("Nama kamu", with: "Riza")
       |> choose("Good", exact: false)
+      |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
       |> click_button("Lanjut tip")
-      |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
+      |> assert_has("h1", donor_hero_headline())
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)
         assert html =~ "Donasi belum bisa disimpan"

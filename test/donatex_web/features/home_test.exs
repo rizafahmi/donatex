@@ -4,6 +4,6 @@ defmodule DonatexWeb.HomeTest do
   test "renders home page", %{conn: conn} do
     conn
     |> visit("/")
-    |> assert_has("h1", "Bikin stream makin seru dan nama kamu muncul di layar.")
+    |> assert_has("h1", donor_hero_headline())
   end
 end

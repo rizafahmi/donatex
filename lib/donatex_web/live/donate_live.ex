@@ -12,13 +12,21 @@ defmodule DonatexWeb.DonateLive do
 
   @preset_amounts [5_000, 10_000, 25_000]
   @preset_amount_options Enum.map(@preset_amounts, &Integer.to_string/1)
-  @form_fields [:donor_name, :reaction, :amount_option, :custom_amount, :message]
+  @form_fields [
+    :donor_name,
+    :reaction,
+    :amount_option,
+    :custom_amount,
+    :message,
+    :show_appreciation
+  ]
   @form_types %{
     donor_name: :string,
     reaction: :string,
     amount_option: :string,
     custom_amount: :integer,
-    message: :string
+    message: :string,
+    show_appreciation: :boolean
   }
 
   @impl Phoenix.LiveView
@@ -49,6 +57,7 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:step, :form)
      |> assign(:donation, nil)
      |> assign(:qr, nil)
+     |> assign(:tip_submitting, false)
      |> assign(:client_ip, peer_ip(socket))
      |> assign_blank_form()}
   end
@@ -57,42 +66,41 @@ defmodule DonatexWeb.DonateLive do
   def handle_event("validate", %{"donation_form" => params}, socket) do
     changeset =
       params
+      |> merge_preserved_amount_params(socket.assigns.form.params)
       |> donation_form_changeset()
       |> Map.put(:action, :validate)
 
     {:noreply, assign_form(socket, changeset)}
   end
 
+  def handle_event("submit", _params, %{assigns: %{step: step}} = socket)
+      when step != :form do
+    {:noreply, socket}
+  end
+
+  def handle_event("submit", _params, %{assigns: %{tip_submitting: true}} = socket) do
+    {:noreply, socket}
+  end
+
   def handle_event("submit", params, socket) do
-    changeset = donation_form_changeset(donation_form_params(params, socket))
+    form_params = donation_form_params(params, socket)
 
-    if changeset.valid? do
-      case create_pending_donation_with_qr(changeset) do
-        {:ok, donation, qr} ->
-          {:noreply,
-           socket
-           |> assign(:step, :payment)
-           |> assign(:donation, donation)
-           |> assign(:qr, qr)
-           |> maybe_reconcile_paid_donation()}
-
-        {:error, :mayar, reason} ->
-          {:noreply,
-           socket
-           |> put_flash(:error, qr_error_message(reason))
-           |> assign_form(changeset)}
-
-        {:error, :donation, _donation_changeset} ->
-          {:noreply,
-           socket
-           |> put_flash(:error, donation_persist_error_message())
-           |> assign_form(changeset)}
-      end
+    # Fail closed: tip path requires appreciation on in submitted params (not only UI).
+    if appreciation_on?(form_params) do
+      submit_tip(socket, form_params)
     else
-      {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
+      {:noreply, socket}
     end
   end
 
+  # Tip CTA is type=submit with name=_tip so the browser serializes live DOM values
+  # (JS.push form: is unavailable on LiveView 1.1.x).
+  def handle_event("submit_feedback", %{"_tip" => _} = params, socket) do
+    handle_event("submit", params, socket)
+  end
+
+  # Enter / primary "Kirim feedback" submits without _tip → free path (M4 free-primary).
+  # Tip stays an explicit click on "Lanjut tip" (name=_tip).
   def handle_event("submit_feedback", %{"donation_form" => params}, socket) do
     changeset = feedback_form_changeset(params)
 
@@ -104,12 +112,7 @@ defmodule DonatexWeb.DonateLive do
   end
 
   def handle_event("new_donation", _params, socket) do
-    {:noreply,
-     socket
-     |> assign(:step, :form)
-     |> assign(:donation, nil)
-     |> assign(:qr, nil)
-     |> assign_blank_form()}
+    {:noreply, reset_donor_form(socket)}
   end
 
   @impl Phoenix.LiveView
@@ -152,6 +155,13 @@ defmodule DonatexWeb.DonateLive do
                 <span class="relative inline-flex size-1.5 rounded-full bg-accent"></span>
               </span>
             </div>
+            <p
+              :if={@qr.expires_at}
+              id="payment-expiry"
+              class="text-xs font-medium text-text-muted"
+            >
+              Berlaku sampai {Calendar.strftime(@qr.expires_at, "%d %b %Y %H:%M UTC")}
+            </p>
           </div>
 
           <div class="relative mt-8 grid gap-6 sm:grid-cols-2 sm:items-start">
@@ -196,6 +206,16 @@ defmodule DonatexWeb.DonateLive do
                   </li>
                 </ul>
               </div>
+
+              <.button
+                id="payment-back"
+                type="button"
+                phx-click="new_donation"
+                variant="ghost"
+                class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]"
+              >
+                Kembali ke form
+              </.button>
             </div>
           </div>
         </section>
@@ -214,7 +234,7 @@ defmodule DonatexWeb.DonateLive do
                 Terima kasih. Alert-mu masuk ke stream.
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Donasimu sudah terkonfirmasi. Kalau ingin menaikkan hype lagi, kamu bisa kirim dukungan berikutnya.
+                Pembayaranmu sudah terkonfirmasi. Kalau ingin menaikkan hype lagi, kamu bisa kirim dukungan berikutnya.
               </p>
             </div>
 
@@ -240,7 +260,7 @@ defmodule DonatexWeb.DonateLive do
                 phx-click="new_donation"
                 class="motion-safe:hover:scale-[1.02] motion-safe:active:scale-[0.98]"
               >
-                Donasi lagi
+                Kirim lagi
               </.button>
               <.button
                 navigate={~p"/"}
@@ -305,10 +325,10 @@ defmodule DonatexWeb.DonateLive do
                       Sedang live
                     </div>
                     <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                      Bikin stream makin seru dan nama kamu muncul di layar.
+                      Kirim feedback ke stream.
                     </h1>
                     <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                      Pilih nominal, tulis pesan, lalu bayar via QRIS. Setelah pembayaran terkonfirmasi, alert donasimu masuk antrean overlay.
+                      Gratis dulu: pilih reaksi, tulis pesan opsional, lalu kirim. Tip QRIS opsional kalau mau kasih apresiasi.
                     </p>
                   </header>
 
@@ -318,23 +338,23 @@ defmodule DonatexWeb.DonateLive do
                         Instan
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        QRIS unik untuk setiap donasi.
+                        Feedback masuk tanpa bayar.
                       </p>
                     </div>
                     <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
                       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                        Aman
+                        Overlay
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        Alert tampil setelah pembayaran valid.
+                        Reaksi muncul sebagai emoji float.
                       </p>
                     </div>
                     <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
                       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                        Favorit
+                        Opsional
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        Rp 10.000 pas buat memanaskan chat.
+                        Tip merayakan setelah pembayaran valid.
                       </p>
                     </div>
                   </div>
@@ -350,7 +370,7 @@ defmodule DonatexWeb.DonateLive do
                   >
                     <div class="space-y-2">
                       <p class="text-sm font-medium text-text-muted">
-                        Siapkan dukunganmu
+                        Siapkan feedbackmu
                       </p>
                       <div class="h-px bg-stroke/60" />
                     </div>
@@ -396,105 +416,6 @@ defmodule DonatexWeb.DonateLive do
                       </p>
                     </fieldset>
 
-                    <fieldset class="space-y-3">
-                      <legend class="w-full">
-                        <span class="flex items-center justify-between gap-3">
-                          <span class="text-sm font-semibold text-text">Pilih nominal</span>
-                          <span class="text-xs uppercase tracking-[0.2em] text-text-muted">IDR</span>
-                        </span>
-                      </legend>
-
-                      <div class="grid grid-cols-2 gap-3">
-                        <label
-                          :for={preset <- @preset_amounts}
-                          for={preset.id}
-                          class={
-                            amount_option_classes(
-                              selected_amount_option == preset.option,
-                              preset.recommended?
-                            )
-                          }
-                        >
-                          <input
-                            id={preset.id}
-                            type="radio"
-                            name={@form[:amount_option].name}
-                            value={preset.value}
-                            checked={selected_amount_option == preset.option}
-                            class="sr-only"
-                          />
-
-                          <div class="flex items-start justify-between gap-3">
-                            <div class="space-y-1">
-                              <span class="block text-sm font-semibold text-text">
-                                {preset.title}
-                              </span>
-                              <span class="block text-lg font-bold tracking-tight text-text">
-                                Rp {preset.formatted}
-                              </span>
-                            </div>
-                            <span
-                              :if={selected_amount_option == preset.option}
-                              class="mt-0.5 text-accent"
-                            >
-                              <span class="hero-check-circle"></span>
-                            </span>
-                          </div>
-                          <span class="text-xs text-text-muted">
-                            {preset.hint}
-                          </span>
-                        </label>
-
-                        <label
-                          for="donation_form_amount_option_custom"
-                          class={amount_option_classes(selected_amount_option == "custom", false)}
-                        >
-                          <input
-                            id="donation_form_amount_option_custom"
-                            type="radio"
-                            name={@form[:amount_option].name}
-                            value="custom"
-                            checked={selected_amount_option == "custom"}
-                            class="sr-only"
-                          />
-                          <div class="space-y-1.5">
-                            <span class="text-base font-semibold text-text">Nominal lain</span>
-                          </div>
-                          <span class="text-xs text-text-muted">Masukkan angka</span>
-                        </label>
-                      </div>
-
-                      <p :if={amount_option_error} class="text-sm font-medium text-danger">
-                        {amount_option_error}
-                      </p>
-                    </fieldset>
-
-                    <div
-                      :if={selected_amount_option == "custom"}
-                      class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-4"
-                    >
-                      <.input
-                        field={@form[:custom_amount]}
-                        type="number"
-                        label="Nominal custom"
-                        placeholder="15000"
-                        min="1000"
-                        step="1000"
-                        required
-                      />
-                      <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <span class="text-text-muted">Masukkan angka tanpa titik atau koma.</span>
-                        <span
-                          :if={parse_custom_amount(@form[:custom_amount].value) > 0}
-                          class="font-semibold text-accent"
-                        >
-                          Nominal: Rp {DonationPresenter.format_idr(
-                            parse_custom_amount(@form[:custom_amount].value)
-                          )}
-                        </span>
-                      </div>
-                    </div>
-
                     <.input
                       field={@form[:message]}
                       type="textarea"
@@ -504,7 +425,126 @@ defmodule DonatexWeb.DonateLive do
                       placeholder="Tulis pesan, request lagu, atau kasih semangat..."
                     />
 
+                    <div class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-3">
+                      <.input
+                        field={@form[:show_appreciation]}
+                        type="checkbox"
+                        id="appreciation-toggle"
+                        label="Tampilkan apresiasi"
+                        class="size-5 rounded border-stroke/60 bg-background text-accent focus:ring-accent/40"
+                      />
+                      <p class="mt-1 pl-7 text-xs text-text-muted">
+                        Opsional — buka pilihan tip QRIS
+                      </p>
+                    </div>
+
+                    <div :if={@show_appreciation} id="amount-options" class="space-y-3">
+                      <fieldset class="space-y-3">
+                        <legend class="w-full">
+                          <span class="flex items-center justify-between gap-3">
+                            <span class="text-sm font-semibold text-text">Pilih nominal</span>
+                            <span class="text-xs uppercase tracking-[0.2em] text-text-muted">
+                              IDR
+                            </span>
+                          </span>
+                        </legend>
+
+                        <div class="grid grid-cols-2 gap-3">
+                          <label
+                            :for={preset <- @preset_amounts}
+                            for={preset.id}
+                            class={
+                              amount_option_classes(
+                                selected_amount_option == preset.option,
+                                preset.recommended?
+                              )
+                            }
+                          >
+                            <input
+                              id={preset.id}
+                              type="radio"
+                              name={@form[:amount_option].name}
+                              value={preset.value}
+                              checked={selected_amount_option == preset.option}
+                              class="sr-only"
+                            />
+
+                            <div class="flex items-start justify-between gap-3">
+                              <div class="space-y-1">
+                                <span class="block text-sm font-semibold text-text">
+                                  {preset.title}
+                                </span>
+                                <span class="block text-lg font-bold tracking-tight text-text">
+                                  Rp {preset.formatted}
+                                </span>
+                              </div>
+                              <span
+                                :if={selected_amount_option == preset.option}
+                                class="mt-0.5 text-accent"
+                              >
+                                <span class="hero-check-circle"></span>
+                              </span>
+                            </div>
+                            <span class="text-xs text-text-muted">
+                              {preset.hint}
+                            </span>
+                          </label>
+
+                          <label
+                            for="donation_form_amount_option_custom"
+                            class={amount_option_classes(selected_amount_option == "custom", false)}
+                          >
+                            <input
+                              id="donation_form_amount_option_custom"
+                              type="radio"
+                              name={@form[:amount_option].name}
+                              value="custom"
+                              checked={selected_amount_option == "custom"}
+                              class="sr-only"
+                            />
+                            <div class="space-y-1.5">
+                              <span class="text-base font-semibold text-text">Nominal lain</span>
+                            </div>
+                            <span class="text-xs text-text-muted">Masukkan angka</span>
+                          </label>
+                        </div>
+
+                        <p :if={amount_option_error} class="text-sm font-medium text-danger">
+                          {amount_option_error}
+                        </p>
+                      </fieldset>
+
+                      <div
+                        :if={selected_amount_option == "custom"}
+                        class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-4"
+                      >
+                        <.input
+                          field={@form[:custom_amount]}
+                          type="number"
+                          label="Nominal custom"
+                          placeholder="15000"
+                          min="1000"
+                          step="1000"
+                          required
+                        />
+                        <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <span class="text-text-muted">
+                            Masukkan angka tanpa titik atau koma.
+                          </span>
+                          <span
+                            :if={parse_custom_amount(@form[:custom_amount].value) > 0}
+                            class="font-semibold text-accent"
+                          >
+                            Nominal: Rp {DonationPresenter.format_idr(
+                              parse_custom_amount(@form[:custom_amount].value)
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
                     <div class="space-y-3 pt-2">
+                      <%!-- Enter / primary submit → free feedback; tip requires #tip-submit (name=_tip). --%>
                       <button
                         type="submit"
                         class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
@@ -524,9 +564,14 @@ defmodule DonatexWeb.DonateLive do
                       </button>
 
                       <button
-                        type="button"
-                        phx-click="submit"
-                        class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
+                        :if={@show_appreciation}
+                        id="tip-submit"
+                        type="submit"
+                        name="_tip"
+                        value="1"
+                        disabled={@tip_submitting}
+                        phx-disable-with="Membuat QR..."
+                        class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
                       >
                         <span class="space-y-0.5">
                           <span class="block text-base">Lanjut tip</span>
@@ -537,7 +582,10 @@ defmodule DonatexWeb.DonateLive do
                         <span aria-hidden="true">&rarr;</span>
                       </button>
 
-                      <div class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30">
+                      <div
+                        :if={@show_appreciation}
+                        class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30"
+                      >
                         <span class="text-xs font-medium text-text-muted">
                           Bisa bayar pakai GoPay, OVO, DANA, ShopeePay & semua M-Banking
                         </span>
@@ -615,14 +663,100 @@ defmodule DonatexWeb.DonateLive do
     do: [custom_amount: "Harus kelipatan 1000"]
 
   defp assign_form(socket, changeset) do
-    assign(socket, :form, to_form(changeset, as: :donation_form))
+    socket
+    |> assign(:form, to_form(changeset, as: :donation_form))
+    |> assign(:show_appreciation, show_appreciation?(changeset))
   end
 
   defp assign_blank_form(socket) do
     assign_form(
       socket,
-      donation_form_changeset(%{"amount_option" => "10000"}, validate_required?: false)
+      donation_form_changeset(
+        %{"amount_option" => "10000", "show_appreciation" => false},
+        validate_required?: false
+      )
     )
+  end
+
+  defp reset_donor_form(socket) do
+    socket
+    |> assign(:step, :form)
+    |> assign(:donation, nil)
+    |> assign(:qr, nil)
+    |> assign(:tip_submitting, false)
+    |> assign_blank_form()
+  end
+
+  defp show_appreciation?(changeset), do: get_field(changeset, :show_appreciation) == true
+
+  defp appreciation_on?(params) when is_map(params) do
+    case Map.get(params, "show_appreciation") do
+      value when value in [true, "true", "on", "1"] -> true
+      _ -> false
+    end
+  end
+
+  defp submit_tip(socket, form_params) do
+    changeset =
+      form_params
+      |> put_tip_appreciation()
+      |> donation_form_changeset()
+
+    socket = assign(socket, :tip_submitting, true)
+
+    if changeset.valid? do
+      create_tip_or_assign_error(socket, changeset)
+    else
+      {:noreply,
+       socket
+       |> assign(:tip_submitting, false)
+       |> assign_form(Map.put(changeset, :action, :insert))}
+    end
+  end
+
+  defp create_tip_or_assign_error(socket, changeset) do
+    case create_pending_donation_with_qr(changeset) do
+      {:ok, donation, qr} ->
+        {:noreply,
+         socket
+         |> assign(:tip_submitting, false)
+         |> assign(:step, :payment)
+         |> assign(:donation, donation)
+         |> assign(:qr, qr)
+         |> maybe_reconcile_paid_donation()}
+
+      {:error, :mayar, reason} ->
+        {:noreply,
+         socket
+         |> assign(:tip_submitting, false)
+         |> put_flash(:error, qr_error_message(reason))
+         |> assign_form(changeset)}
+
+      {:error, :donation, _donation_changeset} ->
+        {:noreply,
+         socket
+         |> assign(:tip_submitting, false)
+         |> put_flash(:error, donation_persist_error_message())
+         |> assign_form(changeset)}
+    end
+  end
+
+  defp merge_preserved_amount_params(params, prior) when is_map(prior) do
+    params
+    |> maybe_preserve_param("amount_option", prior, "10000")
+    |> maybe_preserve_param("custom_amount", prior, nil)
+  end
+
+  defp maybe_preserve_param(params, key, prior, default) do
+    if Map.has_key?(params, key) do
+      params
+    else
+      case Map.fetch(prior, key) do
+        {:ok, value} -> Map.put(params, key, value)
+        :error when is_binary(default) -> Map.put(params, key, default)
+        :error -> params
+      end
+    end
   end
 
   defp peer_ip(socket) do
@@ -669,6 +803,11 @@ defmodule DonatexWeb.DonateLive do
 
   defp donation_form_params(%{"donation_form" => params}, _socket) when is_map(params), do: params
   defp donation_form_params(_params, socket), do: socket.assigns.form.params
+
+  # Tip CTA is only reachable when appreciation is on; keep it on after tip validation
+  # errors so amount errors remain visible (show_appreciation is form-derived).
+  defp put_tip_appreciation(params) when is_map(params),
+    do: Map.put(params, "show_appreciation", true)
 
   defp feedback_attrs(changeset) do
     %{

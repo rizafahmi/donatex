@@ -1,8 +1,10 @@
 # Project Progress
 
 ## Current State
-- Milestone 3 (Floating Overlay Reactions): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
-- Test status: 105 tests, 0 failures
+- Milestone 4 (Optional Appreciation Experience): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
+- M4 tip-path hardening (W1–W6): complete — appreciation is a form checkbox; amounts preserved while collapsed; tip submits live form values; double-submit guarded
+- M4 review follow-up (S1–S5): complete — Enter→free documented/locked; tip gated on appreciation params; paid CTA “Kirim lagi”; hero copy helper; back-reset refutes tip CTA
+- Test status: 113 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -36,6 +38,9 @@
 - [x] Align the overall color scheme and vibe with the user's livestream overlay (cyan and purple developer-terminal aesthetic, terminal window alert layout on `/overlay`)
 - [x] Milestone 2 — Free Notes with Safe Submission: free submit + thank-you, 10s peer-IP cooldown, tip secondary path, admin default `all`, nil-amount display, live insert, no replay for sent
 - [x] Milestone 3 — Floating Overlay Reactions: free Notes float emoji-only on `/overlay` (3–4s, simultaneous, no recovery); tip celebrations unchanged
+- [x] Milestone 4 — Optional Appreciation Experience: collapsed appreciation toggle; free feedback default; tip QR with back/reset and retryable errors
+- [x] M4 tip-path hardening: `<.input>` appreciation checkbox, amount preserve on validate, tip submitter `_tip`, `:tip_submitting` guard, toggle-off + free-with-appreciation tests
+- [x] M4 review follow-up (S1–S5): Enter→free product lock, tip appreciation gate, paid-step copy, back-reset tip refute, `donor_hero_headline/0`
 
 ## In Progress
 
@@ -46,8 +51,8 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Milestone 4 — Optional Appreciation Experience (collapsed appreciation toggle; free feedback default)
-2. Keep tip QR path and overlay float plumbing intact while redesigning the donor form default path
+1. Milestone 5 — Unified Admin Inbox (Tips/Feedback filters; tip-only replay; live free + paid updates)
+2. Keep donor appreciation toggle and overlay float/tip paths intact while reshaping admin filters
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

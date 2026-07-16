@@ -4,18 +4,76 @@ defmodule DonatexWeb.DonateLiveTest do
   import Phoenix.LiveViewTest
   import Plug.Test, only: [put_peer_data: 2]
 
-  test "renders the donor form with preset amounts and optional message", %{conn: conn} do
+  test "renders the donor form with optional message and collapsed appreciation", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
     assert has_element?(view, "#donor-page")
     assert has_element?(view, "#donation-form")
     assert has_element?(view, "#donation-form", "Nama kamu")
-    assert has_element?(view, "#donation-form", "Rp 5.000")
-    assert has_element?(view, "#donation-form", "Rp 10.000")
-    assert has_element?(view, "#donation-form", "Rp 25.000")
     assert has_element?(view, "#donation-form", "Pesan (opsional)")
-
+    assert has_element?(view, "#appreciation-toggle")
+    refute has_element?(view, "#amount-options")
     refute has_element?(view, "#donation_form_custom_amount")
+  end
+
+  test "hides amount choices until appreciation is enabled", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    assert has_element?(view, "#appreciation-toggle")
+    refute has_element?(view, "#amount-options")
+
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
+    assert has_element?(view, "#amount-options")
+    assert has_element?(view, "#amount-options", "Rp 5.000")
+    assert has_element?(view, "#amount-options", "Rp 10.000")
+    assert has_element?(view, "#amount-options", "Rp 25.000")
+  end
+
+  test "shows tip CTA only when appreciation is enabled", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    assert has_element?(view, "#donation-form", "Kirim feedback")
+    refute has_element?(view, "#tip-submit")
+
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
+    assert has_element?(view, "#donation-form", "Kirim feedback")
+    assert has_element?(view, "#tip-submit")
+  end
+
+  test "hides tip UI when appreciation is turned off", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
+    assert has_element?(view, "#amount-options")
+    assert has_element?(view, "#tip-submit")
+
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "false"})
+    |> render_change()
+
+    refute has_element?(view, "#amount-options")
+    refute has_element?(view, "#tip-submit")
+    assert has_element?(view, "#donation-form", "Kirim feedback")
+  end
+
+  test "presents feedback-first copy on the default donor path", %{conn: conn} do
+    {:ok, view, html} = live(conn, ~p"/")
+
+    assert has_element?(view, "#donor-page h1", donor_hero_headline())
+    assert html =~ "Gratis dulu"
+    assert has_element?(view, "#donation-form", "Siapkan feedbackmu")
+    refute html =~ "Pilih nominal, tulis pesan, lalu bayar via QRIS"
+    refute html =~ "Siapkan dukunganmu"
+    refute html =~ "QRIS unik untuk setiap donasi"
   end
 
   test "renders the four approved reaction choices", %{conn: conn} do
@@ -35,7 +93,6 @@ defmodule DonatexWeb.DonateLiveTest do
       |> form("#donation-form",
         donation_form: %{
           "donor_name" => "Riza",
-          "amount_option" => "10000",
           "message" => ""
         }
       )
@@ -52,7 +109,6 @@ defmodule DonatexWeb.DonateLiveTest do
       |> form("#donation-form",
         donation_form: %{
           "donor_name" => "",
-          "amount_option" => "10000",
           "message" => ""
         }
       )
@@ -70,7 +126,6 @@ defmodule DonatexWeb.DonateLiveTest do
         donation_form: %{
           "donor_name" => String.duplicate("a", 65),
           "reaction" => "good",
-          "amount_option" => "10000",
           "message" => ""
         }
       )
@@ -88,7 +143,6 @@ defmodule DonatexWeb.DonateLiveTest do
         donation_form: %{
           "donor_name" => "Riza",
           "reaction" => "good",
-          "amount_option" => "10000",
           "message" => String.duplicate("a", 281)
         }
       )
@@ -100,10 +154,15 @@ defmodule DonatexWeb.DonateLiveTest do
   test "requires choosing a preset or custom amount", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
     html =
       render_submit(view, "submit", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "show_appreciation" => "true",
           "message" => ""
         }
       })
@@ -114,10 +173,15 @@ defmodule DonatexWeb.DonateLiveTest do
   test "shows the custom amount field and validates it", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
     html =
       render_change(view, "validate", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "show_appreciation" => "true",
           "amount_option" => "custom",
           "message" => "Semangat streamnya"
         }
@@ -131,6 +195,7 @@ defmodule DonatexWeb.DonateLiveTest do
       render_submit(view, "submit", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "show_appreciation" => "true",
           "amount_option" => "custom",
           "custom_amount" => "",
           "message" => "Semangat streamnya"
@@ -148,6 +213,7 @@ defmodule DonatexWeb.DonateLiveTest do
         "donation_form" => %{
           "donor_name" => "Riza",
           "reaction" => "good",
+          "show_appreciation" => "true",
           "amount_option" => "custom",
           "custom_amount" => "150000",
           "message" => ""
@@ -205,5 +271,67 @@ defmodule DonatexWeb.DonateLiveTest do
     assert feedback.donor_name == "Live Admin"
     assert feedback.status == "sent"
     assert is_nil(feedback.amount)
+  end
+
+  test "Enter / primary submit without _tip stays free even with appreciation and amount", %{
+    conn: conn
+  } do
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 22}, port: 44_324, ssl_cert: nil})
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    view
+    |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
+    |> render_change()
+
+    html =
+      view
+      |> form("#donation-form",
+        donation_form: %{
+          "donor_name" => "Riza",
+          "reaction" => "good",
+          "message" => "Tetap apresiasi, kirim gratis",
+          "show_appreciation" => "true",
+          "amount_option" => "10000"
+        }
+      )
+      |> render_submit()
+
+    assert html =~ "Terima kasih"
+    assert has_element?(view, "#feedback-thanks")
+    refute html =~ "Scan QRIS"
+    refute has_element?(view, "#payment-expiry")
+
+    feedback =
+      Donatex.Repo.get_by!(Donatex.Donations.Donation, donor_name: "Riza", status: "sent")
+
+    assert feedback.message == "Tetap apresiasi, kirim gratis"
+    assert feedback.status == "sent"
+    assert is_nil(feedback.amount)
+  end
+
+  test "ignores tip submit when appreciation is off", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    before_count = Donatex.Repo.aggregate(Donatex.Donations.Donation, :count)
+
+    html =
+      render_submit(view, "submit_feedback", %{
+        "_tip" => "1",
+        "donation_form" => %{
+          "donor_name" => "Crafted Tip",
+          "reaction" => "good",
+          "message" => "",
+          "show_appreciation" => "false",
+          "amount_option" => "10000"
+        }
+      })
+
+    assert has_element?(view, "#donation-form")
+    refute has_element?(view, "#payment-expiry")
+    refute html =~ "Scan QRIS"
+    assert Donatex.Repo.aggregate(Donatex.Donations.Donation, :count) == before_count
+    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Crafted Tip") == nil
   end
 end
