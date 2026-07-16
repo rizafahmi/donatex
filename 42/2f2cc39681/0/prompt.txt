@@ -1,0 +1,9 @@
+/project-startup-kit but only add init.sh and update @AGENTS.md to harness
+
+---
+
+I changed the workflow a bit. Still use @docs/PROGRESS.md but now I use @docs/milestones/ for each milestone had it's own progress file, @docs/milestones/5-unified-admin-inbox/milestone-log.md for example. Can you please update the @AGENTS.md to accomodate that?
+
+---
+
+/atomic-git-history

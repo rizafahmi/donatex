@@ -1,0 +1,79 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "422f2cc39681",
+  "session_id": "03884fd6-afc7-45a1-a598-867988f98a35",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-16T12:40:24.126517Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [
+    "AGENTS.md"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "7a80e99445b8",
+  "compact_transcript_start": 0,
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-project-startup-kit-2026-07-16T12:34:40.750871Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "project-startup-kit"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "90a49a733215",
+      "timestamp": "2026-07-16T12:34:40.750871Z",
+      "native": {
+        "command": "/project-startup-kit"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/project-startup-kit",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-atomic-git-history-2026-07-16T12:39:42.641863Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "atomic-git-history"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "7a80e99445b8",
+      "timestamp": "2026-07-16T12:39:42.641863Z",
+      "native": {
+        "command": "/atomic-git-history"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/atomic-git-history",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-16T12:40:24.11554Z",
+    "agent_lines": 26,
+    "agent_removed": 14,
+    "human_added": 0,
+    "human_modified": 14,
+    "human_removed": 10,
+    "total_committed": 40,
+    "total_lines_changed": 64,
+    "agent_percentage": 62.5,
+    "metric_version": 2
+  }
+}
