@@ -1,0 +1,17 @@
+/loop /phx-full @docs/milestones/5-unified-admin-inbox/prompt.md /tdd-tidy-first
+
+---
+
+3
+
+---
+
+y
+
+---
+
+y
+
+---
+
+y
