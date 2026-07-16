@@ -39,5 +39,5 @@ defmodule DonatexWeb.ConnCase do
   end
 
   @doc "Canonical donor-page hero headline used in copy locks."
-  def donor_hero_headline, do: "Kirim feedback ke stream."
+  def donor_hero_headline, do: "Kirim Masukan & Pesan"
 end

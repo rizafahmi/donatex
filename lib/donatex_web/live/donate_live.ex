@@ -59,6 +59,7 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:qr, nil)
      |> assign(:tip_submitting, false)
      |> assign(:client_ip, peer_ip(socket))
+     |> assign(:page_title, "Kirim Feedback & Tips")
      |> assign_blank_form()}
   end
 
@@ -146,17 +147,17 @@ defmodule DonatexWeb.DonateLive do
 
           <div class="relative space-y-3">
             <p class="text-xs font-semibold uppercase tracking-[0.34em] text-text-muted">
-              Tinggal sedikit lagi
+              Dukungan Apresiasi
             </p>
             <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-              Scan QRIS-nya
+              Scan QRIS untuk Apresiasi
             </h1>
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-              1) Buka aplikasi bank/e-wallet 2) Scan QRIS 3) Selesai—tunggu konfirmasi di halaman ini.
+              Pesan dan tip Anda akan tersimpan secara otomatis setelah pembayaran sukses (dan akan masuk antrean alert jika stream sedang offline).
             </p>
             <div class="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent shadow-[0_0_12px_rgba(75,250,165,0.15)]">
-              <span class="hero-arrow-path motion-safe:animate-spin"></span>
-              Menunggu konfirmasi
+              <.icon name="hero-arrow-path" class="size-4 animate-spin" />
+              Menunggu konfirmasi pembayaran
               <span class="relative flex size-2 items-center justify-center">
                 <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75">
                 </span>
@@ -236,13 +237,13 @@ defmodule DonatexWeb.DonateLive do
 
             <div class="relative space-y-3">
               <p class="text-xs font-semibold uppercase tracking-[0.34em] text-success">
-                Pembayaran terkonfirmasi
+                Apresiasi Diterima
               </p>
               <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-                Terima kasih. Alert-mu masuk ke stream.
+                Terima kasih! Pesan dan tip Anda telah tersimpan.
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Pembayaranmu sudah terkonfirmasi. Kalau ingin menaikkan hype lagi, kamu bisa kirim dukungan berikutnya.
+                Dukungan Anda sudah kami terima dan simpan. Pesan Anda akan ditampilkan di overlay stream (atau masuk antrean jika stream sedang offline). Terima kasih banyak!
               </p>
             </div>
 
@@ -289,13 +290,13 @@ defmodule DonatexWeb.DonateLive do
 
               <div class="relative space-y-3">
                 <p class="text-xs font-semibold uppercase tracking-[0.34em] text-accent">
-                  Feedback terkirim
+                  Pesan Terkirim
                 </p>
                 <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
-                  Terima kasih. Feedback-mu sudah masuk.
+                  Terima kasih! Pesan Anda telah kami simpan.
                 </h1>
                 <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                  Kamu bisa kirim lagi nanti, atau lanjut kasih tip kalau mau.
+                  Pesan dan masukan Anda sudah tersimpan dengan aman di database kami. Terima kasih atas partisipasinya!
                 </p>
               </div>
 
@@ -330,39 +331,39 @@ defmodule DonatexWeb.DonateLive do
                         </span>
                         <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
                       </span>
-                      Sedang live
+                      Kotak Masukan Terbuka
                     </div>
                     <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
-                      Kirim feedback ke stream.
+                      Kirim Masukan & Pesan
                     </h1>
                     <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                      Gratis dulu: pilih reaksi, tulis pesan opsional, lalu kirim. Tip QRIS opsional kalau mau kasih apresiasi.
+                      Tulis pesan atau masukan Anda secara gratis kapan saja. Anda juga bisa menyertakan tip apresiasi via QRIS secara opsional.
                     </p>
                   </header>
 
                   <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                     <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
                       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                        Instan
+                        Pesan Gratis
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        Feedback masuk tanpa bayar.
+                        Kirim masukan atau saran Anda kapan saja secara cuma-cuma.
                       </p>
                     </div>
                     <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
                       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                        Overlay
+                        Overlay Stream
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        Reaksi muncul sebagai emoji float.
+                        Emoji reaksi akan muncul di layar saat streamer sedang live.
                       </p>
                     </div>
                     <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
                       <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                        Opsional
+                        Apresiasi Tip
                       </p>
                       <p class="mt-2 text-sm font-semibold text-text">
-                        Tip merayakan setelah pembayaran valid.
+                        Dukung kreator dengan tip QRIS opsional.
                       </p>
                     </div>
                   </div>
@@ -405,7 +406,7 @@ defmodule DonatexWeb.DonateLive do
                             ]
                           }
                           for={"donation_form_reaction_#{reaction}"}
-                          class="cursor-pointer rounded-2xl border border-stroke/60 bg-background/20 px-3 py-4 text-center text-sm font-semibold text-text"
+                          class={reaction_classes(to_string(@form[:reaction].value) == reaction)}
                         >
                           <input
                             id={"donation_form_reaction_#{reaction}"}
@@ -442,7 +443,7 @@ defmodule DonatexWeb.DonateLive do
                         class="size-5 rounded border-stroke/60 bg-background text-accent focus:ring-accent/40"
                       />
                       <p class="mt-1 pl-7 text-xs text-text-muted">
-                        Opsional — buka pilihan tip QRIS
+                        Opsional (buka pilihan tip QRIS)
                       </p>
                     </div>
 
@@ -488,9 +489,9 @@ defmodule DonatexWeb.DonateLive do
                               </div>
                               <span
                                 :if={selected_amount_option == preset.option}
-                                class="mt-0.5 text-accent"
+                                class="mt-0.5"
                               >
-                                <span class="hero-check-circle"></span>
+                                <.icon name="hero-check-circle" class="size-5 text-accent" />
                               </span>
                             </div>
                             <span class="text-xs text-text-muted">
@@ -566,7 +567,7 @@ defmodule DonatexWeb.DonateLive do
                         <span class="inline-flex items-center gap-2">
                           <span class="phx-submit-loading:hidden" aria-hidden="true">&rarr;</span>
                           <span class="hidden phx-submit-loading:inline-flex items-center gap-2 text-xs font-semibold">
-                            <span class="hero-arrow-path motion-safe:animate-spin"></span> Mengirim
+                            <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Mengirim
                           </span>
                         </span>
                       </button>
@@ -848,6 +849,22 @@ defmodule DonatexWeb.DonateLive do
   defp preset_amount_copy(25_000), do: {"Masuk spotlight", "Support maksimal", false}
 
   defp preset_amount_copy(_amount), do: {"Support", "Terima kasih", false}
+
+  defp reaction_classes(selected?)
+
+  defp reaction_classes(true) do
+    [
+      "group cursor-pointer rounded-2xl border px-3 py-4 text-center text-sm font-semibold text-text transition-all duration-200",
+      "scale-[1.02] border-accent/50 bg-linear-to-br from-accent/16 to-accent-2/12 shadow-md shadow-accent/25 ring-1 ring-accent/30 active:scale-100 focus-within:ring-4 focus-within:ring-accent/20 focus-within:border-accent/40"
+    ]
+  end
+
+  defp reaction_classes(false) do
+    [
+      "group cursor-pointer rounded-2xl border px-3 py-4 text-center text-sm font-semibold text-text transition-all duration-200",
+      "border-stroke/60 bg-background/20 hover:border-accent/35 hover:bg-background/25 active:scale-[0.99] focus-within:ring-4 focus-within:ring-accent/20 focus-within:border-accent/40"
+    ]
+  end
 
   defp amount_option_classes(selected?, recommended?)
 

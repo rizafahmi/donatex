@@ -59,7 +59,7 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
       html = render_submit(view, "submit_feedback", tip_params)
       assert html =~ "QR belum bisa dibuat sekarang"
       assert has_element?(view, "#donation-form")
-      refute html =~ "Scan QRIS-nya"
+      refute html =~ "Scan QRIS untuk Apresiasi"
     end)
 
     assert Repo.aggregate(Donation, :count) == before_count
@@ -92,13 +92,13 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
     }
 
     html = render_submit(view, "submit_feedback", tip_params)
-    assert html =~ "Scan QRIS-nya"
+    assert html =~ "Scan QRIS untuk Apresiasi"
     refute has_element?(view, "#donation-form")
 
     before_count = Repo.aggregate(Donation, :count)
 
     html = render_submit(view, "submit_feedback", tip_params)
-    assert html =~ "Scan QRIS-nya"
+    assert html =~ "Scan QRIS untuk Apresiasi"
     assert Repo.aggregate(Donation, :count) == before_count
     assert Repo.get_by!(Donation, mayar_transaction_id: "tx-tip-once").status == "pending"
   end
@@ -130,7 +130,7 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
         }
       })
 
-    assert html =~ "Scan QRIS-nya"
+    assert html =~ "Scan QRIS untuk Apresiasi"
     before_count = Repo.aggregate(Donation, :count)
 
     html =
@@ -142,7 +142,7 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
         }
       })
 
-    assert html =~ "Scan QRIS-nya"
+    assert html =~ "Scan QRIS untuk Apresiasi"
     refute has_element?(view, "#feedback-thanks")
     assert Repo.aggregate(Donation, :count) == before_count
     assert Repo.get_by(Donation, donor_name: "Sneaky Free") == nil
@@ -193,7 +193,7 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
         }
       })
 
-    assert html =~ "Scan QRIS-nya"
+    assert html =~ "Scan QRIS untuk Apresiasi"
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-preserve-custom")
     assert donation.amount == 25_000
   end

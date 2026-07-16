@@ -69,7 +69,7 @@ defmodule DonatexWeb.DonateLiveTest do
     {:ok, view, html} = live(conn, ~p"/")
 
     assert has_element?(view, "#donor-page h1", donor_hero_headline())
-    assert html =~ "Gratis dulu"
+    assert html =~ "Tulis pesan atau masukan Anda secara gratis"
     assert has_element?(view, "#donation-form", "Siapkan feedbackmu")
     refute html =~ "Pilih nominal, tulis pesan, lalu bayar via QRIS"
     refute html =~ "Siapkan dukunganmu"
