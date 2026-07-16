@@ -72,29 +72,67 @@ defmodule DonatexWeb.AdminFiltersTest do
     |> refute_has("#donation-#{feedback.id}", "Free Sender")
   end
 
+  test "feedback filter shows free notes and excludes tips", %{
+    conn: conn,
+    pending: pending,
+    paid: paid
+  } do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Free Sender",
+        reaction: "good",
+        message: "hello free"
+      })
+
+    conn
+    |> put_req_header("authorization", basic_auth_header())
+    |> visit(~p"/admin")
+    |> click_button("feedback")
+    |> assert_has("#donation-#{feedback.id}", "Free Sender")
+    |> refute_has("#donation-#{paid.id}", "Paid Donor")
+    |> refute_has("#donation-#{pending.id}", "Pending Donor")
+  end
+
   test "switching filters updates the list", %{conn: conn, pending: pending, paid: paid} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{
+        donor_name: "Free Sender",
+        reaction: "good",
+        message: "hello free"
+      })
+
     session =
       conn
       |> put_req_header("authorization", basic_auth_header())
       |> visit(~p"/admin")
 
+    session
+    |> assert_has("button[phx-value-filter=all]")
+    |> assert_has("button[phx-value-filter=tips]")
+    |> assert_has("button[phx-value-filter=feedback]")
+    |> refute_has("button[phx-value-filter=paid]")
+    |> refute_has("button[phx-value-filter=pending]")
+
     # 1. Under all (default)
     session
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
     |> assert_has("#donation-#{pending.id}", "Pending Donor")
+    |> assert_has("#donation-#{feedback.id}", "Free Sender")
 
-    # 2. Click "pending" filter
-    session = click_button(session, "pending")
-
-    session
-    |> assert_has("#donation-#{pending.id}", "Pending Donor")
-    |> refute_has("#donation-#{paid.id}", "Paid Donor")
-
-    # 3. Click "paid" filter
-    session = click_button(session, "paid")
+    # 2. Tips filter
+    session = click_button(session, "tips")
 
     session
     |> assert_has("#donation-#{paid.id}", "Paid Donor")
+    |> assert_has("#donation-#{pending.id}", "Pending Donor")
+    |> refute_has("#donation-#{feedback.id}", "Free Sender")
+
+    # 3. Feedback filter
+    session = click_button(session, "feedback")
+
+    session
+    |> assert_has("#donation-#{feedback.id}", "Free Sender")
+    |> refute_has("#donation-#{paid.id}", "Paid Donor")
     |> refute_has("#donation-#{pending.id}", "Pending Donor")
   end
 
