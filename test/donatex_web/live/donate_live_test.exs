@@ -157,7 +157,7 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ "Pesan maksimal 280 karakter"
   end
 
-  test "requires choosing a preset or custom amount", %{conn: conn} do
+  test "describes a missing appreciation amount choice as a tip", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
     view
@@ -174,7 +174,8 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert html =~ "Pilih nominal donasi"
+    assert html =~ "Pilih nominal tip"
+    refute html =~ "Pilih nominal donasi"
   end
 
   test "describes a missing custom appreciation amount as a tip", %{conn: conn} do

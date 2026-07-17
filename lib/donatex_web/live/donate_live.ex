@@ -660,7 +660,7 @@ defmodule DonatexWeb.DonateLive do
         end)
 
       _ ->
-        add_error(changeset, :amount_option, "Pilih nominal donasi")
+        add_error(changeset, :amount_option, "Pilih nominal tip")
     end
   end
 
