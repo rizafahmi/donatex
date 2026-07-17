@@ -1017,7 +1017,7 @@ defmodule DonatexWeb.DonateLive do
   end
 
   defp donation_persist_error_message do
-    "Donasi belum bisa disimpan. Coba lagi ya. Kalau kamu sudah sempat scan QR, jangan lanjutkan pembayarannya."
+    "Tip belum bisa disimpan. Coba lagi ya. Kalau kamu sudah sempat scan QR, jangan lanjutkan pembayarannya."
   end
 
   defp log_failed_donation_persist(%Client.DynamicQr{} = qr, amount, donation_changeset) do

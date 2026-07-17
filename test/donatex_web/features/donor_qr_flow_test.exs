@@ -327,7 +327,8 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> assert_has("h1", donor_hero_headline())
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)
-        assert html =~ "Donasi belum bisa disimpan"
+        assert html =~ "Tip belum bisa disimpan"
+        refute html =~ "Donasi belum bisa disimpan"
         refute html =~ "https://example.invalid/qr/persist-failed"
         html
       end)
