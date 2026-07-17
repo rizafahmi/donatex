@@ -66,7 +66,7 @@ defmodule DonatexWeb.Layouts do
               navigate={~p"/"}
               class="rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text"
             >
-              Donate
+              Feedback
             </.link>
             <.link
               navigate={~p"/admin"}

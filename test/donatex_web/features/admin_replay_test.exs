@@ -139,6 +139,19 @@ defmodule DonatexWeb.AdminReplayTest do
     refute html =~ "Donation not found"
   end
 
+  test "labels the public navigation as feedback", %{conn: conn} do
+    {:ok, view, _html} =
+      conn
+      |> put_req_header(
+        "authorization",
+        basic_auth_header(Config.admin_username(), Config.admin_password())
+      )
+      |> live(~p"/admin")
+
+    assert has_element?(view, "nav a[href='/']", "Feedback")
+    refute has_element?(view, "nav a[href='/']", "Donate")
+  end
+
   defp basic_auth_header(username, password) do
     "Basic " <> Base.encode64("#{username}:#{password}")
   end
