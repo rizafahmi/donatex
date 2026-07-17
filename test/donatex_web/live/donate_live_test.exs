@@ -16,6 +16,12 @@ defmodule DonatexWeb.DonateLiveTest do
     refute has_element?(view, "#donation_form_custom_amount")
   end
 
+  test "brands the public experience as Notable", %{conn: conn} do
+    {:ok, _view, html} = live(conn, ~p"/")
+
+    assert html =~ ~s(<title data-default="Notable" data-suffix=" · Notable">)
+  end
+
   test "hides amount choices until appreciation is enabled", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 

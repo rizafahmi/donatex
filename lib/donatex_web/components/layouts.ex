@@ -55,7 +55,7 @@ defmodule DonatexWeb.Layouts do
       >
         <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <a href="/" class="group flex items-baseline gap-3">
-            <span class="font-display text-lg tracking-tight text-text">Donatex</span>
+            <span class="font-display text-lg tracking-tight text-text">Notable</span>
             <span class="text-[0.65rem] font-semibold tracking-[0.28em] text-text-muted/80">
               QRIS
             </span>
