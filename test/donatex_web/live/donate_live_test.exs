@@ -177,7 +177,7 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ "Pilih nominal donasi"
   end
 
-  test "shows the custom amount field and validates it", %{conn: conn} do
+  test "describes a missing custom appreciation amount as a tip", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
     view
@@ -188,6 +188,7 @@ defmodule DonatexWeb.DonateLiveTest do
       render_change(view, "validate", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "reaction" => "good",
           "show_appreciation" => "true",
           "amount_option" => "custom",
           "message" => "Semangat streamnya"
@@ -202,6 +203,7 @@ defmodule DonatexWeb.DonateLiveTest do
       render_submit(view, "submit", %{
         "donation_form" => %{
           "donor_name" => "Riza",
+          "reaction" => "good",
           "show_appreciation" => "true",
           "amount_option" => "custom",
           "custom_amount" => "",
@@ -209,7 +211,8 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert html =~ "Masukkan nominal donasi"
+    assert html =~ "Masukkan nominal tip"
+    refute html =~ "Masukkan nominal donasi"
   end
 
   test "accepts a valid custom amount", %{conn: conn} do

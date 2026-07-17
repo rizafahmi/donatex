@@ -650,7 +650,7 @@ defmodule DonatexWeb.DonateLive do
 
       "custom" ->
         changeset
-        |> validate_required([:custom_amount], message: "Masukkan nominal donasi")
+        |> validate_required([:custom_amount], message: "Masukkan nominal tip")
         |> validate_number(:custom_amount,
           greater_than_or_equal_to: 1_000,
           message: "Minimal 1000"
