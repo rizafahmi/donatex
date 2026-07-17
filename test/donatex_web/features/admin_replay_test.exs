@@ -109,6 +109,21 @@ defmodule DonatexWeb.AdminReplayTest do
     assert html =~ "Only paid tips can be replayed"
   end
 
+  test "describes a missing replay record as a note", %{conn: conn} do
+    {:ok, view, _html} =
+      conn
+      |> put_req_header(
+        "authorization",
+        basic_auth_header(Config.admin_username(), Config.admin_password())
+      )
+      |> live(~p"/admin")
+
+    html = render_click(view, "replay", %{"id" => Ecto.UUID.generate()})
+
+    assert html =~ "Note not found"
+    refute html =~ "Donation not found"
+  end
+
   defp basic_auth_header(username, password) do
     "Basic " <> Base.encode64("#{username}:#{password}")
   end

@@ -37,7 +37,7 @@ defmodule DonatexWeb.AdminLive do
     case Donations.get_donation_by_id(id) do
       nil ->
         Logger.warning("Admin replay failed donation_id=#{id} reason=not_found")
-        {:noreply, put_flash(socket, :error, "Donation not found")}
+        {:noreply, put_flash(socket, :error, "Note not found")}
 
       donation ->
         if replayable?(donation) do
