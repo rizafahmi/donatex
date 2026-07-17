@@ -79,7 +79,7 @@ defmodule DonatexWeb.AdminLive do
         {:noreply, put_flash(socket, :info, "Already paid")}
 
       {:error, :not_found} ->
-        {:noreply, put_flash(socket, :error, "Donation not found")}
+        {:noreply, put_flash(socket, :error, "Note not found")}
 
       {:error, reason} ->
         Logger.warning("Admin mark paid failed donation_id=#{id} reason=#{inspect(reason)}")
