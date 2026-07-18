@@ -22,6 +22,12 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ ~s(<title data-default="Notable" data-suffix=" · Notable">)
   end
 
+  test "identifies the Indonesian document language", %{conn: conn} do
+    {:ok, _view, html} = live(conn, ~p"/")
+
+    assert html =~ ~s(<html lang="id")
+  end
+
   test "hides amount choices until appreciation is enabled", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
