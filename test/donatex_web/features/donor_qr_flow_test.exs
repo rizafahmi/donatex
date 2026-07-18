@@ -180,6 +180,10 @@ defmodule DonatexWeb.DonorQrFlowTest do
 
     session
     |> assert_has("h1", "Terima kasih! Pesan dan tip Anda telah tersimpan.")
+    |> assert_has(
+      "section[role='status'][aria-live='polite']",
+      "Terima kasih! Pesan dan tip Anda telah tersimpan."
+    )
 
     session
     |> click_button("Kirim lagi")

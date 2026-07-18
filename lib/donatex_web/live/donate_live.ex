@@ -230,7 +230,11 @@ defmodule DonatexWeb.DonateLive do
         </section>
       <% else %>
         <%= if @step == :paid do %>
-          <section class="relative isolate overflow-hidden rounded-[2.5rem] border bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8 transition-all duration-700 ease-out starting:scale-95 starting:opacity-0 animate-success-glow">
+          <section
+            role="status"
+            aria-live="polite"
+            class="relative isolate overflow-hidden rounded-[2.5rem] border bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8 transition-all duration-700 ease-out starting:scale-95 starting:opacity-0 animate-success-glow"
+          >
             <div class="absolute inset-0 bg-linear-to-br from-success/14 via-transparent to-accent/10" />
             <div class="absolute -left-16 top-8 h-56 w-56 rounded-full bg-success/10 blur-3xl" />
             <div class="absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
