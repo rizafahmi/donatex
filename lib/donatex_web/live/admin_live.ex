@@ -62,31 +62,6 @@ defmodule DonatexWeb.AdminLive do
     end
   end
 
-  def handle_event("mark_paid", %{"id" => id}, socket) do
-    case Donations.mark_paid_by_id(id) do
-      {:ok, donation, true} ->
-        Logger.info("Admin marked paid donation_id=#{id}")
-
-        Phoenix.PubSub.broadcast(
-          Donatex.PubSub,
-          "donations:paid",
-          {:donation_paid, DonationPresenter.payload(donation)}
-        )
-
-        {:noreply, put_flash(socket, :info, "Marked as paid")}
-
-      {:ok, _donation, false} ->
-        {:noreply, put_flash(socket, :info, "Already paid")}
-
-      {:error, :not_found} ->
-        {:noreply, put_flash(socket, :error, "Note not found")}
-
-      {:error, reason} ->
-        Logger.warning("Admin mark paid failed donation_id=#{id} reason=#{inspect(reason)}")
-        {:noreply, put_flash(socket, :error, "Failed to mark as paid")}
-    end
-  end
-
   @impl Phoenix.LiveView
   def handle_info({:donation_created, donation}, socket) do
     filter = socket.assigns.filter
@@ -307,11 +282,10 @@ defmodule DonatexWeb.AdminLive do
           </div>
 
           <div
-            :if={replayable?(donation) or donation.status == "pending"}
+            :if={replayable?(donation)}
             class="relative mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end"
           >
             <.button
-              :if={replayable?(donation)}
               type="button"
               variant="primary"
               phx-click="replay"
@@ -319,17 +293,6 @@ defmodule DonatexWeb.AdminLive do
               class="w-full px-5 py-2.5 text-xs sm:w-auto phx-click-loading:opacity-60 phx-click-loading:pointer-events-none"
             >
               Replay Alert
-            </.button>
-
-            <.button
-              :if={donation.status == "pending"}
-              type="button"
-              variant="ghost"
-              phx-click="mark_paid"
-              phx-value-id={donation.id}
-              class="w-full px-5 py-2.5 text-xs sm:w-auto phx-click-loading:opacity-60 phx-click-loading:pointer-events-none"
-            >
-              Mark Paid
             </.button>
           </div>
         </article>

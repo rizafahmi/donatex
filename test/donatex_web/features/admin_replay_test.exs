@@ -124,7 +124,15 @@ defmodule DonatexWeb.AdminReplayTest do
     refute html =~ "Donation not found"
   end
 
-  test "describes a missing manual payment record as a note", %{conn: conn} do
+  test "does not offer manual payment confirmation for pending tips", %{conn: conn} do
+    {:ok, pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-no-manual-payment",
+        donor_name: "Awaiting Mayar",
+        reaction: "great",
+        amount: 25_000
+      })
+
     {:ok, view, _html} =
       conn
       |> put_req_header(
@@ -133,10 +141,9 @@ defmodule DonatexWeb.AdminReplayTest do
       )
       |> live(~p"/admin")
 
-    html = render_click(view, "mark_paid", %{"id" => Ecto.UUID.generate()})
-
-    assert html =~ "Note not found"
-    refute html =~ "Donation not found"
+    assert has_element?(view, "#donations-#{pending.id}")
+    refute has_element?(view, "#donations-#{pending.id} button[phx-click='mark_paid']")
+    assert Repo.get!(Donation, pending.id).status == "pending"
   end
 
   test "labels the public navigation as feedback", %{conn: conn} do
