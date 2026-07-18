@@ -265,6 +265,7 @@ defmodule DonatexWeb.DonateLiveTest do
 
     assert html =~ "Terima kasih"
     assert has_element?(view, "#feedback-thanks")
+    assert has_element?(view, "#feedback-thanks[role='status'][aria-live='polite']")
 
     feedback =
       Donatex.Repo.get_by!(Donatex.Donations.Donation, donor_name: "Riza", status: "sent")
