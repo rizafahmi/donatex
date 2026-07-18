@@ -430,7 +430,7 @@ defmodule DonatexWeb.DonateLive do
                       type="textarea"
                       label="Pesan (opsional)"
                       rows="4"
-                      maxlength="160"
+                      maxlength="280"
                       placeholder="Tulis pesan, request lagu, atau kasih semangat..."
                     />
 

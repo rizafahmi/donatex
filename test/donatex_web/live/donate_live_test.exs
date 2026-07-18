@@ -157,6 +157,12 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ "Pesan maksimal 280 karakter"
   end
 
+  test "allows browsers to enter the full 280-character message limit", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    assert has_element?(view, "#donation_form_message[maxlength='280']")
+  end
+
   test "describes a missing appreciation amount choice as a tip", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
