@@ -57,6 +57,22 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert Repo.get!(Donation, second.id).alerted
   end
 
+  test "brands the tip alert title bar as Notable", %{conn: conn} do
+    {:ok, pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-brand",
+        donor_name: "Branded Tipper",
+        reaction: "great",
+        amount: 10_000
+      })
+
+    {:ok, _paid} = Donations.mark_paid_by_mayar_transaction_id(pending.mayar_transaction_id)
+    {:ok, _view, html} = live(conn, ~p"/overlay")
+
+    assert html =~ "notable-terminal | alert"
+    refute html =~ "donatex-terminal | alert"
+  end
+
   test "queues paid events received while another alert is displayed", %{conn: conn} do
     {:ok, _pending} =
       Donations.create_pending_donation(%{
