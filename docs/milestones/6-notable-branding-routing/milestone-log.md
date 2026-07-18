@@ -26,5 +26,18 @@
 ## Unspecified implementation decisions
 - Kept the default redirect code inline in the `PageController` module to reuse the existing structure.
 
+## Corrective branding audit — 2026-07-18
+- Re-audited user-visible copy across the donor flow, QR states, overlay, shared navigation, and authenticated admin after the initial milestone completion claim.
+- Replaced remaining donation-first copy in appreciation validation and persistence errors with tip terminology.
+- Replaced remaining admin missing-record messages with Note terminology.
+- Changed the shared public-route navigation label from `Donate` to `Feedback`.
+- Changed the visible overlay title bar from `donatex-terminal | alert` to `notable-terminal | alert`.
+- Kept internal `Donatex`/`Donations` modules, schema terminology, DOM IDs, event names, PubSub topics, and logs unchanged, as required by the PRD.
+- Added focused regressions for each corrected user-visible string.
+
+### Final verification evidence
+- Scoped visible-string audit found no remaining donation-first copy; remaining matches are internal identifiers, logs, comments, or the intentionally retained font-family asset name.
+- `./init.sh` passed: 140 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication check passed; architecture policy passed.
+
 ## Next steps
 - Proceed to Milestone 7: End-to-end refinement, smoke testing, and final release preparation.

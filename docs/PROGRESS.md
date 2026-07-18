@@ -2,7 +2,7 @@
 
 ## Current State
 - Milestone 6 (Notable Branding and Routing): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
-- Test status: 135 tests, 0 failures
+- Test status: 140 tests, 0 failures
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -43,6 +43,7 @@
 - [x] Milestone 5 — Unified Admin Inbox: All/Tips/Feedback filters; card fields (reaction, type, time, status); tip-only replay guard; live free + paid updates; Notes empty state
 - [x] Milestone 6 — Notable branding / public route polish (per PRD) & redirect /donate to /
 - [x] Refresh admin header/subtitle remaining "donation" wording to "notes and tips"
+- [x] Complete corrective Milestone 6 user-visible copy audit across donor validation/errors, admin missing-record messages, shared navigation, and overlay terminal branding
 
 ## In Progress
 
