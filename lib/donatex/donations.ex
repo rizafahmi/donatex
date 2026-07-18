@@ -168,15 +168,6 @@ defmodule Donatex.Donations do
 
   def get_donation(id), do: get_donation_by_id(id)
 
-  def mark_paid_by_id(id) when is_binary(id) and byte_size(id) > 0 do
-    case Repo.get(Donation, id) do
-      nil -> {:error, :not_found}
-      donation -> mark_paid_with_change(donation)
-    end
-  end
-
-  def mark_paid_by_id(_id), do: {:error, :invalid_id}
-
   def list_paid_unalerted_donations do
     Donation
     |> where([d], d.status == "paid" and not d.alerted)
