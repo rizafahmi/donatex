@@ -146,6 +146,23 @@ defmodule DonatexWeb.OverlayLiveTest do
     refute html =~ "secret note body"
   end
 
+  test "animates a free Note float for three to four seconds", %{conn: conn} do
+    {:ok, feedback} =
+      Donations.create_feedback(%{donor_name: "Timed", reaction: "great", message: nil})
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:created",
+      {:donation_created, feedback}
+    )
+
+    float_html = view |> element("#obs-float-#{feedback.id}") |> render()
+    assert [_, duration] = Regex.run(~r/--float-duration: (\d+)ms/, float_html)
+    assert String.to_integer(duration) in 3_000..4_000
+  end
+
   test "does not float pending tip creations on donations:created", %{conn: conn} do
     {:ok, pending} =
       Donations.create_pending_donation(%{

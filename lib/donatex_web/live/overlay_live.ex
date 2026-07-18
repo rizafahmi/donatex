@@ -158,7 +158,7 @@ defmodule DonatexWeb.OverlayLive do
           emoji: emoji,
           start_x: Enum.random(8..85),
           drift_x: Enum.random(-18..18),
-          duration_ms: Enum.random(6_000..8_000)
+          duration_ms: Enum.random(3_000..4_000)
         }
     end
   end

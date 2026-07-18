@@ -109,7 +109,7 @@
   pointer-events: none;
   user-select: none;
   will-change: transform, opacity;
-  animation: obs-float-path var(--float-duration, 7000ms) ease-out forwards;
+  animation: obs-float-path var(--float-duration, 3500ms) ease-out forwards;
 }
 
 @keyframes obs-float-path {
