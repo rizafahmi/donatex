@@ -278,3 +278,34 @@
 @custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
 
 [data-phx-session], [data-phx-teleported-src] { display: contents }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-neon-pulse,
+  .animate-neon-purple-pulse,
+  .animate-border-glow,
+  .animate-success-glow,
+  .animate-spin,
+  .animate-ping,
+  .animate-pulse {
+    animation: none;
+  }
+
+  .obs-float-emoji {
+    animation: none;
+    transform: translate3d(0, -30vh, 0);
+    opacity: 1;
+  }
+
+  .obs-overlay-line {
+    animation: none;
+    transform: rotate(-5deg) scale3d(1, 1, 1);
+    opacity: 1;
+  }
+
+  .obs-overlay-main-text,
+  .obs-overlay-sub-text {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+}

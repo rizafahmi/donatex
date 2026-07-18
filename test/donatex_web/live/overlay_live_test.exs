@@ -268,6 +268,22 @@ defmodule DonatexWeb.OverlayLiveTest do
     refute html =~ "MissedFloat"
   end
 
+  test "provides static alert fallbacks when reduced motion is requested" do
+    css = File.read!(Path.expand("../../../assets/css/app.css", __DIR__))
+
+    assert [_, reduced_motion_rules] =
+             Regex.run(
+               ~r/@media \(prefers-reduced-motion: reduce\) \{(?<rules>.*)\}\s*\z/s,
+               css
+             )
+
+    assert reduced_motion_rules =~ ".obs-float-emoji"
+    assert reduced_motion_rules =~ ".obs-overlay-line"
+    assert reduced_motion_rules =~ ".obs-overlay-main-text"
+    assert reduced_motion_rules =~ ".obs-overlay-sub-text"
+    assert reduced_motion_rules =~ "animation: none"
+  end
+
   defp donation_payload(donation) do
     %{
       id: donation.id,
