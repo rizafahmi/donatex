@@ -1,8 +1,9 @@
 # Project Progress
 
 ## Current State
-- Milestone 6 (Notable Branding and Routing): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
-- Test status: 140 tests, 0 failures
+- Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
+- Test status: 144 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed
+- Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
@@ -44,6 +45,11 @@
 - [x] Milestone 6 — Notable branding / public route polish (per PRD) & redirect /donate to /
 - [x] Refresh admin header/subtitle remaining "donation" wording to "notes and tips"
 - [x] Complete corrective Milestone 6 user-visible copy audit across donor validation/errors, admin missing-record messages, shared navigation, and overlay terminal branding
+- [x] Milestone 7 — Remove manual-paid bypass so only Mayar confirmation can promote pending tips
+- [x] Align free reaction timing to 3–4 seconds and donor message input to the 280-character server limit
+- [x] Add Indonesian document metadata, live status announcements, and reduced-motion fallbacks
+- [x] Verify mobile free feedback, OBS transparency/layout, restart recovery, auto-dismiss persistence, and paid-tip replay in a real browser
+- [x] Run the final 144-test, Credo, Dialyzer, duplication, and architecture quality gate
 
 ## In Progress
 
@@ -54,7 +60,8 @@
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
 
 ## Next Steps
-1. Milestone 7 — End-to-end refinement, smoke testing, and final release preparation
+1. Configure the production environment and deploy using the documented release process.
+2. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
@@ -66,4 +73,5 @@
 - Milestone 4 log: [docs/milestones/4-optional-appreciation-experience/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
 - Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
+- Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)
