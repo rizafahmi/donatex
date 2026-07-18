@@ -155,7 +155,11 @@ defmodule DonatexWeb.DonateLive do
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
               Pesan dan tip Anda akan tersimpan secara otomatis setelah pembayaran sukses (dan akan masuk antrean alert jika stream sedang offline).
             </p>
-            <div class="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent shadow-[0_0_12px_rgba(75,250,165,0.15)]">
+            <div
+              role="status"
+              aria-live="polite"
+              class="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs font-semibold text-accent shadow-[0_0_12px_rgba(75,250,165,0.15)]"
+            >
               <.icon name="hero-arrow-path" class="size-4 animate-spin" />
               Menunggu konfirmasi pembayaran
               <span class="relative flex size-2 items-center justify-center">

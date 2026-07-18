@@ -59,6 +59,10 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> choose("Rp 10.000", exact: false)
     |> click_button("Lanjut tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
+    |> assert_has(
+      "[role='status'][aria-live='polite']",
+      "Menunggu konfirmasi pembayaran"
+    )
     |> unwrap(fn view ->
       html = Phoenix.LiveViewTest.render(view)
       assert html =~ "https://example.invalid/qr/10000"
