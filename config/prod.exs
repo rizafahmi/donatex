@@ -17,7 +17,7 @@ config :donatex, DonatexWeb.Endpoint,
     rewrite_on: [:x_forwarded_proto],
     exclude: [
       # paths: ["/health"],
-      hosts: ["localhost", "127.0.0.1", "donasi.rizafahmi.com"]
+      hosts: ["localhost", "127.0.0.1", "feedback.rizafahmi.com"]
     ]
   ]
 

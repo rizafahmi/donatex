@@ -54,7 +54,7 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "donasi.rizafahmi.com"
+  host = System.get_env("PHX_HOST") || "feedback.rizafahmi.com"
 
   config :donatex, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
@@ -96,7 +96,7 @@ if config_env() == :prod do
 
   config :donatex, DonatexWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
-    check_origin: [origin, "https://donasi.rizafahmi.com"],
+    check_origin: [origin, "https://feedback.rizafahmi.com"],
     http: [
       # Enable IPv6 and bind on all interfaces.
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
