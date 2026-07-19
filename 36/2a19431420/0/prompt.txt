@@ -1,0 +1,13 @@
+/phx-plan In Scan QRIS untuk Apresiasi section, please add copy/words something to guide user to use or open ewallet/banking app to scan the QRIS. Something like: Buka aplikasi ewallet atau ebanking kesayangan kamu untuk scan QRIS
+
+---
+
+3
+
+---
+
+Not yet. Should it be highlighted? Like Call To Action? Let me know what your thougt about it
+
+---
+
+soft highlight it is
