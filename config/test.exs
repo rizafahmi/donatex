@@ -49,3 +49,5 @@ config :donatex, :admin,
   password: "pass_test"
 
 config :donatex, :app, base_url: "http://localhost:4000"
+
+config :donatex, async_analytics: false

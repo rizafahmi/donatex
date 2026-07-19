@@ -9,7 +9,8 @@ import Config
 
 config :donatex,
   ecto_repos: [Donatex.Repo],
-  generators: [timestamp_type: :utc_datetime, binary_id: true]
+  generators: [timestamp_type: :utc_datetime, binary_id: true],
+  async_analytics: true
 
 # Configure the endpoint
 config :donatex, DonatexWeb.Endpoint,

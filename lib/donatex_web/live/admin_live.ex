@@ -15,12 +15,20 @@ defmodule DonatexWeb.AdminLive do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:created")
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
+      Phoenix.PubSub.subscribe(Donatex.PubSub, "analytics:page_view")
     end
 
     {:ok,
      socket
      |> assign(:page_title, "Admin Console")
+     |> assign(:meta_description, "Administrative console for managing notes and tips.")
+     |> assign(:meta_robots, "noindex, nofollow")
+     |> assign(
+       :canonical_url,
+       (Application.get_env(:donatex, :app)[:base_url] |> String.trim_trailing("/")) <> "/admin"
+     )
      |> assign(:stats, Donations.get_donation_stats())
+     |> assign(:funnel_stats, Donatex.Analytics.get_funnel_stats())
      |> assign(:filters, @filters)
      |> assign_filtered_donations(@default_filter)}
   end
@@ -77,7 +85,8 @@ defmodule DonatexWeb.AdminLive do
 
     {:noreply,
      socket
-     |> assign(:stats, Donations.get_donation_stats())}
+     |> assign(:stats, Donations.get_donation_stats())
+     |> assign(:funnel_stats, Donatex.Analytics.get_funnel_stats())}
   end
 
   def handle_info({:donation_paid, %{id: id}}, socket) do
@@ -99,7 +108,8 @@ defmodule DonatexWeb.AdminLive do
 
         {:noreply,
          socket
-         |> assign(:stats, Donations.get_donation_stats())}
+         |> assign(:stats, Donations.get_donation_stats())
+         |> assign(:funnel_stats, Donatex.Analytics.get_funnel_stats())}
     end
   end
 
@@ -112,6 +122,12 @@ defmodule DonatexWeb.AdminLive do
       end
 
     {:noreply, socket}
+  end
+
+  def handle_info({:page_view_recorded, _path}, socket) do
+    {:noreply,
+     socket
+     |> assign(:funnel_stats, Donatex.Analytics.get_funnel_stats())}
   end
 
   @impl Phoenix.LiveView
@@ -151,6 +167,89 @@ defmodule DonatexWeb.AdminLive do
               /overlay
             </a>
           </div>
+        </div>
+      </div>
+      
+    <!-- Conversion Funnel Section -->
+      <div class="border border-stroke/50 bg-surface/30 rounded-3xl p-6 mb-6">
+        <h2 class="text-xs font-semibold uppercase tracking-[0.24em] text-text-muted mb-4">
+          Conversion Funnel
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <!-- Total Views Card -->
+          <div class="bg-background/25 border border-stroke/30 rounded-2xl p-4 flex flex-col justify-between animate-neon-pulse">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+              Total Views
+            </span>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-bold text-text">{@funnel_stats.views}</span>
+              <span class="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
+                loads
+              </span>
+            </div>
+            <div class="mt-4 h-1 w-full bg-stroke/20 rounded-full overflow-hidden">
+              <div class="h-full bg-stroke/60 rounded-full" style="width: 100%"></div>
+            </div>
+          </div>
+          
+    <!-- Feedback Conversion Card -->
+          <div class="bg-background/25 border border-stroke/30 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                Feedback Left
+              </span>
+              <span class="text-xs font-bold text-accent">
+                {calculate_rate(@funnel_stats.feedback, @funnel_stats.views)}%
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-bold text-text">{@funnel_stats.feedback}</span>
+              <span class="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
+                notes
+              </span>
+            </div>
+            <div class="mt-4 h-1 w-full bg-stroke/20 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-accent rounded-full transition-all duration-500"
+                style={"width: #{calculate_rate(@funnel_stats.feedback, @funnel_stats.views)}%"}
+              >
+              </div>
+            </div>
+          </div>
+          
+    <!-- Tips Conversion Card -->
+          <div class="bg-background/25 border border-stroke/30 rounded-2xl p-4 flex flex-col justify-between">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
+                Tips Paid
+              </span>
+              <span class="text-xs font-bold text-accent-2">
+                {calculate_rate(@funnel_stats.paid, @funnel_stats.views)}%
+              </span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl font-bold text-text">{@funnel_stats.paid}</span>
+              <span class="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
+                tips
+              </span>
+            </div>
+            <div class="mt-4 h-1 w-full bg-stroke/20 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-accent-2 rounded-full transition-all duration-500"
+                style={"width: #{calculate_rate(@funnel_stats.paid, @funnel_stats.views)}%"}
+              >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          :if={@funnel_stats.views < @funnel_stats.feedback + @funnel_stats.paid}
+          class="mt-4 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-accent-2"
+        >
+          <span class="h-1.5 w-1.5 rounded-full bg-accent-2 animate-pulse shrink-0"></span>
+          <span>Stats adjusted for historical notes/tips</span>
         </div>
       </div>
       
@@ -323,4 +422,15 @@ defmodule DonatexWeb.AdminLive do
   defp status_badge_class("pending"), do: "border-accent-2/30 bg-accent-2/10 text-accent-2"
   defp status_badge_class("sent"), do: "border-stroke/60 bg-surface-2/40 text-text-muted"
   defp status_badge_class(_status), do: "border-stroke/60 bg-background/20 text-text-muted"
+
+  defp calculate_rate(_count, 0), do: "0.0"
+
+  defp calculate_rate(count, views) do
+    if count >= views do
+      "100.0"
+    else
+      percent = count / views * 100
+      :erlang.float_to_binary(percent, [{:decimals, 1}])
+    end
+  end
 end

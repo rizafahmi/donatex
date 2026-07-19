@@ -1,8 +1,9 @@
 # Project Progress
 
 ## Current State
+- Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
-- Test status: 144 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed
+- Test status: 151 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
@@ -52,6 +53,8 @@
 - [x] Verify mobile free feedback, OBS transparency/layout, restart recovery, auto-dismiss persistence, and paid-tip replay in a real browser
 - [x] Run the final 144-test, Credo, Dialyzer, duplication, and architecture quality gate
 - [x] Unify free feedback and tip submission behind one mode-aware donor-form button and one `submit_feedback` event
+- [x] Milestone 8 — SEO Optimization: robots.txt, canonical links, descriptive page titles, meta descriptions, sitemap.xml, llms.txt, Open Graph/Twitter Card tags, Strict-Transport-Security trust signal header, Organization & FAQPage JSON-LD schemas, and 301 permanent redirect for /donate.
+- [x] Visitor Analytics & Conversion Funnel: Track raw page views on `/` dynamically via connected socket, broadcast page views via PubSub, and render real-time conversion rates (Feedback & Tip Conversion) on `/admin` with a premium glassmorphic visual card.
 
 ## In Progress
 
@@ -76,4 +79,5 @@
 - Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
 - Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
 - Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
+- Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

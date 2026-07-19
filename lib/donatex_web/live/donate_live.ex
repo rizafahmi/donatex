@@ -33,6 +33,7 @@ defmodule DonatexWeb.DonateLive do
   def mount(_params, _session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+      Donatex.Analytics.track_page_view("/")
     end
 
     preset_amounts =
@@ -60,6 +61,15 @@ defmodule DonatexWeb.DonateLive do
      |> assign(:tip_submitting, false)
      |> assign(:client_ip, peer_ip(socket))
      |> assign(:page_title, "Kirim Feedback & Tips")
+     |> assign(
+       :meta_description,
+       "Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming."
+     )
+     |> assign(:meta_robots, "index, follow, max-snippet:150, max-image-preview:large")
+     |> assign(
+       :canonical_url,
+       (Application.get_env(:donatex, :app)[:base_url] |> String.trim_trailing("/")) <> "/"
+     )
      |> assign_blank_form()}
   end
 
@@ -235,7 +245,12 @@ defmodule DonatexWeb.DonateLive do
                 Terima kasih! Pesan dan tip Anda telah tersimpan.
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Dukungan Anda sudah kami terima dan simpan. Pesan Anda akan ditampilkan di overlay stream (atau masuk antrean jika stream sedang offline). Terima kasih banyak!
+                Dukungan Anda sudah kami terima dan simpan. Pesan Anda akan ditampilkan di overlay stream (atau masuk antrean jika stream sedang offline). Sembari menunggu, yuk baca artikel terbaru atau project saya di <a
+                  href="https://rizafahmi.com/?utm_source=feedback_app&utm_medium=referral&utm_campaign=donation_page_thanks_tip"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-accent underline hover:text-accent/80 transition"
+                >rizafahmi.com</a>. Terima kasih banyak!
               </p>
             </div>
 
@@ -290,7 +305,12 @@ defmodule DonatexWeb.DonateLive do
                   Terima kasih! Pesan Anda telah kami simpan.
                 </h1>
                 <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                  Pesan dan masukan Anda sudah tersimpan dengan aman di database kami. Terima kasih atas partisipasinya!
+                  Pesan dan masukan Anda sudah tersimpan dengan aman. Sembari menunggu, yuk baca artikel terbaru atau project saya di <a
+                    href="https://rizafahmi.com/?utm_source=feedback_app&utm_medium=referral&utm_campaign=donation_page_thanks_free"
+                    target="_blank"
+                    rel="noopener"
+                    class="text-accent underline hover:text-accent/80 transition"
+                  >rizafahmi.com</a>. Terima kasih atas partisipasinya!
                 </p>
               </div>
 
@@ -317,11 +337,11 @@ defmodule DonatexWeb.DonateLive do
               <div class="absolute right-0 top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl" />
 
               <div class="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[0.95fr_1.05fr] lg:px-10 lg:py-10">
-                <div class="min-w-0 flex flex-col justify-between gap-8">
+                <div class="min-w-0 flex flex-col gap-8">
                   <header class="space-y-4">
                     <div class="inline-flex items-center gap-2 rounded-full border border-accent/35 bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
                       <span class="relative flex size-2">
-                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70">
+                        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75">
                         </span>
                         <span class="relative inline-flex size-2 rounded-full bg-accent"></span>
                       </span>
@@ -331,36 +351,65 @@ defmodule DonatexWeb.DonateLive do
                       Kirim Masukan & Pesan
                     </h1>
                     <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                      Tulis pesan atau masukan Anda secara gratis kapan saja. Anda juga bisa menyertakan tip apresiasi via QRIS secara opsional.
+                      Tulis pesan atau masukan secara gratis kapan saja untuk mendukung stream <a
+                        href="https://rizafahmi.com/?utm_source=feedback_app&utm_medium=referral&utm_campaign=donation_page_desc"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-accent underline hover:text-accent/80 transition"
+                      >Riza Fahmi</a>. Juga bisa menyertakan tip apresiasi via QRIS jika berkenan.
                     </p>
                   </header>
 
-                  <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                    <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
-                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                        Pesan Gratis
-                      </p>
-                      <p class="mt-2 text-sm font-semibold text-text">
-                        Kirim masukan atau saran Anda kapan saja secara cuma-cuma.
-                      </p>
-                    </div>
-                    <div class="rounded-3xl border border-stroke/60 bg-background/20 px-4 py-4">
-                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-                        Overlay Stream
-                      </p>
-                      <p class="mt-2 text-sm font-semibold text-text">
-                        Emoji reaksi akan muncul di layar saat streamer sedang live.
-                      </p>
-                    </div>
-                    <div class="rounded-3xl border border-accent/35 bg-accent/10 px-4 py-4">
-                      <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-                        Apresiasi Tip
-                      </p>
-                      <p class="mt-2 text-sm font-semibold text-text">
-                        Dukung kreator dengan tip QRIS opsional.
-                      </p>
-                    </div>
-                  </div>
+                  <ul class="space-y-4" aria-label="Fitur tersedia">
+                    <li class="flex items-start gap-3">
+                      <span
+                        class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-stroke/60 text-text-muted"
+                        aria-hidden="true"
+                      >
+                        <.icon name="hero-chat-bubble-left-ellipsis" class="size-4" />
+                      </span>
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
+                          Pesan Gratis
+                        </p>
+                        <p class="mt-0.5 text-sm text-text-muted/80">
+                          Kirim masukan atau saran kapan saja, tanpa biaya.
+                        </p>
+                      </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                      <span
+                        class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-accent-2/15 text-accent-2"
+                        aria-hidden="true"
+                      >
+                        <.icon name="hero-play-circle" class="size-4" />
+                      </span>
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-2/80">
+                          Overlay Stream
+                        </p>
+                        <p class="mt-0.5 text-sm text-text-muted/80">
+                          Emoji reaksi muncul di layar saat streamer sedang live.
+                        </p>
+                      </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                      <span
+                        class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent"
+                        aria-hidden="true"
+                      >
+                        <.icon name="hero-qr-code" class="size-4" />
+                      </span>
+                      <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+                          Apresiasi Tip
+                        </p>
+                        <p class="mt-0.5 text-sm text-text-muted/80">
+                          Dukung kreator dengan tip QRIS, opsional.
+                        </p>
+                      </div>
+                    </li>
+                  </ul>
                 </div>
 
                 <div class="min-w-0 rounded-[2.25rem] border border-stroke/60 bg-background/18 px-5 py-6 shadow-sm shadow-black/25 ring-1 ring-stroke/35 backdrop-blur sm:px-6 sm:py-7">
@@ -371,13 +420,6 @@ defmodule DonatexWeb.DonateLive do
                     phx-submit="submit_feedback"
                     class="space-y-6"
                   >
-                    <div class="space-y-2">
-                      <p class="text-sm font-medium text-text-muted">
-                        Siapkan feedbackmu
-                      </p>
-                      <div class="h-px bg-stroke/60" />
-                    </div>
-
                     <.input
                       field={@form[:donor_name]}
                       label="Nama kamu"
@@ -428,18 +470,33 @@ defmodule DonatexWeb.DonateLive do
                       placeholder="Tulis pesan, request lagu, atau kasih semangat..."
                     />
 
-                    <div class="rounded-3xl border border-stroke/60 bg-background/14 px-4 py-3">
-                      <.input
-                        field={@form[:show_appreciation]}
+                    <label
+                      class="flex cursor-pointer items-start gap-3 rounded-2xl border border-stroke/50 bg-background/10 px-4 py-3 transition hover:border-stroke/70 hover:bg-background/15"
+                      for="appreciation-toggle"
+                    >
+                      <input type="hidden" name={@form[:show_appreciation].name} value="false" />
+                      <input
                         type="checkbox"
                         id="appreciation-toggle"
-                        label="Tampilkan apresiasi"
-                        class="size-5 rounded border-stroke/60 bg-background text-accent focus:ring-accent/40"
+                        name={@form[:show_appreciation].name}
+                        value="true"
+                        checked={
+                          Phoenix.HTML.Form.normalize_value(
+                            "checkbox",
+                            @form[:show_appreciation].value
+                          )
+                        }
+                        class="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-stroke/60 bg-background text-accent focus:ring-accent/40"
                       />
-                      <p class="mt-1 pl-7 text-xs text-text-muted">
-                        Opsional (buka pilihan tip QRIS)
-                      </p>
-                    </div>
+                      <span class="min-w-0 pointer-events-none select-none">
+                        <span class="block text-sm font-semibold text-text">
+                          Tambah tip apresiasi
+                        </span>
+                        <span class="block text-xs text-text-muted">
+                          Opsional. Buka pilihan pembayaran QRIS.
+                        </span>
+                      </span>
+                    </label>
 
                     <div :if={@show_appreciation} id="amount-options" class="space-y-3">
                       <fieldset class="space-y-3">
@@ -546,26 +603,26 @@ defmodule DonatexWeb.DonateLive do
                       </div>
                     </div>
 
-                    <div class="space-y-3 pt-2">
+                    <div class="space-y-2.5 pt-1">
                       <button
                         type="submit"
                         disabled={@show_appreciation and @tip_submitting}
                         phx-disable-with={
                           if @show_appreciation, do: "Membuat QR...", else: "Mengirim..."
                         }
-                        class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
+                        class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
                       >
                         <span class="space-y-0.5">
-                          <span class="block text-base">
+                          <span class="block text-base leading-tight">
                             <%= if @show_appreciation do %>
                               Kirim feedback + tip
                             <% else %>
                               Kirim feedback
                             <% end %>
                           </span>
-                          <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
+                          <span class="block text-[11px] font-medium text-background/65 uppercase tracking-[0.12em]">
                             <%= if @show_appreciation do %>
-                              Pembayaran via QRIS
+                              Lanjut ke pembayaran QRIS
                             <% else %>
                               Gratis, tanpa tip
                             <% end %>
@@ -579,14 +636,12 @@ defmodule DonatexWeb.DonateLive do
                         </span>
                       </button>
 
-                      <div
+                      <p
                         :if={@show_appreciation}
-                        class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-surface/30 px-3 py-2.5 text-center shadow-inner ring-1 ring-stroke/30"
+                        class="text-center text-xs text-text-muted/75"
                       >
-                        <span class="text-xs font-medium text-text-muted">
-                          Bisa bayar pakai GoPay, OVO, DANA, ShopeePay & semua M-Banking
-                        </span>
-                      </div>
+                        GoPay, OVO, DANA, ShopeePay & semua M-Banking
+                      </p>
                     </div>
                   </.form>
                 </div>
@@ -595,6 +650,62 @@ defmodule DonatexWeb.DonateLive do
           <% end %>
         <% end %>
       <% end %>
+
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Notable",
+          "url": "https://feedback.rizafahmi.com",
+          "logo": "https://feedback.rizafahmi.com/favicon.ico",
+          "sameAs": [
+            "https://rizafahmi.com/",
+            "https://github.com/rizafahmi",
+            "https://twitter.com/rizafahmi"
+          ],
+          "description": "Notable adalah platform untuk mengirim masukan, saran, atau pesan kepada streamer secara gratis, serta memberikan tip apresiasi via QRIS."
+        }
+      </script>
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Apa itu Notable?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Notable adalah platform untuk mengirim masukan, saran, atau pesan kepada streamer secara gratis, serta memberikan tip apresiasi via QRIS."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Bagaimana cara mengirim pesan secara gratis?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Anda cukup mengisi nama, memilih emoji reaksi, menulis pesan Anda, dan menekan tombol 'Kirim feedback'."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Bagaimana cara memberikan tip apresiasi?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Centang pilihan 'Tambah tip apresiasi', pilih nominal tip yang diinginkan, lalu selesaikan pembayaran dengan memindai kode QRIS dinamis yang muncul di layar."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Metode pembayaran apa saja yang didukung untuk tip?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Kami mendukung semua dompet digital (GoPay, OVO, DANA, ShopeePay, LinkAja) serta semua aplikasi M-Banking yang mendukung pembayaran QRIS."
+              }
+            }
+          ]
+        }
+      </script>
     </Layouts.app>
     """
   end
