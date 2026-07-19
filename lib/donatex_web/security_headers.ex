@@ -8,7 +8,8 @@ defmodule DonatexWeb.SecurityHeaders do
       "permissions-policy" => "camera=(), microphone=(), geolocation=()",
       "referrer-policy" => "strict-origin-when-cross-origin",
       "x-content-type-options" => "nosniff",
-      "x-frame-options" => "DENY"
+      "x-frame-options" => "DENY",
+      "strict-transport-security" => "max-age=31536000; includeSubDomains"
     }
   end
 end
