@@ -57,7 +57,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> choose("Great", exact: false)
     |> check("Tampilkan apresiasi", exact: false)
     |> choose("Rp 10.000", exact: false)
-    |> click_button("Lanjut tip")
+    |> click_button("Kirim feedback + tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
     |> assert_has(
       "[role='status'][aria-live='polite']",
@@ -102,7 +102,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> fill_in("Nama kamu", with: "Riza")
     |> choose("Great", exact: false)
     |> check("Tampilkan apresiasi", exact: false)
-    |> click_button("Lanjut tip")
+    |> click_button("Kirim feedback + tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-preserve-amount")
@@ -134,7 +134,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> choose("Rp 25.000", exact: false)
     |> uncheck("Tampilkan apresiasi", exact: false)
     |> check("Tampilkan apresiasi", exact: false)
-    |> click_button("Lanjut tip")
+    |> click_button("Kirim feedback + tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-preserve-25k")
@@ -164,7 +164,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> choose("Good", exact: false)
       |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut tip")
+      |> click_button("Kirim feedback + tip")
       |> assert_has("h1", "Scan QRIS untuk Apresiasi")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: "tx-donate-2")
@@ -225,7 +225,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> choose("Okay", exact: false)
       |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 25.000", exact: false)
-      |> click_button("Lanjut tip")
+      |> click_button("Kirim feedback + tip")
       |> assert_has("h1", "Scan QRIS untuk Apresiasi")
 
     donation = Repo.get_by!(Donation, mayar_transaction_id: transaction_id)
@@ -268,13 +268,13 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> choose("Great", exact: false)
     |> check("Tampilkan apresiasi", exact: false)
     |> choose("Rp 10.000", exact: false)
-    |> click_button("Lanjut tip")
+    |> click_button("Kirim feedback + tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
     |> assert_has("#payment-expiry")
     |> click_button("Kembali ke form")
     |> assert_has("h1", donor_hero_headline())
     |> refute_has("#amount-options")
-    |> refute_has("#tip-submit")
+    |> assert_has("#donation-form button[type='submit']", "Kirim feedback")
     |> unwrap(fn view ->
       html = Phoenix.LiveViewTest.render(view)
       refute html =~ ~s(value="Riza")
@@ -295,7 +295,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> choose("Good", exact: false)
       |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut tip")
+      |> click_button("Kirim feedback + tip")
       |> assert_has("h1", donor_hero_headline())
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)
@@ -331,7 +331,7 @@ defmodule DonatexWeb.DonorQrFlowTest do
       |> choose("Good", exact: false)
       |> check("Tampilkan apresiasi", exact: false)
       |> choose("Rp 10.000", exact: false)
-      |> click_button("Lanjut tip")
+      |> click_button("Kirim feedback + tip")
       |> assert_has("h1", donor_hero_headline())
       |> unwrap(fn view ->
         html = Phoenix.LiveViewTest.render(view)

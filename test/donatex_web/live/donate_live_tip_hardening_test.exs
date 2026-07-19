@@ -40,7 +40,6 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
     {:ok, view, _html} = live(conn, ~p"/")
 
     tip_params = %{
-      "_tip" => "1",
       "donation_form" => %{
         "donor_name" => "Double Tip",
         "reaction" => "good",
@@ -65,7 +64,7 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
     assert Repo.aggregate(Donation, :count) == before_count
   end
 
-  test "successful tip via _tip ignores a second tip submit on payment step", %{conn: conn} do
+  test "successful tip ignores a second tip submit on payment step", %{conn: conn} do
     Req.Test.expect(__MODULE__, fn conn ->
       Req.Test.json(conn, %{
         "statusCode" => 200,
@@ -81,7 +80,6 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
     {:ok, view, _html} = live(conn, ~p"/")
 
     tip_params = %{
-      "_tip" => "1",
       "donation_form" => %{
         "donor_name" => "Once Tip",
         "reaction" => "good",
@@ -120,7 +118,6 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
 
     html =
       render_submit(view, "submit_feedback", %{
-        "_tip" => "1",
         "donation_form" => %{
           "donor_name" => "Payment Step",
           "reaction" => "good",
@@ -184,7 +181,6 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
 
     html =
       render_submit(view, "submit_feedback", %{
-        "_tip" => "1",
         "donation_form" => %{
           "donor_name" => "Preserve Custom",
           "reaction" => "good",

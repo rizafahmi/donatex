@@ -77,46 +77,26 @@ defmodule DonatexWeb.DonateLive do
      |> assign_form(changeset)}
   end
 
-  def handle_event("submit", _params, %{assigns: %{step: step}} = socket)
-      when step != :form do
-    {:noreply, socket}
-  end
-
-  def handle_event("submit", _params, %{assigns: %{tip_submitting: true}} = socket) do
-    {:noreply, socket}
-  end
-
-  def handle_event("submit", params, socket) do
-    form_params = donation_form_params(params, socket)
-
-    # Fail closed: tip path requires appreciation on in submitted params (not only UI).
-    if appreciation_on?(form_params) do
-      submit_tip(socket, form_params)
-    else
-      {:noreply, socket}
-    end
-  end
-
-  # Tip CTA is type=submit with name=_tip so the browser serializes live DOM values
-  # (JS.push form: is unavailable on LiveView 1.1.x).
-  def handle_event("submit_feedback", %{"_tip" => _} = params, socket) do
-    handle_event("submit", params, socket)
-  end
-
   def handle_event("submit_feedback", _params, %{assigns: %{step: step}} = socket)
       when step != :form do
     {:noreply, socket}
   end
 
-  # Enter / primary "Kirim feedback" submits without _tip → free path (M4 free-primary).
-  # Tip stays an explicit click on "Lanjut tip" (name=_tip).
-  def handle_event("submit_feedback", %{"donation_form" => params}, socket) do
-    changeset = feedback_form_changeset(params)
+  def handle_event("submit_feedback", _params, %{assigns: %{tip_submitting: true}} = socket) do
+    {:noreply, socket}
+  end
 
-    if changeset.valid? do
-      submit_valid_feedback(socket, changeset)
+  def handle_event("submit_feedback", %{"donation_form" => params}, socket) do
+    if appreciation_on?(params) do
+      submit_tip(socket, params)
     else
-      {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
+      changeset = feedback_form_changeset(params)
+
+      if changeset.valid? do
+        submit_valid_feedback(socket, changeset)
+      else
+        {:noreply, assign_form(socket, Map.put(changeset, :action, :insert))}
+      end
     end
   end
 
@@ -563,15 +543,28 @@ defmodule DonatexWeb.DonateLive do
                     </div>
 
                     <div class="space-y-3 pt-2">
-                      <%!-- Enter / primary submit → free feedback; tip requires #tip-submit (name=_tip). --%>
                       <button
                         type="submit"
+                        disabled={@show_appreciation and @tip_submitting}
+                        phx-disable-with={
+                          if @show_appreciation, do: "Membuat QR...", else: "Mengirim..."
+                        }
                         class="group inline-flex w-full items-center justify-between rounded-3xl bg-accent px-5 py-4 text-left text-sm font-semibold text-background shadow-sm shadow-accent/25 ring-1 ring-accent/30 transition duration-200 hover:bg-accent/92 active:bg-accent/88 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99] hover:shadow-lg hover:shadow-accent/30"
                       >
                         <span class="space-y-0.5">
-                          <span class="block text-base">Kirim feedback</span>
+                          <span class="block text-base">
+                            <%= if @show_appreciation do %>
+                              Kirim feedback + tip
+                            <% else %>
+                              Kirim feedback
+                            <% end %>
+                          </span>
                           <span class="block text-[11px] font-semibold text-background/70 uppercase tracking-wide">
-                            Gratis, tanpa tip
+                            <%= if @show_appreciation do %>
+                              Pembayaran via QRIS
+                            <% else %>
+                              Gratis, tanpa tip
+                            <% end %>
                           </span>
                         </span>
                         <span class="inline-flex items-center gap-2">
@@ -580,25 +573,6 @@ defmodule DonatexWeb.DonateLive do
                             <.icon name="hero-arrow-path" class="size-4 animate-spin" /> Mengirim
                           </span>
                         </span>
-                      </button>
-
-                      <button
-                        :if={@show_appreciation}
-                        id="tip-submit"
-                        type="submit"
-                        name="_tip"
-                        value="1"
-                        disabled={@tip_submitting}
-                        phx-disable-with="Membuat QR..."
-                        class="group inline-flex w-full items-center justify-between rounded-3xl border border-stroke/60 bg-background/20 px-5 py-4 text-left text-sm font-semibold text-text transition duration-200 hover:border-accent/40 hover:bg-background/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent phx-submit-loading:pointer-events-none phx-submit-loading:opacity-70 motion-safe:hover:scale-[1.01] motion-safe:active:scale-[0.99]"
-                      >
-                        <span class="space-y-0.5">
-                          <span class="block text-base">Lanjut tip</span>
-                          <span class="block text-[11px] font-semibold text-text-muted uppercase tracking-wide">
-                            Pembayaran via QRIS
-                          </span>
-                        </span>
-                        <span aria-hidden="true">&rarr;</span>
                       </button>
 
                       <div
@@ -827,11 +801,7 @@ defmodule DonatexWeb.DonateLive do
     )
   end
 
-  defp donation_form_params(%{"donation_form" => params}, _socket) when is_map(params), do: params
-  defp donation_form_params(_params, socket), do: socket.assigns.form.params
-
-  # Tip CTA is only reachable when appreciation is on; keep it on after tip validation
-  # errors so amount errors remain visible (show_appreciation is form-derived).
+  # Keep appreciation on after tip validation errors so amount errors remain visible.
   defp put_tip_appreciation(params) when is_map(params),
     do: Map.put(params, "show_appreciation", true)
 

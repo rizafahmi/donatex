@@ -65,3 +65,12 @@
 
 ## Done-when result
 - Milestone 7 is complete. The free and tipped paths, unified overlay, restart recovery, replay, webhook safety, accessibility refinements, and full quality gate satisfy the approved release-check criteria.
+
+## Post-milestone donor submit refinement — 2026-07-19
+
+- Replaced the separate free-feedback and tip CTAs with one submit button whose label and supporting text reflect the appreciation toggle.
+- Unified button clicks and Enter-key submission through `submit_feedback`; submitted `donation_form[show_appreciation]` selects the free or tip path.
+- Removed the top-level `_tip` routing contract while preserving separate free/tip validation, amount recovery, QRIS creation, cooldown, and duplicate-tip guards.
+- Updated LiveView, hardening, cooldown, and PhoenixTest QR journey coverage.
+- Focused donor suites: 35 tests, 0 failures.
+- `mix ci`: 144 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed.

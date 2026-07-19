@@ -9,6 +9,8 @@ defmodule DonatexWeb.DonateLiveTest do
 
     assert has_element?(view, "#donor-page")
     assert has_element?(view, "#donation-form")
+    assert submit_button_count(view) == 1
+    assert has_element?(view, "#donation-form button[type='submit']", "Kirim feedback")
     assert has_element?(view, "#donation-form", "Nama kamu")
     assert has_element?(view, "#donation-form", "Pesan (opsional)")
     assert has_element?(view, "#appreciation-toggle")
@@ -44,18 +46,23 @@ defmodule DonatexWeb.DonateLiveTest do
     assert has_element?(view, "#amount-options", "Rp 25.000")
   end
 
-  test "shows tip CTA only when appreciation is enabled", %{conn: conn} do
+  test "keeps one submit button and updates its copy when appreciation is enabled", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
-    assert has_element?(view, "#donation-form", "Kirim feedback")
-    refute has_element?(view, "#tip-submit")
+    assert submit_button_count(view) == 1
+    assert has_element?(view, "#donation-form button[type='submit']", "Kirim feedback")
 
     view
     |> form("#donation-form", donation_form: %{"show_appreciation" => "true"})
     |> render_change()
 
-    assert has_element?(view, "#donation-form", "Kirim feedback")
-    assert has_element?(view, "#tip-submit")
+    assert submit_button_count(view) == 1
+
+    assert has_element?(
+             view,
+             "#donation-form button[type='submit']",
+             "Kirim feedback + tip"
+           )
   end
 
   test "hides tip UI when appreciation is turned off", %{conn: conn} do
@@ -66,15 +73,15 @@ defmodule DonatexWeb.DonateLiveTest do
     |> render_change()
 
     assert has_element?(view, "#amount-options")
-    assert has_element?(view, "#tip-submit")
+    assert submit_button_count(view) == 1
 
     view
     |> form("#donation-form", donation_form: %{"show_appreciation" => "false"})
     |> render_change()
 
     refute has_element?(view, "#amount-options")
-    refute has_element?(view, "#tip-submit")
-    assert has_element?(view, "#donation-form", "Kirim feedback")
+    assert submit_button_count(view) == 1
+    assert has_element?(view, "#donation-form button[type='submit']", "Kirim feedback")
   end
 
   test "presents feedback-first copy on the default donor path", %{conn: conn} do
@@ -177,7 +184,7 @@ defmodule DonatexWeb.DonateLiveTest do
     |> render_change()
 
     html =
-      render_submit(view, "submit", %{
+      render_submit(view, "submit_feedback", %{
         "donation_form" => %{
           "donor_name" => "Riza",
           "show_appreciation" => "true",
@@ -188,6 +195,7 @@ defmodule DonatexWeb.DonateLiveTest do
 
     assert html =~ "Pilih nominal tip"
     refute html =~ "Pilih nominal donasi"
+    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Riza") == nil
   end
 
   test "describes a missing custom appreciation amount as a tip", %{conn: conn} do
@@ -213,7 +221,7 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ ~s(step="1000")
 
     html =
-      render_submit(view, "submit", %{
+      render_submit(view, "submit_feedback", %{
         "donation_form" => %{
           "donor_name" => "Riza",
           "reaction" => "good",
@@ -232,7 +240,7 @@ defmodule DonatexWeb.DonateLiveTest do
     {:ok, view, _html} = live(conn, ~p"/")
 
     html =
-      render_submit(view, "submit", %{
+      render_submit(view, "submit_feedback", %{
         "donation_form" => %{
           "donor_name" => "Riza",
           "reaction" => "good",
@@ -297,12 +305,7 @@ defmodule DonatexWeb.DonateLiveTest do
     assert is_nil(feedback.amount)
   end
 
-  test "Enter / primary submit without _tip stays free even with appreciation and amount", %{
-    conn: conn
-  } do
-    conn =
-      put_peer_data(conn, %{address: {203, 0, 113, 22}, port: 44_324, ssl_cert: nil})
-
+  test "normal form submit with appreciation enabled uses tip validation", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
     view
@@ -310,35 +313,27 @@ defmodule DonatexWeb.DonateLiveTest do
     |> render_change()
 
     html =
-      view
-      |> form("#donation-form",
-        donation_form: %{
+      render_submit(view, "submit_feedback", %{
+        "donation_form" => %{
           "donor_name" => "Riza",
           "reaction" => "good",
-          "message" => "Tetap apresiasi, kirim gratis",
+          "message" => "Apresiasi via tip",
           "show_appreciation" => "true",
-          "amount_option" => "10000"
+          "amount_option" => ""
         }
-      )
-      |> render_submit()
+      })
 
-    assert html =~ "Terima kasih"
-    assert has_element?(view, "#feedback-thanks")
-    refute html =~ "Scan QRIS"
+    assert html =~ "Pilih nominal tip"
+    assert has_element?(view, "#donation-form")
+    refute has_element?(view, "#feedback-thanks")
     refute has_element?(view, "#payment-expiry")
-
-    feedback =
-      Donatex.Repo.get_by!(Donatex.Donations.Donation, donor_name: "Riza", status: "sent")
-
-    assert feedback.message == "Tetap apresiasi, kirim gratis"
-    assert feedback.status == "sent"
-    assert is_nil(feedback.amount)
+    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Riza") == nil
   end
 
-  test "ignores tip submit when appreciation is off", %{conn: conn} do
+  test "top-level _tip cannot force the tip path when submitted appreciation is false", %{
+    conn: conn
+  } do
     {:ok, view, _html} = live(conn, ~p"/")
-
-    before_count = Donatex.Repo.aggregate(Donatex.Donations.Donation, :count)
 
     html =
       render_submit(view, "submit_feedback", %{
@@ -352,11 +347,17 @@ defmodule DonatexWeb.DonateLiveTest do
         }
       })
 
-    assert has_element?(view, "#donation-form")
+    assert has_element?(view, "#feedback-thanks")
     refute has_element?(view, "#payment-expiry")
     refute html =~ "Scan QRIS"
-    assert Donatex.Repo.aggregate(Donatex.Donations.Donation, :count) == before_count
-    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Crafted Tip") == nil
+
+    feedback =
+      Donatex.Repo.get_by!(Donatex.Donations.Donation,
+        donor_name: "Crafted Tip",
+        status: "sent"
+      )
+
+    assert is_nil(feedback.amount)
   end
 
   test "free submit_feedback on thanks step is a no-op", %{conn: conn} do
@@ -389,5 +390,13 @@ defmodule DonatexWeb.DonateLiveTest do
     assert has_element?(view, "#feedback-thanks")
     assert Donatex.Repo.aggregate(Donatex.Donations.Donation, :count) == before_count
     assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Thanks Guard 2") == nil
+  end
+
+  defp submit_button_count(view) do
+    view
+    |> render()
+    |> LazyHTML.from_fragment()
+    |> LazyHTML.query("#donation-form button[type='submit']")
+    |> Enum.count()
   end
 end

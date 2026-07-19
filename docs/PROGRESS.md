@@ -3,6 +3,7 @@
 ## Current State
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Test status: 144 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed
+- Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
@@ -50,6 +51,7 @@
 - [x] Add Indonesian document metadata, live status announcements, and reduced-motion fallbacks
 - [x] Verify mobile free feedback, OBS transparency/layout, restart recovery, auto-dismiss persistence, and paid-tip replay in a real browser
 - [x] Run the final 144-test, Credo, Dialyzer, duplication, and architecture quality gate
+- [x] Unify free feedback and tip submission behind one mode-aware donor-form button and one `submit_feedback` event
 
 ## In Progress
 
