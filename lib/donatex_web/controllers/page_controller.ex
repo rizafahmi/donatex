@@ -6,6 +6,8 @@ defmodule DonatexWeb.PageController do
   end
 
   def redirect_to_root(conn, _params) do
-    redirect(conn, to: ~p"/")
+    conn
+    |> put_status(:moved_permanently)
+    |> redirect(to: ~p"/")
   end
 end
