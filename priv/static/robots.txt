@@ -1,5 +1,17 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-#
-# To ban all spiders from the entire site uncomment the next two lines:
-# User-agent: *
-# Disallow: /
+# /robots.txt
+# Optimized for search engine indexing based on Google Search guidelines.
+
+User-agent: *
+Allow: /
+
+# Block admin, overlay, and webhook/private areas
+Disallow: /admin/
+Disallow: /admin
+Disallow: /overlay
+Disallow: /overlay/
+Disallow: /api/
+Disallow: /webhooks/
+Disallow: /private/
+Disallow: /dev/
+
+Sitemap: https://feedback.rizafahmi.com/sitemap.xml
