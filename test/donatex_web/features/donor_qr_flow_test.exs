@@ -60,6 +60,10 @@ defmodule DonatexWeb.DonorQrFlowTest do
     |> click_button("Kirim feedback + tip")
     |> assert_has("h1", "Scan QRIS untuk Apresiasi")
     |> assert_has(
+      "p",
+      "Buka aplikasi ewallet atau ebanking kesayangan kamu untuk scan QRIS."
+    )
+    |> assert_has(
       "[role='status'][aria-live='polite']",
       "Menunggu konfirmasi pembayaran"
     )

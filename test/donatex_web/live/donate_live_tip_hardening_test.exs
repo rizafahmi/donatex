@@ -91,6 +91,10 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
 
     html = render_submit(view, "submit_feedback", tip_params)
     assert html =~ "Scan QRIS untuk Apresiasi"
+
+    assert html =~
+             "Buka aplikasi ewallet atau ebanking kesayangan kamu untuk scan QRIS"
+
     refute has_element?(view, "#donation-form")
 
     before_count = Repo.aggregate(Donation, :count)

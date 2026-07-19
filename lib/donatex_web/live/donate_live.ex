@@ -132,6 +132,10 @@ defmodule DonatexWeb.DonateLive do
             <h1 class="font-display text-3xl font-semibold tracking-tight text-balance text-text sm:text-4xl">
               Scan QRIS untuk Apresiasi
             </h1>
+            <p class="inline-flex max-w-xl items-start gap-2 rounded-2xl border border-accent/25 bg-accent/5 px-3.5 py-2.5 text-sm font-medium leading-6 text-text sm:text-base">
+              <span class="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+              Buka aplikasi ewallet atau ebanking kesayangan kamu untuk scan QRIS.
+            </p>
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
               Pesan dan tip Anda akan tersimpan secara otomatis setelah pembayaran sukses (dan akan masuk antrean alert jika stream sedang offline).
             </p>
