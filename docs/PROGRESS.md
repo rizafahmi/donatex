@@ -1,9 +1,10 @@
 # Project Progress
 
 ## Current State
+- Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
-- Test status: 151 tests, 0 failures; Credo clean; Dialyzer 0 errors; duplication and architecture checks passed
+- Test status: 165 tests, 0 failures; Credo clean on changed files; compile warnings-as-errors passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
@@ -55,6 +56,7 @@
 - [x] Unify free feedback and tip submission behind one mode-aware donor-form button and one `submit_feedback` event
 - [x] Milestone 8 — SEO Optimization: robots.txt, canonical links, descriptive page titles, meta descriptions, sitemap.xml, llms.txt, Open Graph/Twitter Card tags, Strict-Transport-Security trust signal header, Organization & FAQPage JSON-LD schemas, and 301 permanent redirect for /donate.
 - [x] Visitor Analytics & Conversion Funnel: Track raw page views on `/` dynamically via connected socket, broadcast page views via PubSub, and render real-time conversion rates (Feedback & Tip Conversion) on `/admin` with a premium glassmorphic visual card.
+- [x] Milestone 9 — Donor Visitor Presence: Track ephemeral signed browser sessions with Phoenix Presence, deduplicate multiple tabs, and show an exact real-time count only at three or more visitors.
 
 ## In Progress
 
@@ -63,10 +65,12 @@
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
+- Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps
 1. Configure the production environment and deploy using the documented release process.
-2. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
+2. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
+3. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
@@ -80,4 +84,5 @@
 - Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
 - Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
+- Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

@@ -14,6 +14,7 @@ defmodule Donatex.Application do
        repos: Application.fetch_env!(:donatex, :ecto_repos), skip: skip_migrations?()},
       {DNSCluster, query: Application.get_env(:donatex, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Donatex.PubSub},
+      DonatexWeb.Presence,
       Donatex.FeedbackRateLimiter,
       # Start to serve requests, typically the last entry
       DonatexWeb.Endpoint

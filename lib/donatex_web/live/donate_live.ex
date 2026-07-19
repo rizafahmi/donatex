@@ -9,7 +9,9 @@ defmodule DonatexWeb.DonateLive do
   alias Donatex.FeedbackRateLimiter
   alias Donatex.Mayar.Client
   alias DonatexWeb.DonationPresenter
+  alias DonatexWeb.Presence
 
+  @visitor_topic "donate:visitors"
   @preset_amounts [5_000, 10_000, 25_000]
   @preset_amount_options Enum.map(@preset_amounts, &Integer.to_string/1)
   @form_fields [
@@ -30,7 +32,7 @@ defmodule DonatexWeb.DonateLive do
   }
 
   @impl Phoenix.LiveView
-  def mount(_params, _session, socket) do
+  def mount(_params, session, socket) do
     if connected?(socket) do
       Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
       Donatex.Analytics.track_page_view("/")
@@ -52,25 +54,31 @@ defmodule DonatexWeb.DonateLive do
         }
       end)
 
-    {:ok,
-     socket
-     |> assign(:preset_amounts, preset_amounts)
-     |> assign(:step, :form)
-     |> assign(:donation, nil)
-     |> assign(:qr, nil)
-     |> assign(:tip_submitting, false)
-     |> assign(:client_ip, peer_ip(socket))
-     |> assign(:page_title, "Kirim Feedback & Tips")
-     |> assign(
-       :meta_description,
-       "Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming."
-     )
-     |> assign(:meta_robots, "index, follow, max-snippet:150, max-image-preview:large")
-     |> assign(
-       :canonical_url,
-       (Application.get_env(:donatex, :app)[:base_url] |> String.trim_trailing("/")) <> "/"
-     )
-     |> assign_blank_form()}
+    socket =
+      socket
+      |> assign(:preset_amounts, preset_amounts)
+      |> assign(:step, :form)
+      |> assign(:donation, nil)
+      |> assign(:qr, nil)
+      |> assign(:tip_submitting, false)
+      |> assign(:client_ip, peer_ip(socket))
+      |> assign(:visitor_id, session["visitor_id"])
+      |> assign(:visitor_count, 0)
+      |> assign(:visitor_topic, visitor_topic(session))
+      |> assign(:visitor_tracking_active, false)
+      |> assign(:page_title, "Kirim Feedback & Tips")
+      |> assign(
+        :meta_description,
+        "Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming."
+      )
+      |> assign(:meta_robots, "index, follow, max-snippet:150, max-image-preview:large")
+      |> assign(
+        :canonical_url,
+        (Application.get_env(:donatex, :app)[:base_url] |> String.trim_trailing("/")) <> "/"
+      )
+      |> assign_blank_form()
+
+    {:ok, track_visitor(socket, session)}
   end
 
   @impl Phoenix.LiveView
@@ -121,6 +129,13 @@ defmodule DonatexWeb.DonateLive do
     else
       {:noreply, socket}
     end
+  end
+
+  def handle_info(
+        %Phoenix.Socket.Broadcast{topic: topic, event: "presence_diff"},
+        %{assigns: %{visitor_topic: topic, visitor_tracking_active: true}} = socket
+      ) do
+    {:noreply, assign_visitor_count(socket)}
   end
 
   def handle_info(_message, socket), do: {:noreply, socket}
@@ -347,6 +362,14 @@ defmodule DonatexWeb.DonateLive do
                       </span>
                       Kotak Masukan Terbuka
                     </div>
+                    <p
+                      :if={@visitor_count >= 3}
+                      id="visitor-presence-count"
+                      class="flex items-center gap-2 text-xs font-medium text-text-muted"
+                    >
+                      <span class="size-1.5 rounded-full bg-accent" aria-hidden="true"></span>
+                      {@visitor_count} orang sedang di halaman ini
+                    </p>
                     <h1 class="font-display text-4xl font-semibold tracking-tight text-balance text-text sm:text-5xl">
                       Kirim Masukan & Pesan
                     </h1>
@@ -997,6 +1020,82 @@ defmodule DonatexWeb.DonateLive do
 
   defp trim(value) when is_binary(value), do: String.trim(value)
   defp trim(value), do: value
+
+  defp track_visitor(socket, session) do
+    if connected?(socket) do
+      topic = socket.assigns.visitor_topic
+      Phoenix.PubSub.subscribe(Donatex.PubSub, topic)
+
+      case track_presence(topic, session["visitor_id"]) do
+        {:ok, _ref} ->
+          socket
+          |> assign(:visitor_tracking_active, true)
+          |> assign_visitor_count()
+
+        {:error, reason} ->
+          fail_visitor_tracking(socket, reason)
+      end
+    else
+      socket
+    end
+  end
+
+  defp track_presence(topic, visitor_id) when is_binary(visitor_id) and visitor_id != "" do
+    presence_mod().track(self(), topic, visitor_id, %{})
+  catch
+    :exit, reason -> {:error, {:exit, reason}}
+  end
+
+  defp track_presence(_topic, _visitor_id), do: {:error, :missing_visitor_id}
+
+  defp assign_visitor_count(socket) do
+    case list_presence(socket.assigns.visitor_topic) do
+      {:ok, presences} ->
+        assign(socket, :visitor_count, map_size(presences))
+
+      {:error, reason} ->
+        fail_visitor_tracking(socket, reason)
+    end
+  end
+
+  defp list_presence(topic) do
+    {:ok, presence_mod().list(topic)}
+  catch
+    :exit, reason -> {:error, {:exit, reason}}
+  end
+
+  defp fail_visitor_tracking(socket, reason) do
+    Logger.warning("Visitor presence tracking failed: #{inspect(reason)}")
+    topic = socket.assigns.visitor_topic
+
+    if socket.assigns.visitor_tracking_active do
+      _ = untrack_presence(topic, socket.assigns.visitor_id)
+    end
+
+    _ = Phoenix.PubSub.unsubscribe(Donatex.PubSub, topic)
+
+    socket
+    |> assign(:visitor_tracking_active, false)
+    |> assign(:visitor_count, 0)
+  end
+
+  defp untrack_presence(topic, visitor_id) when is_binary(visitor_id) and visitor_id != "" do
+    presence_mod().untrack(self(), topic, visitor_id)
+  catch
+    :exit, reason -> {:error, {:exit, reason}}
+  end
+
+  defp untrack_presence(_topic, _visitor_id), do: :ok
+
+  defp presence_mod do
+    Application.get_env(:donatex, :visitor_presence, Presence)
+  end
+
+  defp visitor_topic(%{"visitor_presence_topic" => topic})
+       when is_binary(topic) and topic != "",
+       do: topic
+
+  defp visitor_topic(_session), do: @visitor_topic
 
   defp create_pending_donation_with_qr(changeset) do
     donor_name = get_field(changeset, :donor_name)

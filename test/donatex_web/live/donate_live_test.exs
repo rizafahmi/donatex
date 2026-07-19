@@ -18,6 +18,13 @@ defmodule DonatexWeb.DonateLiveTest do
     refute has_element?(view, "#donation_form_custom_amount")
   end
 
+  test "disconnected render shows the donor form without claiming visitors", %{conn: conn} do
+    html = conn |> get(~p"/") |> html_response(200)
+
+    assert html =~ ~s(id="donation-form")
+    refute html =~ ~s(id="visitor-presence-count")
+  end
+
   test "brands the public experience as Notable", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/")
 
