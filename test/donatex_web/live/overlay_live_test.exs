@@ -9,6 +9,15 @@ defmodule DonatexWeb.OverlayLiveTest do
   alias Donatex.Reactions
   alias Donatex.Repo
 
+  test "renders SEO metadata with noindex robots and self-referential canonical URL", %{
+    conn: conn
+  } do
+    {:ok, _view, html} = live(conn, ~p"/overlay")
+
+    assert html =~ ~s(<meta name="robots" content="noindex, nofollow")
+    assert html =~ ~s(<link rel="canonical" href="http://localhost:4000/overlay")
+  end
+
   test "replays paid and unalerted donations on mount and advances after dismiss", %{conn: conn} do
     {:ok, first_pending} =
       Donations.create_pending_donation(%{

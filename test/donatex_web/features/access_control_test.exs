@@ -39,6 +39,18 @@ defmodule DonatexWeb.AccessControlTest do
     )
     |> visit(~p"/admin")
     |> assert_has("h1", "Admin")
+
+    seo_conn =
+      conn
+      |> put_req_header(
+        "authorization",
+        basic_auth_header(Config.admin_username(), Config.admin_password())
+      )
+      |> get(~p"/admin")
+
+    html = html_response(seo_conn, 200)
+    assert html =~ ~s(<meta name="robots" content="noindex, nofollow")
+    assert html =~ ~s(<link rel="canonical" href="http://localhost:4000/admin")
   end
 
   defp basic_auth_header(username, password) do

@@ -7,6 +7,23 @@
     <.live_title default="Notable" suffix=" · Notable">
       {assigns[:page_title]}
     </.live_title>
+
+    <meta :if={assigns[:meta_description]} name="description" content={@meta_description} />
+    <meta :if={assigns[:meta_robots]} name="robots" content={@meta_robots} />
+    <link :if={assigns[:canonical_url]} rel="canonical" href={@canonical_url} />
+    
+<!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={assigns[:page_title] || "Notable"} />
+    <meta :if={assigns[:meta_description]} property="og:description" content={@meta_description} />
+    <meta :if={assigns[:canonical_url]} property="og:url" content={@canonical_url} />
+    <meta property="og:site_name" content="Notable" />
+    
+<!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={assigns[:page_title] || "Notable"} />
+    <meta :if={assigns[:meta_description]} name="twitter:description" content={@meta_description} />
+
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>

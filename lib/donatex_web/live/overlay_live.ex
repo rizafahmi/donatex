@@ -23,6 +23,15 @@ defmodule DonatexWeb.OverlayLive do
      |> assign(:current, nil)
      |> assign(:floats, %{})
      |> assign(:page_title, "OBS Overlay")
+     |> assign(
+       :meta_description,
+       "OBS stream overlay page for displaying live alerts and emoji reactions."
+     )
+     |> assign(:meta_robots, "noindex, nofollow")
+     |> assign(
+       :canonical_url,
+       (Application.get_env(:donatex, :app)[:base_url] |> String.trim_trailing("/")) <> "/overlay"
+     )
      |> start_next_alert()}
   end
 

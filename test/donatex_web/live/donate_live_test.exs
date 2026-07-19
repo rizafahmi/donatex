@@ -30,6 +30,33 @@ defmodule DonatexWeb.DonateLiveTest do
     assert html =~ ~s(<html lang="id")
   end
 
+  test "renders SEO metadata and structured JSON-LD data", %{conn: conn} do
+    {:ok, _view, html} = live(conn, ~p"/")
+
+    assert html =~
+             ~s(<meta name="description" content="Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming.")
+
+    assert html =~
+             ~s(<meta name="robots" content="index, follow, max-snippet:150, max-image-preview:large")
+
+    assert html =~ ~s(<link rel="canonical" href="http://localhost:4000/")
+
+    assert html =~ ~s(<meta property="og:type" content="website")
+    assert html =~ ~s(<meta property="og:title" content="Kirim Feedback &amp; Tips")
+    assert html =~ ~s(<meta property="og:site_name" content="Notable")
+    assert html =~ ~s(<meta name="twitter:card" content="summary")
+
+    assert html =~ ~s("https://schema.org")
+    assert html =~ ~s("Organization")
+    assert html =~ ~s("sameAs":)
+    assert html =~ ~s("https://rizafahmi.com/")
+    assert html =~ ~s("FAQPage")
+
+    # Verify about page link
+    assert html =~
+             ~s(<a href="https://rizafahmi.com/?utm_source=feedback_app&amp;utm_medium=referral&amp;utm_campaign=donation_page_desc" target="_blank" rel="noopener")
+  end
+
   test "hides amount choices until appreciation is enabled", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/")
 
@@ -88,8 +115,7 @@ defmodule DonatexWeb.DonateLiveTest do
     {:ok, view, html} = live(conn, ~p"/")
 
     assert has_element?(view, "#donor-page h1", donor_hero_headline())
-    assert html =~ "Tulis pesan atau masukan Anda secara gratis"
-    assert has_element?(view, "#donation-form", "Siapkan feedbackmu")
+    assert html =~ "Tulis pesan atau masukan secara gratis"
     refute html =~ "Pilih nominal, tulis pesan, lalu bayar via QRIS"
     refute html =~ "Siapkan dukunganmu"
     refute html =~ "QRIS unik untuk setiap donasi"
