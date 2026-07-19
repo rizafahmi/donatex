@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "f147af9ba560",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 9,
+  "files_touched": [
+    ".scratch/donor-visitor-presence/issues/01-fail-hidden-presence.md",
+    ".scratch/donor-visitor-presence/issues/02-lifecycle-test-sync.md",
+    "docs/PROGRESS.md",
+    "docs/milestones/9-donor-visitor-presence/milestone-log.md",
+    "lib/donatex/application.ex",
+    "lib/donatex_web/live/donate_live.ex",
+    "lib/donatex_web/plugs/visitor_id.ex",
+    "lib/donatex_web/presence.ex",
+    "lib/donatex_web/router.ex",
+    "test/donatex_web/live/donate_live_presence_test.exs",
+    "test/donatex_web/live/donate_live_test.exs",
+    "test/donatex_web/plugs/visitor_id_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f1/47af9ba560/0/metadata.json",
+      "transcript": "/f1/47af9ba560/0/full.jsonl",
+      "compact_transcript": "/f1/47af9ba560/0/transcript.jsonl",
+      "content_hash": "/f1/47af9ba560/0/content_hash.txt",
+      "prompt": "/f1/47af9ba560/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 112982,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 3166016,
+    "output_tokens": 30000,
+    "api_call_count": 9
+  }
+}
