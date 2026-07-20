@@ -18,6 +18,14 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert html =~ ~s(<link rel="canonical" href="http://localhost:4000/overlay")
   end
 
+  test "does not render flash or connection status banners", %{conn: conn} do
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    refute has_element?(view, "#flash-group")
+    refute has_element?(view, "#client-error")
+    refute has_element?(view, "#server-error")
+  end
+
   test "replays paid and unalerted donations on mount and advances after dismiss", %{conn: conn} do
     {:ok, first_pending} =
       Donations.create_pending_donation(%{

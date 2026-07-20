@@ -96,7 +96,7 @@ defmodule DonatexWeb.Layouts do
         </div>
       </main>
 
-      <.flash_group flash={@flash} />
+      <.flash_group :if={@variant == "app"} flash={@flash} />
     </div>
     """
   end
