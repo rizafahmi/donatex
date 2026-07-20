@@ -1,10 +1,11 @@
 # Project Progress
 
 ## Current State
+- Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
-- Test status: 165 tests, 0 failures; Credo clean on changed files; compile warnings-as-errors passed
+- Test status for the latest donor CTA change: 31 focused tests, 0 failures; format check and compile warnings-as-errors passed; mobile browser verification passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
@@ -62,6 +63,7 @@
 
 
 ## Known Issues
+- Baseline `./init.sh` currently reports one pre-existing static SEO failure: `llms.txt` does not contain the test's expected “OBS Overlay” text; all later baseline checks still ran successfully
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment

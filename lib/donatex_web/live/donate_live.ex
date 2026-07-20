@@ -494,29 +494,66 @@ defmodule DonatexWeb.DonateLive do
                     />
 
                     <label
-                      class="flex cursor-pointer items-start gap-3 rounded-2xl border border-stroke/50 bg-background/10 px-4 py-3 transition hover:border-stroke/70 hover:bg-background/15"
+                      class={[
+                        "group flex cursor-pointer items-center gap-3 rounded-2xl border px-4 py-4 transition-all duration-200 focus-within:ring-4 focus-within:ring-accent-2/20",
+                        if(@show_appreciation,
+                          do: "border-accent-2/60 bg-accent-2/12 ring-1 ring-accent-2/25",
+                          else:
+                            "border-accent-2/35 bg-accent-2/6 hover:border-accent-2/55 hover:bg-accent-2/10 active:scale-[0.99]"
+                        )
+                      ]}
                       for="appreciation-toggle"
                     >
                       <input type="hidden" name={@form[:show_appreciation].name} value="false" />
-                      <input
-                        type="checkbox"
-                        id="appreciation-toggle"
-                        name={@form[:show_appreciation].name}
-                        value="true"
-                        checked={
-                          Phoenix.HTML.Form.normalize_value(
-                            "checkbox",
-                            @form[:show_appreciation].value
+                      <span
+                        class={[
+                          "flex size-10 shrink-0 items-center justify-center rounded-xl transition-colors",
+                          if(@show_appreciation,
+                            do: "bg-accent-2 text-background",
+                            else: "bg-accent-2/15 text-accent-2 group-hover:bg-accent-2/20"
                           )
-                        }
-                        class="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-stroke/60 bg-background text-accent focus:ring-accent/40"
-                      />
-                      <span class="min-w-0 pointer-events-none select-none">
-                        <span class="block text-sm font-semibold text-text">
-                          Tambah tip apresiasi
+                        ]}
+                        aria-hidden="true"
+                      >
+                        <.icon name="hero-heart" class="size-5" />
+                      </span>
+                      <span class="min-w-0 flex-1 pointer-events-none select-none">
+                        <span class="block text-base font-semibold text-text">
+                          Tambah tip untuk mendukung
                         </span>
-                        <span class="block text-xs text-text-muted">
-                          Opsional. Buka pilihan pembayaran QRIS.
+                        <span class="mt-0.5 block text-xs text-text-muted">
+                          Mulai Rp5.000 · Bayar praktis dengan QRIS
+                        </span>
+                      </span>
+                      <span class="flex shrink-0 items-center gap-2">
+                        <span class="hidden text-[10px] font-semibold uppercase tracking-[0.12em] text-accent-2 sm:inline">
+                          Opsional
+                        </span>
+                        <input
+                          type="checkbox"
+                          id="appreciation-toggle"
+                          name={@form[:show_appreciation].name}
+                          value="true"
+                          aria-controls="amount-options"
+                          checked={
+                            Phoenix.HTML.Form.normalize_value(
+                              "checkbox",
+                              @form[:show_appreciation].value
+                            )
+                          }
+                          class="sr-only"
+                        />
+                        <span
+                          class={[
+                            "flex size-6 items-center justify-center rounded-full border transition-colors",
+                            if(@show_appreciation,
+                              do: "border-accent-2 bg-accent-2 text-background",
+                              else: "border-accent-2/60 bg-background/70 text-transparent"
+                            )
+                          ]}
+                          aria-hidden="true"
+                        >
+                          <.icon name="hero-check" class="size-4" />
                         </span>
                       </span>
                     </label>
@@ -715,7 +752,7 @@ defmodule DonatexWeb.DonateLive do
               "name": "Bagaimana cara memberikan tip apresiasi?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Centang pilihan 'Tambah tip apresiasi', pilih nominal tip yang diinginkan, lalu selesaikan pembayaran dengan memindai kode QRIS dinamis yang muncul di layar."
+                "text": "Centang pilihan 'Tambah tip untuk mendukung', pilih nominal tip yang diinginkan, lalu selesaikan pembayaran dengan memindai kode QRIS dinamis yang muncul di layar."
               }
             },
             {

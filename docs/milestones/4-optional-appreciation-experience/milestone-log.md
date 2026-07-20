@@ -63,3 +63,11 @@
   - Free feedback is the default path; appreciation reveals amount choices
   - Tip path reaches a complete QR screen with back + retryable errors
   - No celebration before payment confirmation
+
+## Post-milestone CTA polish (2026-07-20)
+
+- Reworked the collapsed appreciation checkbox into a full-width purple selectable card while preserving the native checkbox behavior and free-feedback default.
+- Updated the title to “Tambah tip untuk mendukung” and added accurate price/payment context: “Mulai Rp5.000 · Bayar praktis dengan QRIS.”
+- Added distinct unselected/selected card treatments, a heart cue, an optional badge on larger screens, and a consistent circular check indicator.
+- Updated feature-test selectors and FAQ structured data to use the new label.
+- Verification: donor LiveView + QR flow tests — 31 tests, 0 failures; format check and warnings-as-errors compilation passed; mobile browser checks at 390×844 passed for collapsed and selected states.

@@ -14,6 +14,9 @@ defmodule DonatexWeb.DonateLiveTest do
     assert has_element?(view, "#donation-form", "Nama kamu")
     assert has_element?(view, "#donation-form", "Pesan (opsional)")
     assert has_element?(view, "#appreciation-toggle")
+    assert has_element?(view, "label[for='appreciation-toggle']", "Tambah tip untuk mendukung")
+    assert has_element?(view, "label[for='appreciation-toggle']", "Mulai Rp5.000")
+    assert has_element?(view, "label[for='appreciation-toggle']", "Bayar praktis dengan QRIS")
     refute has_element?(view, "#amount-options")
     refute has_element?(view, "#donation_form_custom_amount")
   end
