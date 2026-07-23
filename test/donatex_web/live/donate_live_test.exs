@@ -44,7 +44,7 @@ defmodule DonatexWeb.DonateLiveTest do
     {:ok, _view, html} = live(conn, ~p"/")
 
     assert html =~
-             ~s(<meta name="description" content="Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming.")
+             ~s(<meta name="description" content="Kirim masukan, saran, atau pesan secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung kreator.")
 
     assert html =~
              ~s(<meta name="robots" content="index, follow, max-snippet:150, max-image-preview:large")
