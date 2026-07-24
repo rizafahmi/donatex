@@ -98,20 +98,13 @@ defmodule DonatexWeb.QrCodeLive do
 
   defp overlay_classes(_), do: ["qr-ov-off"]
 
-  defp overlay_style(%{value: 0}) do
-    ""
+  defp overlay_style(%{value: 0}), do: ""
+
+  defp overlay_style(%{element_index: idx}) when is_integer(idx) do
+    "--wave-delay: -#{Float.round(idx * 0.02, 2)}s;"
   end
 
-  defp overlay_style(%{classes: classes}) do
-    is_finder = Enum.any?(classes, &String.starts_with?(&1, "qr-frame"))
-    is_inner = Enum.any?(classes, &String.starts_with?(&1, "qr-inner-frame"))
-
-    if is_finder or is_inner do
-      ""
-    else
-      "animation-delay: #{Float.round(:rand.uniform() * 2, 2)}s;"
-    end
-  end
+  defp overlay_style(_), do: ""
 
   defp overlay_bolt(%{value: 1, classes: classes}) do
     is_finder = Enum.any?(classes, &String.starts_with?(&1, "qr-frame"))

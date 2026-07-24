@@ -308,6 +308,11 @@
     transform: none;
     opacity: 1;
   }
+
+  .qr-ov-on,
+  .qr-ov-on .qr-ov-bolt {
+    animation: none;
+  }
 }
 
 /* ===== QR Code Page ===== */
@@ -405,6 +410,21 @@
 @keyframes qr-bolt-pulse {
   0%, 100% { opacity: 0.2; transform: scale(0.85); }
   50% { opacity: 0.4; transform: scale(1.05); }
+}
+
+/* Data-flow wave: sequential delay creates a traveling wave across the matrix (slice of #6) */
+.qr-ov-on .qr-ov-bolt {
+  animation-delay: var(--wave-delay, 0s);
+}
+
+.qr-ov-on {
+  animation: qr-data-wave 3s ease-in-out infinite;
+  animation-delay: var(--wave-delay, 0s);
+}
+
+@keyframes qr-data-wave {
+  0%, 100% { box-shadow: inset 0 0 0 0 rgba(156, 207, 216, 0); }
+  50% { box-shadow: inset 0 0 4px 1px rgba(156, 207, 216, 0.2); }
 }
 
 /* Finder pattern decorative borders (non-destructive, on overlay only) */

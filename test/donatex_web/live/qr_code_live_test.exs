@@ -110,6 +110,17 @@ defmodule DonatexWeb.QrCodeLiveTest do
       assert has_element?(view, "#qr-svg-hidden svg")
     end
 
+    test "data on-cells render sequential wave delays for traveling animation", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/qr")
+
+      wave_delays =
+        Regex.scan(~r/--wave-delay:\s*(-?[\d.]+)s/, html)
+        |> Enum.map(fn [_, val] -> String.to_float(val) end)
+
+      assert length(wave_delays) > 10
+      assert wave_delays == Enum.sort(wave_delays, :desc)
+    end
+
     test "download button is present and triggers push event", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/qr")
 
