@@ -19,7 +19,7 @@ defmodule DonatexWeb.Plugs.SEO do
         conn
         |> assign(
           :meta_description,
-          "Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming."
+          "Kirim masukan, saran, atau pesan secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung kreator."
         )
         |> assign(:meta_robots, "index, follow, max-snippet:150, max-image-preview:large")
         |> assign(:canonical_url, base_url <> "/")

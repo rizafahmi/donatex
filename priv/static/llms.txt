@@ -1,6 +1,6 @@
 # Notable
 
-Notable is a digital platform for stream viewers to send feedback, suggestions, and tips directly to stream creators.
+Notable is a platform for sending feedback, suggestions, and tips directly to creators.
 
 ## Public Pages
 - [Kirim Feedback & Tips](https://feedback.rizafahmi.com/) - The main landing page for viewers and donors to submit free feedback and optional tips via dynamic QRIS.
