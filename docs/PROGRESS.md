@@ -1,6 +1,7 @@
 # Project Progress
 
 ## Current State
+- The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
 - Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
@@ -10,6 +11,7 @@
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
+- [x] Replace the decorative `/qr` lightning-dot grid with a scannable EQRCode SVG and SVG-based PNG download
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
 - [x] Mayar webhook → DB transition to `paid` (deduped) → PubSub broadcast
 - [x] Overlay consumes broadcasts, recovers missed alerts from DB, and plays alerts sequentially
