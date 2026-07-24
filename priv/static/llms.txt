@@ -4,3 +4,4 @@ Notable is a digital platform for stream viewers to send feedback, suggestions, 
 
 ## Public Pages
 - [Kirim Feedback & Tips](https://feedback.rizafahmi.com/) - The main landing page for viewers and donors to submit free feedback and optional tips via dynamic QRIS.
+- [OBS Overlay](https://feedback.rizafahmi.com/overlay) - Overlay page for displaying live alerts and emoji reactions.
