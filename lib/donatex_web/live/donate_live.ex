@@ -69,7 +69,7 @@ defmodule DonatexWeb.DonateLive do
       |> assign(:page_title, "Kirim Feedback & Tips")
       |> assign(
         :meta_description,
-        "Kirim masukan, saran, atau pesan kepada streamer secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung streaming."
+        "Kirim masukan, saran, atau pesan secara gratis. Anda juga dapat memberikan tip apresiasi via QRIS untuk mendukung kreator."
       )
       |> assign(:meta_robots, "index, follow, max-snippet:150, max-image-preview:large")
       |> assign(
@@ -162,7 +162,7 @@ defmodule DonatexWeb.DonateLive do
               Buka aplikasi ewallet atau ebanking kesayangan kamu untuk scan QRIS.
             </p>
             <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-              Pesan dan tip Anda akan tersimpan secara otomatis setelah pembayaran sukses (dan akan masuk antrean alert jika stream sedang offline).
+              Pesan dan tip Anda akan tersimpan secara otomatis setelah pembayaran sukses (dan akan masuk antrean alert jika acara sedang offline).
             </p>
             <div
               role="status"
@@ -260,7 +260,7 @@ defmodule DonatexWeb.DonateLive do
                 Terima kasih! Pesan dan tip Anda telah tersimpan.
               </h1>
               <p class="max-w-xl text-sm leading-6 text-text-muted sm:text-base">
-                Dukungan Anda sudah kami terima dan simpan. Pesan Anda akan ditampilkan di overlay stream (atau masuk antrean jika stream sedang offline). Sembari menunggu, yuk baca artikel terbaru atau project saya di <a
+                Dukungan Anda sudah kami terima dan simpan. Pesan Anda akan ditampilkan di layar (atau masuk antrean jika acara sedang offline). Sembari menunggu, yuk baca artikel terbaru atau project saya di <a
                   href="https://rizafahmi.com/?utm_source=feedback_app&utm_medium=referral&utm_campaign=donation_page_thanks_tip"
                   target="_blank"
                   rel="noopener"
@@ -374,7 +374,7 @@ defmodule DonatexWeb.DonateLive do
                       Kirim Masukan & Pesan
                     </h1>
                     <p class="max-w-2xl text-sm leading-6 text-text-muted sm:text-base">
-                      Tulis pesan atau masukan secara gratis kapan saja untuk mendukung stream <a
+                      Tulis pesan atau masukan secara gratis kapan saja untuk mendukung <a
                         href="https://rizafahmi.com/?utm_source=feedback_app&utm_medium=referral&utm_campaign=donation_page_desc"
                         target="_blank"
                         rel="noopener"
@@ -409,10 +409,10 @@ defmodule DonatexWeb.DonateLive do
                       </span>
                       <div>
                         <p class="text-xs font-semibold uppercase tracking-[0.2em] text-accent-2/80">
-                          Overlay Stream
+                          Reaksi Live
                         </p>
                         <p class="mt-0.5 text-sm text-text-muted/80">
-                          Emoji reaksi muncul di layar saat streamer sedang live.
+                          Emoji reaksi muncul di layar saat acara sedang berlangsung.
                         </p>
                       </div>
                     </li>
@@ -723,7 +723,7 @@ defmodule DonatexWeb.DonateLive do
             "https://github.com/rizafahmi",
             "https://twitter.com/rizafahmi"
           ],
-          "description": "Notable adalah platform untuk mengirim masukan, saran, atau pesan kepada streamer secara gratis, serta memberikan tip apresiasi via QRIS."
+          "description": "Notable adalah platform untuk mengirim masukan, saran, atau pesan secara gratis, serta memberikan tip apresiasi via QRIS."
         }
       </script>
       <script type="application/ld+json">
@@ -736,7 +736,7 @@ defmodule DonatexWeb.DonateLive do
               "name": "Apa itu Notable?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Notable adalah platform untuk mengirim masukan, saran, atau pesan kepada streamer secara gratis, serta memberikan tip apresiasi via QRIS."
+                "text": "Notable adalah platform untuk mengirim masukan, saran, atau pesan secara gratis, serta memberikan tip apresiasi via QRIS."
               }
             },
             {

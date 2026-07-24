@@ -75,6 +75,153 @@ Hooks.PlaySound = {
   }
 }
 
+// ===== QR Code Page Hook =====
+Hooks.QrCode = {
+  mounted() {
+    this._initExpandMinimize()
+
+    this.handleEvent("qr:download", () => this._downloadPNG())
+    this.handleEvent("qr:share", ({url}) => this._share(url))
+  },
+
+  destroyed() {
+    if (this._expandTimer) clearTimeout(this._expandTimer)
+    if (this._minimizeTimer) clearTimeout(this._minimizeTimer)
+  },
+
+  _initExpandMinimize() {
+    const wrapper = this.el.querySelector("#overlayWrapper")
+    if (!wrapper) return
+
+    const pill = this.el.querySelector("#minimizedPill")
+    if (pill) {
+      pill.addEventListener("click", () => {
+        wrapper.classList.remove("is-minimized")
+        wrapper.classList.add("is-expanded")
+      })
+    }
+
+    // Auto-cycle: expanded for 3 min, minimized for 15s
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (prefersReducedMotion) return
+
+    const EXPANDED_MS = 180000
+    const MINIMIZED_MS = 15000
+    let isPaused = false
+
+    const minimize = () => {
+      if (isPaused) return
+      wrapper.classList.remove("is-expanded")
+      wrapper.classList.add("is-minimized")
+      this._stopTimerBar()
+      this._minimizeTimer = setTimeout(expand, MINIMIZED_MS)
+    }
+
+    const expand = () => {
+      if (isPaused) return
+      wrapper.classList.remove("is-minimized")
+      wrapper.classList.add("is-expanded")
+      this._startTimerBar(EXPANDED_MS)
+      this._expandTimer = setTimeout(minimize, EXPANDED_MS)
+    }
+
+    this._startTimerBar(EXPANDED_MS)
+    this._expandTimer = setTimeout(minimize, EXPANDED_MS)
+
+    // Pause on hover
+    wrapper.addEventListener("mouseenter", () => {
+      isPaused = true
+      if (this._expandTimer) { clearTimeout(this._expandTimer); this._expandTimer = null }
+      if (this._minimizeTimer) { clearTimeout(this._minimizeTimer); this._minimizeTimer = null }
+      this._stopTimerBar()
+    })
+    wrapper.addEventListener("mouseleave", () => {
+      isPaused = false
+      if (wrapper.classList.contains("is-expanded")) {
+        this._startTimerBar(EXPANDED_MS)
+        this._expandTimer = setTimeout(minimize, EXPANDED_MS)
+      } else {
+        this._minimizeTimer = setTimeout(expand, MINIMIZED_MS)
+      }
+    })
+  },
+
+  _startTimerBar(durationMs) {
+    const timerBar = this.el.querySelector("#timerBar")
+    if (!timerBar) return
+    timerBar.style.animation = "none"
+    void timerBar.offsetWidth
+    timerBar.style.animation = `qr-timer-drain ${durationMs}ms linear forwards`
+  },
+
+  _stopTimerBar() {
+    const timerBar = this.el.querySelector("#timerBar")
+    if (timerBar) timerBar.style.animation = "none"
+  },
+
+  _downloadPNG() {
+    const svgEl = this.el.querySelector("#qr-svg-hidden svg")
+    if (!svgEl) return
+
+    const svgData = new XMLSerializer().serializeToString(svgEl)
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" })
+    const url = URL.createObjectURL(svgBlob)
+
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement("canvas")
+      const scale = 4
+      canvas.width = img.width * scale
+      canvas.height = img.height * scale
+      const ctx = canvas.getContext("2d")
+      ctx.fillStyle = "#ffffff"
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(url)
+
+      canvas.toBlob((blob) => {
+        const dlUrl = URL.createObjectURL(blob)
+        const a = document.createElement("a")
+        a.href = dlUrl
+        a.download = "qr-code.png"
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(dlUrl)
+      }, "image/png")
+    }
+    img.src = url
+  },
+
+  _share(url) {
+    if (navigator.share) {
+      navigator.share({ title: "Livestream Feedback", url: url }).catch(() => {})
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        this._showToast("Link copied to clipboard!")
+      }).catch(() => {
+        this._showToast("Copy failed. URL: " + url)
+      })
+    }
+  },
+
+  _showToast(message) {
+    const toast = document.createElement("div")
+    toast.textContent = message
+    toast.style.cssText = `
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(31, 29, 46, 0.92); color: #e0def4; padding: 12px 24px;
+      border-radius: 9999px; border: 1px solid rgba(196, 167, 231, 0.4);
+      font-size: 14px; font-weight: 600; z-index: 9999;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      animation: qr-cta-badge-float 3s ease-in-out infinite;
+    `
+    document.body.appendChild(toast)
+    setTimeout(() => toast.remove(), 3000)
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
@@ -129,4 +276,3 @@ if (process.env.NODE_ENV === "development") {
     window.liveReloader = reloader
   })
 }
-
