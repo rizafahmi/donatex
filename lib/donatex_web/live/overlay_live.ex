@@ -4,8 +4,8 @@ defmodule DonatexWeb.OverlayLive do
   require Logger
 
   alias Donatex.Donations
-  alias Donatex.Reactions
   alias DonatexWeb.DonationPresenter
+  alias DonatexWeb.OverlayComponents
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
@@ -46,21 +46,13 @@ defmodule DonatexWeb.OverlayLive do
   end
 
   def handle_info({:donation_created, %{status: "sent"} = donation}, socket) do
-    case build_float(donation) do
-      nil ->
-        {:noreply, socket}
-
-      float ->
-        Process.send_after(self(), {:dismiss_float, float.id}, float.duration_ms)
-
-        {:noreply, update(socket, :floats, &Map.put(&1, float.id, float))}
-    end
+    {:noreply, OverlayComponents.add_float(socket, donation)}
   end
 
   def handle_info({:donation_created, _donation}, socket), do: {:noreply, socket}
 
   def handle_info({:dismiss_float, id}, socket) do
-    {:noreply, update(socket, :floats, &Map.delete(&1, id))}
+    {:noreply, OverlayComponents.dismiss_float(socket, id)}
   end
 
   def handle_info({:dismiss_current, id}, socket) do
@@ -99,15 +91,7 @@ defmodule DonatexWeb.OverlayLive do
     ~H"""
     <Layouts.app flash={@flash} flash_generations={@flash_generations} variant="overlay">
       <div class="obs-overlay-container">
-        <div
-          :for={{id, float} <- @floats}
-          id={"obs-float-#{id}"}
-          class="obs-float-emoji"
-          style={float_style(float)}
-          aria-hidden="true"
-        >
-          {float.emoji}
-        </div>
+        <OverlayComponents.floats floats={@floats} />
         <%= if @current do %>
           <audio
             phx-hook="PlaySound"
@@ -122,8 +106,7 @@ defmodule DonatexWeb.OverlayLive do
             class="obs-overlay-line"
           >
             <div class="obs-overlay-box"></div>
-            
-    <!-- Terminal Header Title Bar -->
+            <!-- Terminal Header Title Bar -->
             <div class="absolute top-0 left-0 right-0 z-20 flex items-center justify-between border-b border-stroke/40 bg-surface-2/65 px-6 py-2.5 rounded-t-2xl font-mono text-[11px] font-semibold tracking-wider text-text-muted/70 uppercase">
               <div class="flex items-center gap-1.5 select-none">
                 <span class="h-3 w-3 rounded-full bg-[#ff5f56]"></span>
@@ -163,30 +146,6 @@ defmodule DonatexWeb.OverlayLive do
       </div>
     </Layouts.app>
     """
-  end
-
-  defp build_float(%{id: id, reaction: reaction}) do
-    case Reactions.pick_emoji(reaction) do
-      nil ->
-        nil
-
-      emoji ->
-        %{
-          id: id,
-          emoji: emoji,
-          start_x: Enum.random(8..85),
-          drift_x: Enum.random(-18..18),
-          duration_ms: Enum.random(3_000..4_000)
-        }
-    end
-  end
-
-  defp float_style(float) do
-    [
-      "--float-start-x: #{float.start_x}%;",
-      "--float-drift-x: #{float.drift_x}vw;",
-      "--float-duration: #{float.duration_ms}ms;"
-    ]
   end
 
   defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do

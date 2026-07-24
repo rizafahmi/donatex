@@ -129,6 +129,15 @@
   }
 }
 
+/* Full-viewport float layer for the combined QR + feedback overlay page */
+.qr-overlay-floats {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 5;
+}
+
 .obs-overlay-line {
   width: 2200px;
   height: 200px;

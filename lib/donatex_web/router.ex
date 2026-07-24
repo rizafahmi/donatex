@@ -35,6 +35,7 @@ defmodule DonatexWeb.Router do
     live "/overlay", OverlayLive
     live "/qr", QrCodeLive
     live "/questions", QuestionLive
+    live "/qr-overlay", QrOverlayLive
   end
 
   scope "/", DonatexWeb do
