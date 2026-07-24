@@ -33,6 +33,7 @@ defmodule DonatexWeb.Router do
     live "/", DonateLive
     get "/donate", PageController, :redirect_to_root
     live "/overlay", OverlayLive
+    live "/qr", QrCodeLive
   end
 
   scope "/", DonatexWeb do
