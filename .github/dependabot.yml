@@ -1,0 +1,18 @@
+version: 2
+updates:
+  # Elixir (mix) dependency updates
+  - package-ecosystem: mix
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      mix-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  # GitHub Actions version updates
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
