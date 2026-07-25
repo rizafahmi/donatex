@@ -53,3 +53,6 @@ npm-debug.log
 /.cursor/hooks.json
 /.entire/
 /.pi/extensions/entire/
+
+# Agent run resume state (quota-interrupted runs)
+/docs/agent-run-resume.md

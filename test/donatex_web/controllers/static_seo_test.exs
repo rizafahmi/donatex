@@ -25,6 +25,8 @@ defmodule DonatexWeb.StaticSeoTest do
     assert body =~ "# Notable"
     assert body =~ "Kirim Feedback & Tips"
     assert body =~ "OBS Overlay"
+    assert body =~ "Tanya Jawab"
+    assert body =~ "/questions"
   end
 
   test "returns 301 permanent redirect for /donate", %{conn: conn} do

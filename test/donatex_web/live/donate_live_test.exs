@@ -435,4 +435,11 @@ defmodule DonatexWeb.DonateLiveTest do
     |> LazyHTML.query("#donation-form button[type='submit']")
     |> Enum.count()
   end
+
+  test "links subtly to the Q&A board", %{conn: conn} do
+    {:ok, _view, html} = live(conn, ~p"/")
+
+    assert html =~ "Punya pertanyaan untuk Riza?"
+    assert html =~ ~s(href="/questions")
+  end
 end

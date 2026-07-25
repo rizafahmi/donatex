@@ -4,10 +4,10 @@ defmodule DonatexWeb.DonateLiveFeedbackCooldownTest do
   import Phoenix.LiveViewTest
   import Plug.Test, only: [put_peer_data: 2]
 
-  alias Donatex.FeedbackRateLimiter
+  alias Donatex.SubmissionLimiter
 
   setup do
-    FeedbackRateLimiter.reset()
+    SubmissionLimiter.reset()
     :ok
   end
 
@@ -51,9 +51,9 @@ defmodule DonatexWeb.DonateLiveFeedbackCooldownTest do
     ip = {203, 0, 113, 11}
     conn = put_peer_data(conn, %{address: ip, port: 44_322, ssl_cert: nil})
 
-    assert :ok = FeedbackRateLimiter.reserve(ip)
+    assert :ok = SubmissionLimiter.reserve({:feedback, ip})
     # Simulate the DonateLive failure path: reserve charged, persist failed, release.
-    assert :ok = FeedbackRateLimiter.release(ip)
+    assert :ok = SubmissionLimiter.release({:feedback, ip})
 
     {:ok, view, _html} = live(conn, ~p"/")
 

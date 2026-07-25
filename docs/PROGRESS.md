@@ -3,6 +3,7 @@
 ## Current State
 - The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
 - Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
+- Milestone 10 (Audience Questions Board): complete — a secondary public Q&A surface at `/questions` lets the audience submit questions (optional name, else `Anonim`) and toggle one anonymous upvote per question; Today is ranked open→answered, votes desc, oldest first; prior WIB dates collapse and load on demand; an authenticated `/admin/questions` page lets the streamer answer/reopen/hide/restore; public and admin views converge in real time via PubSub; raw visitor ids are hashed (never persisted/logged); see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md) and [ADR-024](file:///Users/riza/code/donatex/docs/decisions/ADR-024-secondary-public-qa-questions-board.md)
 - Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
@@ -60,12 +61,12 @@
 - [x] Milestone 8 — SEO Optimization: robots.txt, canonical links, descriptive page titles, meta descriptions, sitemap.xml, llms.txt, Open Graph/Twitter Card tags, Strict-Transport-Security trust signal header, Organization & FAQPage JSON-LD schemas, and 301 permanent redirect for /donate.
 - [x] Visitor Analytics & Conversion Funnel: Track raw page views on `/` dynamically via connected socket, broadcast page views via PubSub, and render real-time conversion rates (Feedback & Tip Conversion) on `/admin` with a premium glassmorphic visual card.
 - [x] Milestone 9 — Donor Visitor Presence: Track ephemeral signed browser sessions with Phoenix Presence, deduplicate multiple tabs, and show an exact real-time count only at three or more visitors.
+- [x] Milestone 10 — Audience Questions Board: secondary public `/questions` Q&A surface with anonymous upvotes, WIB-grouped ranked board, and authenticated `/admin/questions` moderation (answer/reopen/hide/restore); generalized `SubmissionLimiter`; raw visitor ids hashed and never persisted/logged.
 
 ## In Progress
 
 
 ## Known Issues
-- Baseline `./init.sh` currently reports one pre-existing static SEO failure: `llms.txt` does not contain the test's expected “OBS Overlay” text; all later baseline checks still ran successfully
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
 - If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
@@ -89,4 +90,5 @@
 - Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
+- Milestone 10 log: [docs/milestones/10-audience-questions-board/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)
