@@ -39,6 +39,24 @@ defmodule DonatexWeb.Plugs.SEO do
         |> assign(:meta_robots, "noindex, nofollow")
         |> assign(:canonical_url, base_url <> "/admin")
 
+      "/questions" ->
+        conn
+        |> assign(
+          :meta_description,
+          "Ajukan pertanyaan untuk Riza dan beri upvote anonim. Pertanyaan langsung tampil di papan hari ini."
+        )
+        |> assign(:meta_robots, "noindex, follow")
+        |> assign(:canonical_url, base_url <> "/questions")
+
+      "/admin/questions" ->
+        conn
+        |> assign(
+          :meta_description,
+          "Moderasi pertanyaan audiens: tandai terjawab, sembunyikan, dan kembalikan."
+        )
+        |> assign(:meta_robots, "noindex, nofollow")
+        |> assign(:canonical_url, base_url <> "/admin/questions")
+
       _ ->
         conn
     end

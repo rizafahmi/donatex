@@ -137,8 +137,16 @@ defmodule DonatexWeb.AdminLive do
       <.header>
         Admin Panel
         <:subtitle>
-          Manage livestream notes and tips, mark manual payments, and replay alerts.
+          Manage notes and tips, mark manual payments, and replay alerts.
         </:subtitle>
+        <:actions>
+          <.link
+            navigate={~p"/admin/questions"}
+            class="rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text"
+          >
+            Moderasi Pertanyaan
+          </.link>
+        </:actions>
       </.header>
       
     <!-- Status telemetry bar -->

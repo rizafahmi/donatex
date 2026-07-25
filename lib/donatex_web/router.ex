@@ -34,12 +34,14 @@ defmodule DonatexWeb.Router do
     get "/donate", PageController, :redirect_to_root
     live "/overlay", OverlayLive
     live "/qr", QrCodeLive
+    live "/questions", QuestionLive
   end
 
   scope "/", DonatexWeb do
     pipe_through [:browser, :admin]
 
     live "/admin", AdminLive
+    live "/admin/questions", AdminQuestionLive
   end
 
   scope "/", DonatexWeb do

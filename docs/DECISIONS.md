@@ -2,6 +2,10 @@
 
 This is a lightweight decision log (what/why/when). For detailed context and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
+## 2026-07-25: Add A Secondary Public Q&A Questions Board (ADR-024)
+- Reason: Audience questions and anonymous upvotes are a distinct interaction from donation/feedback; model them as a separate bounded context with its own tables and a secondary `/questions` public route plus an authenticated `/admin/questions` moderation page.
+- Reference: [ADR-024](file:///Users/riza/code/donatex/docs/decisions/ADR-024-secondary-public-qa-questions-board.md)
+
 ## 2026-07-15: Pivot From Donation-First To Feedback-First With Optional Tips (ADR-023)
 - Reason: Donation framing created negative audience sentiment and suppressed engagement. Pivoting to feedback-first with optional tips lowers the participation barrier and removes the "asking for money" stigma.
 - Reference: [ADR-023](file:///Users/riza/code/donatex/docs/decisions/ADR-023-pivot-feedback-first-with-optional-tips.md)

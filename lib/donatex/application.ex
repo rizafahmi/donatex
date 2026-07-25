@@ -15,7 +15,7 @@ defmodule Donatex.Application do
       {DNSCluster, query: Application.get_env(:donatex, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Donatex.PubSub},
       DonatexWeb.Presence,
-      Donatex.FeedbackRateLimiter,
+      Donatex.SubmissionLimiter,
       # Start to serve requests, typically the last entry
       DonatexWeb.Endpoint
     ]

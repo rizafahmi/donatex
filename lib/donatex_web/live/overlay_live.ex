@@ -25,7 +25,7 @@ defmodule DonatexWeb.OverlayLive do
      |> assign(:page_title, "OBS Overlay")
      |> assign(
        :meta_description,
-       "OBS stream overlay page for displaying live alerts and emoji reactions."
+       "OBS overlay page for displaying live alerts and emoji reactions."
      )
      |> assign(:meta_robots, "noindex, nofollow")
      |> assign(

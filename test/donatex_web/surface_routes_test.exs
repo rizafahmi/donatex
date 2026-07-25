@@ -15,6 +15,12 @@ defmodule DonatexWeb.SurfaceRoutesTest do
     |> assert_has("h1", "Overlay")
   end
 
+  test "GET /questions", %{conn: conn} do
+    conn
+    |> visit("/questions")
+    |> assert_has("h1", "Tanya Jawab")
+  end
+
   test "GET /admin", %{conn: conn} do
     conn
     |> put_req_header("authorization", basic_auth_header())

@@ -6,8 +6,8 @@ defmodule DonatexWeb.DonateLive do
   require Logger
 
   alias Donatex.Donations
-  alias Donatex.FeedbackRateLimiter
   alias Donatex.Mayar.Client
+  alias Donatex.SubmissionLimiter
   alias DonatexWeb.DonationPresenter
   alias DonatexWeb.Presence
 
@@ -707,6 +707,16 @@ defmodule DonatexWeb.DonateLive do
                 </div>
               </div>
             </section>
+
+            <p class="pt-2 text-center text-xs text-text-muted/70">
+              Punya pertanyaan untuk Riza?
+              <.link
+                navigate={~p"/questions"}
+                class="font-medium text-text-muted underline-offset-2 hover:text-accent hover:underline transition"
+              >
+                Tanya jawab
+              </.link>
+            </p>
           <% end %>
         <% end %>
       <% end %>
@@ -935,10 +945,10 @@ defmodule DonatexWeb.DonateLive do
   end
 
   defp reserve_feedback_rate_limit(nil), do: :ok
-  defp reserve_feedback_rate_limit(ip), do: FeedbackRateLimiter.reserve(ip)
+  defp reserve_feedback_rate_limit(ip), do: SubmissionLimiter.reserve({:feedback, ip})
 
   defp release_feedback_rate_limit(nil), do: :ok
-  defp release_feedback_rate_limit(ip), do: FeedbackRateLimiter.release(ip)
+  defp release_feedback_rate_limit(ip), do: SubmissionLimiter.release({:feedback, ip})
 
   defp submit_valid_feedback(socket, changeset) do
     client_ip = socket.assigns.client_ip
