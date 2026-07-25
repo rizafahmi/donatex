@@ -1,0 +1,9 @@
+Make it the copy little more generic. Change streamer, livestream, etc. to presenter or Riza or Riza Fahmi
+
+---
+
+On `/questions` page, make question textarea as main focuse
+
+---
+
+Make the form collapsible
