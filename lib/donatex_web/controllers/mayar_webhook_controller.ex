@@ -158,17 +158,17 @@ defmodule DonatexWeb.MayarWebhookController do
         nil
 
       donation ->
-        # Check if there are other pending donations with the same amount
-        # This could indicate a potential mismatch
         other_pending = Donations.count_pending_by_amount(payment_received.amount)
 
         if other_pending > 1 do
           Logger.warning(
-            "Mayar webhook multiple pending donations with amount=#{payment_received.amount} (count=#{other_pending}), matched newest"
+            "Mayar webhook rejected ambiguous amount fallback amount=#{payment_received.amount} count=#{other_pending}"
           )
-        end
 
-        {:fallback, donation, payment_received.mayar_transaction_id}
+          nil
+        else
+          {:fallback, donation, payment_received.mayar_transaction_id}
+        end
     end
   end
 

@@ -280,4 +280,41 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     assert_received {:donation_paid, %{id: id, mayar_transaction_id: ^confirmation_tx_id}}
     assert id == donation.id
   end
+
+  test "fails closed when amount fallback matches multiple pending donations", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    donations =
+      for {transaction_id, donor_name} <- [{"original-a", "Alice"}, {"original-b", "Bob"}] do
+        assert {:ok, %Donation{} = donation} =
+                 Donations.create_pending_donation(%{
+                   mayar_transaction_id: transaction_id,
+                   donor_name: donor_name,
+                   reaction: "good",
+                   amount: 15_000
+                 })
+
+        donation
+      end
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "confirmation-id",
+          "amount" => 15_000,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    assert Enum.all?(donations, fn donation ->
+             Repo.get!(Donation, donation.id).status == "pending"
+           end)
+
+    refute_receive {:donation_paid, _payload}, 50
+  end
 end
