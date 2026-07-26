@@ -98,10 +98,10 @@ defmodule Donatex.Donations do
   under concurrent same-amount payments.
 
   Returns:
-    * `{:ok, donation, true}`  — claimed and marked paid (broadcast once)
-    * `{:ok, donation, false}` — already paid by a concurrent delivery (no broadcast)
+    * `{:ok, donation, true}`  — claimed and marked paid
     * `{:error, :not_found}`   — no matching pending donation (orphan payment)
     * `{:error, :ambiguous}`   — multiple matching pending donations, fail closed
+    * `{:error, :unique_constraint}` — the new transaction ID belongs to another donation
   """
   def claim_pending_by_amount_with_change(amount, donor_name \\ nil, new_transaction_id)
       when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and

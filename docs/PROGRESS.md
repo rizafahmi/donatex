@@ -73,7 +73,7 @@
 - [x] [#28](https://github.com/rizafahmi/donatex/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
 
 ## In Progress
-- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — implemented: immediate-transaction claim, fail-closed ambiguity handling, and explicit uniqueness-conflict errors; pending commit and PR.
+- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — implemented and committed: immediate-transaction claim, fail-closed ambiguity handling, and explicit uniqueness-conflict errors; awaiting PR.
 - [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — PR [#34](https://github.com/rizafahmi/donatex/pull/34) merged: atomic pending→paid claim.
 
 ## Known Issues

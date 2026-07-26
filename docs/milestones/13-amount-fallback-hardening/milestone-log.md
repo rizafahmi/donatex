@@ -36,7 +36,7 @@ previous implementation had two problems:
   ExDNA code clone between `mark_paid_with_change/1` and
   `claim_with_transaction_id_update/2`.
 
-- The amount fallback count and claim now run in an immediate SQLite
+- The amount fallback match selection and claim now run in an immediate SQLite
   transaction, preventing another writer from inserting a matching pending
   donation between selection and update.
 
@@ -88,3 +88,6 @@ previous implementation had two problems:
 - Review follow-up: `mix format --check-formatted
   lib/donatex/donations.ex test/donatex/donations_test.exs` and
   `mix test test/donatex/donations_test.exs` — 29 tests, 0 failures
+- Documentation/lint housekeeping corrected the amount-claim return contract and
+  project status; changed-file formatting and Credo, compile warnings, Dialyzer,
+  ExDNA, and Reach checks passed. No tests ran in this phase.
