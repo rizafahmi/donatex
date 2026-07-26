@@ -41,7 +41,7 @@
 - Mayar confirmation remains the only transition from pending to paid. Do not reintroduce an admin/manual-paid path without changing the approved product scope.
 - Free reactions use one generated duration for both the LiveView dismissal timer and CSS animation through `--float-duration`.
 - The reduced-motion rules live at the end of `assets/css/app.css`; keep static `opacity` and `transform` fallbacks when changing overlay animations.
-- Webhook coverage continues to verify confirmed-only handling, amount mismatch rejection, deduplication, persisted paid state, and one broadcast. `Repo.update/1` completes before `PubSub.broadcast/3` in the controller path.
+- The webhook correlation and write-before-broadcast contract is owned by [ADR-016](../../decisions/ADR-016-webhook-acceptance-criteria.md).
 
 ## PRD deviations
 - No implementation scope deviations.

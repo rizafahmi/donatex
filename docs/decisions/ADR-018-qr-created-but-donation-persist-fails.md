@@ -59,6 +59,6 @@ If Mayar QR creation succeeds but persisting the pending donation fails:
 ## Consequences
 
 - The donor flow fails closed when the system cannot persist a pending donation, even if Mayar already created a QR.
-- In rare cases, a donor could still complete payment after scanning a QR; the webhook will be ignored because the donation row does not exist.
+- In rare cases, a donor could still complete payment after scanning a QR. Without a uniquely matching persisted pending row, the webhook is ignored under the correlation rules in ADR-016.
 - Operational visibility is improved via targeted warning logs that are safe to keep.
 
