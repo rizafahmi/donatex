@@ -21,7 +21,12 @@ defmodule DonatexWeb.QrCodeLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} variant="overlay" show_header={false}>
+    <Layouts.app
+      flash={@flash}
+      flash_generations={@flash_generations}
+      variant="overlay"
+      show_header={false}
+    >
       <div class="qr-page" id="qr-page" phx-hook="QrCode">
         <div class="qr-page-inner">
           <div class="cta-overlay-wrapper is-expanded" id="overlayWrapper">

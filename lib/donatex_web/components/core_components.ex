@@ -39,6 +39,7 @@ defmodule DonatexWeb.CoreComponents do
     default: true,
     doc: "whether to auto-dismiss the toast after a few seconds via the FlashAutoHide hook"
 
+  attr :flash_generation, :integer, default: nil
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -53,6 +54,7 @@ defmodule DonatexWeb.CoreComponents do
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       phx-hook={@auto_hide && "FlashAutoHide"}
       data-flash-key={if @auto_hide, do: @kind}
+      data-flash-generation={if @auto_hide, do: @flash_generation}
       role="alert"
       class={[
         "group pointer-events-auto flex w-full items-start gap-3 rounded-2xl border bg-surface/80 px-4 py-3 text-sm text-text shadow-lg shadow-black/30 backdrop-blur",

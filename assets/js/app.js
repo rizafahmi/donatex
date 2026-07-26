@@ -230,10 +230,16 @@ Hooks.QrCode = {
 // `phx-connected` / `phx-disconnected`.
 Hooks.FlashAutoHide = {
   mounted() {
+    this._flashGeneration = this.el.dataset.flashGeneration
     this._scheduleClear()
   },
   updated() {
-    this._scheduleClear()
+    const flashGeneration = this.el.dataset.flashGeneration
+
+    if (flashGeneration !== this._flashGeneration) {
+      this._flashGeneration = flashGeneration
+      this._scheduleClear()
+    }
   },
   destroyed() {
     this._clearTimer()
@@ -242,7 +248,13 @@ Hooks.FlashAutoHide = {
     this._clearTimer()
     const key = this.el.dataset.flashKey
     if (!key) return
-    this._timer = setTimeout(() => this.pushEvent("lv:clear-flash", {key}), 5000)
+    const flashGeneration = this._flashGeneration
+
+    this._timer = setTimeout(() => {
+      if (this.el.dataset.flashGeneration === flashGeneration) {
+        this.pushEvent("lv:clear-flash", {key})
+      }
+    }, 5000)
   },
   _clearTimer() {
     if (this._timer) {

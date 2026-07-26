@@ -143,7 +143,7 @@ defmodule DonatexWeb.DonateLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} show_header={false}>
+    <Layouts.app flash={@flash} flash_generations={@flash_generations} show_header={false}>
       <%= if @step == :payment do %>
         <section class="relative isolate overflow-hidden rounded-[2.5rem] border border-stroke/60 bg-surface/45 px-6 py-8 shadow-xl shadow-black/35 sm:px-8">
           <div class="absolute inset-0 bg-linear-to-br from-accent/12 via-transparent to-accent-2/10" />

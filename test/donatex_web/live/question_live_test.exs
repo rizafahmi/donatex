@@ -111,6 +111,7 @@ defmodule DonatexWeb.QuestionLiveTest do
       assert html =~ ~s(id="flash-info")
       assert html =~ ~s(phx-hook="FlashAutoHide")
       assert html =~ ~s(data-flash-key="info")
+      assert html =~ ~r/data-flash-generation="\d+"/
     end
 
     test "connection-error toasts do not auto-hide", %{conn: conn} do
@@ -237,6 +238,23 @@ defmodule DonatexWeb.QuestionLiveTest do
 
       {:ok, view, _html} = live(conn, ~p"/questions")
       assert has_element?(view, "#question-#{q.id} button[disabled]")
+    end
+
+    test "repeated identical flash gets a fresh auto-hide generation", %{conn: conn} do
+      q = Questions.create_question!(%{"body" => "answered q"})
+      {:ok, _} = Questions.mark_answered(q.id)
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      first_html = render_click(view, "toggle_vote", %{"id" => q.id})
+      second_html = render_click(view, "toggle_vote", %{"id" => q.id})
+
+      [first_generation] =
+        Regex.run(~r/data-flash-generation="(\d+)"/, first_html, capture: :all_but_first)
+
+      [second_generation] =
+        Regex.run(~r/data-flash-generation="(\d+)"/, second_html, capture: :all_but_first)
+
+      refute first_generation == second_generation
     end
   end
 

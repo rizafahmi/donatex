@@ -26,6 +26,7 @@ defmodule DonatexWeb.Layouts do
 
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :flash_generations, :map, default: %{}
 
   attr :current_scope, :map,
     default: nil,
@@ -102,7 +103,11 @@ defmodule DonatexWeb.Layouts do
         </div>
       </main>
 
-      <.flash_group :if={@variant == "app"} flash={@flash} />
+      <.flash_group
+        :if={@variant == "app"}
+        flash={@flash}
+        flash_generations={@flash_generations}
+      />
     </div>
     """
   end
@@ -115,6 +120,7 @@ defmodule DonatexWeb.Layouts do
       <.flash_group flash={@flash} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :flash_generations, :map, required: true
   attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
 
   def flash_group(assigns) do
@@ -124,8 +130,16 @@ defmodule DonatexWeb.Layouts do
       aria-live="polite"
       class="fixed right-4 top-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3"
     >
-      <.flash kind={:info} flash={@flash} />
-      <.flash kind={:error} flash={@flash} />
+      <.flash
+        kind={:info}
+        flash={@flash}
+        flash_generation={@flash_generations["info"]}
+      />
+      <.flash
+        kind={:error}
+        flash={@flash}
+        flash_generation={@flash_generations["error"]}
+      />
 
       <.flash
         id="client-error"

@@ -166,7 +166,7 @@ defmodule DonatexWeb.QuestionLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} flash_generations={@flash_generations}>
       <section id="questions-page" class="space-y-6">
         <header class="space-y-2">
           <h1
