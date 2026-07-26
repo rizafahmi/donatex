@@ -89,41 +89,39 @@ defmodule Donatex.Donations do
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
   @doc """
-  Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
-  Matches by amount (and optional donor_name) for pending donations.
-  Returns the oldest matching pending donation.
+  Atomically claims the unique pending donation matching an amount and optional donor name.
   """
-  def get_pending_donation_by_amount(amount, donor_name \\ nil)
-      when is_integer(amount) and amount > 0 do
-    query =
+  def claim_pending_donation_by_amount(amount, donor_name, new_transaction_id)
+      when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) > 0 do
+    candidates =
       Donation
       |> where(status: "pending")
       |> where(amount: ^amount)
-      |> order_by([d], desc: d.inserted_at, asc: d.id)
-      |> limit(1)
 
-    query =
+    candidates =
       if donor_name && byte_size(donor_name) > 0 do
-        where(query, [d], d.donor_name == ^donor_name)
+        where(candidates, [d], d.donor_name == ^donor_name)
       else
-        query
+        candidates
       end
 
-    Repo.one(query)
-  end
+    unique_candidate_id =
+      candidates
+      |> group_by([d], d.status)
+      |> having([d], count(d.id) == 1)
+      |> select([d], max(d.id))
 
-  def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
     Donation
-    |> where(status: "pending")
-    |> where(amount: ^amount)
-    |> Repo.aggregate(:count)
+    |> where([d], d.status == "pending" and d.id in subquery(unique_candidate_id))
+    |> do_claim_pending_donation(new_transaction_id)
   end
 
-  def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)
+  def claim_pending_donation(%Donation{id: id}, new_transaction_id)
       when is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
-    donation
-    |> Donation.changeset(%{mayar_transaction_id: new_transaction_id})
-    |> Repo.update()
+    Donation
+    |> where([d], d.id == ^id and d.status == "pending")
+    |> do_claim_pending_donation(new_transaction_id)
   end
 
   def get_donation_by_id(id) when is_binary(id) and byte_size(id) > 0 do
@@ -178,6 +176,24 @@ defmodule Donatex.Donations do
   end
 
   def mark_paid_with_change(_donation), do: {:error, :invalid_donation}
+
+  defp do_claim_pending_donation(query, new_transaction_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    query
+    |> select([d], d)
+    |> Repo.update_all(
+      set: [
+        mayar_transaction_id: new_transaction_id,
+        status: "paid",
+        updated_at: now
+      ]
+    )
+    |> case do
+      {1, [donation]} -> {:ok, donation}
+      {0, []} -> {:error, :not_found_or_ambiguous}
+    end
+  end
 
   def mark_paid_by_mayar_transaction_id(mayar_transaction_id)
       when is_binary(mayar_transaction_id) and byte_size(mayar_transaction_id) > 0 do

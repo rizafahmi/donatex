@@ -71,12 +71,12 @@ defmodule DonatexWeb.MayarWebhookController do
     update_transaction_id_and_mark_paid(donation, payment_received)
   end
 
-  defp handle_donation_match({:fallback, donation, _new_transaction_id}, payment_received) do
+  defp handle_donation_match({:claimed_fallback, donation}, payment_received) do
     Logger.info(
-      "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} old_tx_id=#{donation.mayar_transaction_id}"
+      "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id}"
     )
 
-    update_transaction_id_and_mark_paid(donation, payment_received)
+    broadcast_paid_donation(donation, payment_received)
   end
 
   defp handle_donation_match(nil, payment_received) do
@@ -88,13 +88,13 @@ defmodule DonatexWeb.MayarWebhookController do
   end
 
   defp update_transaction_id_and_mark_paid(donation, payment_received) do
-    case Donations.update_mayar_transaction_id(donation, payment_received.mayar_transaction_id) do
+    case Donations.claim_pending_donation(donation, payment_received.mayar_transaction_id) do
       {:ok, updated_donation} ->
-        mark_donation_paid(updated_donation, payment_received)
+        broadcast_paid_donation(updated_donation, payment_received)
 
       {:error, reason} ->
         Logger.warning(
-          "Mayar webhook failed to update transaction id mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=#{inspect(reason)}"
+          "Mayar webhook failed to claim donation mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=#{inspect(reason)}"
         )
 
         :ok
@@ -148,27 +148,22 @@ defmodule DonatexWeb.MayarWebhookController do
     end
   end
 
-  # Fallback: match by amount (newest first)
+  # Fallback: atomically claim the unique pending amount/name match.
   defp find_by_amount_fallback(%Webhook.PaymentReceived{} = payment_received) do
-    case Donations.get_pending_donation_by_amount(
+    case Donations.claim_pending_donation_by_amount(
            payment_received.amount,
-           payment_received.donor_name
+           payment_received.donor_name,
+           payment_received.mayar_transaction_id
          ) do
-      nil ->
+      {:ok, donation} ->
+        {:claimed_fallback, donation}
+
+      {:error, :not_found_or_ambiguous} ->
+        Logger.warning(
+          "Mayar webhook rejected non-unique amount fallback amount=#{payment_received.amount} donor_name=#{inspect(payment_received.donor_name)}"
+        )
+
         nil
-
-      donation ->
-        other_pending = Donations.count_pending_by_amount(payment_received.amount)
-
-        if other_pending > 1 do
-          Logger.warning(
-            "Mayar webhook rejected ambiguous amount fallback amount=#{payment_received.amount} count=#{other_pending}"
-          )
-
-          nil
-        else
-          {:fallback, donation, payment_received.mayar_transaction_id}
-        end
     end
   end
 
@@ -202,17 +197,7 @@ defmodule DonatexWeb.MayarWebhookController do
   defp mark_donation_paid(donation, payment_received) do
     case Donations.mark_paid_with_change(donation) do
       {:ok, donation, true} ->
-        Logger.info(
-          "Mayar webhook accepted mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} amount=#{donation.amount}"
-        )
-
-        Phoenix.PubSub.broadcast(
-          Donatex.PubSub,
-          "donations:paid",
-          {:donation_paid, DonationPresenter.payload(donation)}
-        )
-
-        :ok
+        broadcast_paid_donation(donation, payment_received)
 
       {:ok, donation, false} ->
         Logger.info(
@@ -228,6 +213,20 @@ defmodule DonatexWeb.MayarWebhookController do
 
         :ok
     end
+  end
+
+  defp broadcast_paid_donation(donation, payment_received) do
+    Logger.info(
+      "Mayar webhook accepted mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} amount=#{donation.amount}"
+    )
+
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:paid",
+      {:donation_paid, DonationPresenter.payload(donation)}
+    )
+
+    :ok
   end
 
   defp paid_status?(status) when is_binary(status) do

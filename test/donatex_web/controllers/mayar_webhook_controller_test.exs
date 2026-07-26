@@ -317,4 +317,93 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
 
     refute_receive {:donation_paid, _payload}, 50
   end
+
+  test "uses donor name to disambiguate same-amount pending donations", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = alice} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "original-alice",
+               donor_name: "Alice",
+               reaction: "good",
+               amount: 15_000
+             })
+
+    assert {:ok, %Donation{} = bob} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "original-bob",
+               donor_name: "Bob",
+               reaction: "great",
+               amount: 15_000
+             })
+
+    confirmation_tx_id = "confirmation-alice"
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => confirmation_tx_id,
+          "amount" => 15_000,
+          "customerName" => "Alice",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+    assert %Donation{status: "paid"} = Repo.get!(Donation, alice.id)
+    assert %Donation{status: "pending"} = Repo.get!(Donation, bob.id)
+
+    assert_received {:donation_paid,
+                     %{id: alice_id, mayar_transaction_id: ^confirmation_tx_id}}
+
+    assert alice_id == alice.id
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
+  test "concurrent amount fallbacks atomically claim one pending donation", %{conn: _conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = donation} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "original-concurrent-fallback",
+               donor_name: "Alice",
+               reaction: "good",
+               amount: 15_000
+             })
+
+    token = Config.mayar_webhook_token()
+    confirmation_ids = ["confirmation-fallback-a", "confirmation-fallback-b"]
+
+    results =
+      confirmation_ids
+      |> Enum.map(fn confirmation_id ->
+        Task.async(fn ->
+          build_conn()
+          |> put_req_header("accept", "application/json")
+          |> post(~p"/webhooks/mayar/#{token}", %{
+            "event" => "payment.received",
+            "data" => %{
+              "transactionId" => confirmation_id,
+              "amount" => 15_000,
+              "customerName" => "Alice",
+              "transactionStatus" => "paid"
+            }
+          })
+        end)
+      end)
+      |> Enum.map(&Task.await(&1, 5_000))
+
+    assert Enum.all?(results, &(json_response(&1, 200) == %{"ok" => true}))
+
+    assert %Donation{status: "paid", mayar_transaction_id: claimed_id} =
+             Repo.get!(Donation, donation.id)
+
+    assert claimed_id in confirmation_ids
+    assert_receive {:donation_paid, %{id: donation_id, mayar_transaction_id: ^claimed_id}}
+    assert donation_id == donation.id
+    refute_receive {:donation_paid, _payload}, 50
+  end
 end
