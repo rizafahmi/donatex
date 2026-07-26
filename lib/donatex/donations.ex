@@ -116,9 +116,10 @@ defmodule Donatex.Donations do
         {:ok, paid, false}
 
       nil ->
-        case Repo.transaction(fn ->
-               claim_pending_by_amount_in_tx(amount, new_transaction_id, donor_name)
-             end) do
+        case Repo.transaction(
+               fn -> claim_pending_by_amount_in_tx(amount, new_transaction_id, donor_name) end,
+               mode: :immediate
+             ) do
           {:ok, {donation, changed?}} -> {:ok, donation, changed?}
           {:error, reason} -> {:error, reason}
         end

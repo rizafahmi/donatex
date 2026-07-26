@@ -565,3 +565,92 @@ defmodule Donatex.DonationsTest do
     end
   end
 end
+
+defmodule Donatex.DonationsConcurrencyTest do
+  use ExUnit.Case, async: false
+
+  import Ecto.Query
+
+  alias Donatex.Donations
+  alias Donatex.Donations.Donation
+  alias Donatex.Repo
+  alias Ecto.Adapters.SQL.Sandbox
+
+  test "concurrent donor-disambiguated fallback claims both complete" do
+    :ok = Sandbox.checkout(Repo, sandbox: false)
+
+    amount = 91_337
+    suffix = System.unique_integer([:positive])
+    first_name = "Concurrent First #{suffix}"
+    second_name = "Concurrent Second #{suffix}"
+
+    {:ok, first} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-concurrent-first-original-#{suffix}",
+        donor_name: first_name,
+        reaction: "good",
+        amount: amount
+      })
+
+    {:ok, second} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-concurrent-second-original-#{suffix}",
+        donor_name: second_name,
+        reaction: "great",
+        amount: amount
+      })
+
+    donation_ids = [first.id, second.id]
+
+    on_exit(fn ->
+      :ok = Sandbox.checkout(Repo, sandbox: false)
+      Repo.delete_all(from d in Donation, where: d.id in ^donation_ids)
+    end)
+
+    parent = self()
+
+    first_task =
+      Task.async(fn ->
+        :ok = Sandbox.checkout(Repo, sandbox: false)
+
+        Repo.transaction(
+          fn ->
+            result =
+              Donations.claim_pending_by_amount_as_paid(
+                amount,
+                "tx-concurrent-first-confirm-#{suffix}",
+                first_name
+              )
+
+            send(parent, {:first_claimed, result})
+            receive do: (:release_first_claim -> result)
+          end,
+          mode: :immediate
+        )
+      end)
+
+    assert_receive {:first_claimed, {:ok, %Donation{id: first_id}, true}}, 1_000
+    assert first_id == first.id
+
+    second_task =
+      Task.async(fn ->
+        :ok = Sandbox.checkout(Repo, sandbox: false)
+
+        Donations.claim_pending_by_amount_as_paid(
+          amount,
+          "tx-concurrent-second-confirm-#{suffix}",
+          second_name
+        )
+      end)
+
+    Process.sleep(50)
+    send(first_task.pid, :release_first_claim)
+
+    assert {:ok, {:ok, %Donation{id: ^first_id}, true}} = Task.await(first_task, 2_000)
+    assert {:ok, %Donation{id: second_id}, true} = Task.await(second_task, 2_000)
+    assert second_id == second.id
+
+    assert %Donation{status: "paid"} = Repo.get!(Donation, first.id)
+    assert %Donation{status: "paid"} = Repo.get!(Donation, second.id)
+  end
+end
