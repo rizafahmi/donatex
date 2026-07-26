@@ -1,0 +1,92 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "052e416ca330",
+  "session_id": "73973f7b-f6a9-4a17-9506-b64932cfeabf",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-26T02:21:41.999791Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    ".gitignore",
+    "docs/agent-workflow.md"
+  ],
+  "agent": "Cursor",
+  "model": "default",
+  "turn_id": "f566eea46e9b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 240078,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2249728,
+    "output_tokens": 32398,
+    "api_call_count": 2
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-ce-doc-review-2026-07-25T23:53:33.823344Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "ce-doc-review"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "194fcb6ce9ed",
+      "timestamp": "2026-07-25T23:53:33.823344Z",
+      "native": {
+        "command": "/ce-doc-review"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/ce-doc-review",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-26T02:21:41.965942Z",
+    "agent_lines": 0,
+    "agent_removed": 433,
+    "human_added": 185,
+    "human_modified": 3,
+    "human_removed": 0,
+    "total_committed": 185,
+    "total_lines_changed": 621,
+    "agent_percentage": 69.72624798711755,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1084,
+      "user_lines_removed": 3,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".gitignore": 6,
+        "docs/agent-cursor-workflow.md": 366,
+        "docs/agent-workflow.md": 31,
+        "docs/cursor-workflow-prompt.md": 673,
+        "priv/static/images/qr-questions-branded.svg": 4,
+        "priv/static/images/qr-questions.svg": 4
+      },
+      "user_removed_per_file": {
+        "docs/agent-workflow.md": 3
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1084,
+      "agent_lines_removed": 3
+    }
+  ]
+}
