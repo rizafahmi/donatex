@@ -1,0 +1,70 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "0bd72c8a53f7",
+  "session_id": "b3f101f6-d7a8-4337-8e8c-02a8c01609b2",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-26T02:51:24.350116Z",
+  "branch": "fix/25-concurrency-safe-paid-webhook",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "test/donatex/questions_test.exs",
+    "test/donatex_web/live/admin_question_live_test.exs",
+    "test/donatex_web/live/question_live_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "7f773228d9a8",
+  "checkpoint_transcript_start": 42,
+  "transcript_lines_at_start": 42,
+  "compact_transcript_start": 8,
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-codex-loop-2026-07-26T02:32:13.81224Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "codex-loop"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "6ef1b3f0666c",
+      "timestamp": "2026-07-26T02:32:13.81224Z",
+      "native": {
+        "command": "/codex-loop"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/codex-loop",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-26T02:51:24.312025Z",
+    "agent_lines": 57,
+    "agent_removed": 32,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 57,
+    "total_lines_changed": 89,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

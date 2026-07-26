@@ -1,0 +1,160 @@
+<timestamp>Sunday, Jul 26, 2026, 9:47 AM (UTC+7)</timestamp>
+
+i want a PR
+
+---
+
+The CI error
+
+
+1s
+1s
+8s
+0s
+3s
+16s
+Run mix ci
+Compiling 1 file (.ex)
+Generated donatex app
+Running ExUnit with seed: 962785, max_cases: 8
+
+.....................................02:48:31.857 REDACTED [warning] Mayar webhook rejected parse_error=missing_field=data
+.........................02:48:32.561 [warning] Mayar create_qr network error: non-existing domain
+........................................................02:48:32.896 [warning] Admin replay failed donation_id=e67a3cf0-ca0d-4f2e-ab50-46652774d7fb reason=not_found
+..02:48:32.908 [warning] Admin replay rejected donation_id=f1b76310-e73b-420e-bcfd-7e809ba96d45 status=sent amount=nil
+..02:48:32.972 [warning] Admin replay rejected donation_id=4984faa6-4066-446e-80dd-0541cc5ee1df status=pending amount=15000
+...02:48:33.039 [error] Exqlite.Connection (#PID<0.539.0> ("db_conn_2")) disconnected: ** (DBConnection.ConnectionError) client #PID<0.1645.0> exited
+....
+
+  1) test midnight rollover rolls today into a collapsed historical group at the WIB boundary (DonatexWeb.QuestionLiveTest)
+Error:      test/donatex_web/live/question_live_test.exs:289
+     Expected truthy, got false
+     code: assert has_element?(view, "#question-#{q_today.id}")
+     arguments:
+
+         # 1
+         #Phoenix.LiveViewTest.View<
+           id: "phx-GMW3EXzC6vYxDhZC",
+           module: DonatexWeb.QuestionLive,
+           pid: #PID<0.1680.0>,
+           endpoint: DonatexWeb.Endpoint,
+           ...
+         >
+
+         # 2
+         "#question-d4c7c062-dbda-4422-bd5b-f54ff291691c"
+
+     stacktrace:
+       test/donatex_web/live/question_live_test.exs:298: (test)
+
+.
+
+  2) test ranking and tie-breaking open before answered, then votes desc, then oldest first (DonatexWeb.QuestionLiveTest)
+Error:      test/donatex_web/live/question_live_test.exs:211
+     Assertion with == failed
+     code:  assert parse_today_order(html) == [q2.id, q1.id, q3.id]
+     left:  []
+     right: ["c96f446f-97c9-4fff-b700-5ff6bab5b3d2",
+             "82addce1-5e89-4c90-935f-ef17cd65c465",
+             "be19adf9-94e7-421b-9fe5-a59dbe120cc4"]
+     stacktrace:
+       test/donatex_web/live/question_live_test.exs:231: (test)
+
+.....
+
+  3) test realtime updates a committed vote reorders the board in a connected browser (DonatexWeb.QuestionLiveTest)
+Error:      test/donatex_web/live/question_live_test.exs:266
+     ** (ArgumentError) errors were found at the given arguments:
+
+       * 1st argument: not a nonempty list
+
+     code: assert hd(parse_today_order(html)) == q1.id
+     stacktrace:
+       (erts 15.2.7.10) :erlang.hd([])
+       test/donatex_web/live/question_live_test.exs:277: (test)
+
+....02:48:33.141 [error] Exqlite.Connection (#PID<0.541.0> ("db_conn_4")) disconnected: ** (DBConnection.ConnectionError) client #PID<0.1761.0> exited
+.02:48:33.148 [error] Exqlite.Connection (#PID<0.540.0> ("db_conn_3")) disconnected: ** (DBConnection.ConnectionError) client #PID<0.1768.0> exited
+.........
+
+  4) test cross-page broadcast: a vote from the public page reaches admin (DonatexWeb.AdminQuestionLiveTest)
+Error:      test/donatex_web/live/admin_question_live_test.exs:130
+     Assertion with =~ failed
+     code:  assert html =~ "1 upvote"
+     left:  "<div id=\"phx-GMW3EYW1KR2NTB3B\" data-phx-main=\"\" data-phx-session=\"SFMyNTY.REDACTED.REDACTED\" data-phx-static=\"SFMyNTY.REDACTED.REDACTED\"><div class=\"relative min-h-dvh bg-background\"><div class=\"pointer-events-none absolute inset-0 overflow-hidden\"><div class=\"absolute -top-40 left-1/3 h-[32rem] w-[32rem] rounded-full bg-accent/18 blur-3xl\"></div><div class=\"absolute -bottom-44 right-1/4 h-[34rem] w-[34rem] rounded-full bg-accent-2/14 blur-3xl\"></div><div class=\"absolute inset-0 bg-linear-to-b from-transparent via-transparent to-black/25\"></div></div><header class=\"sticky top-0 z-30 border-b border-stroke/60 bg-background/70 backdrop-blur\"><div class=\"mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6\"><a href=\"/\" class=\"group flex items-baseline gap-3\"><span class=\"font-display text-lg tracking-tight text-text\">Notable</span><span class=\"text-[0.65rem] font-semibold tracking-[0.28em] text-text-muted/80\">\n          QRIS\n        </span></a><nav class=\"flex items-center gap-2\"><a href=\"https://rizafahmi.com/?utm_source=feedback_app&amp;utm_medium=referral&amp;utm_campaign=donation_page_header\" target=\"_blank\" rel=\"noopener\" class=\"rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text\">\n          Tentang Riza\n        </a><a href=\"/\" data-phx-link=\"redirect\" data-phx-link-state=\"push\" class=\"rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text\">\n          Feedback\n        </a><a href=\"/questions\" data-phx-link=\"redirect\" data-phx-link-state=\"push\" class=\"rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text\">\n          Q&amp;A\n        </a><a href=\"/admin\" data-phx-link=\"redirect\" data-phx-link-state=\"push\" class=\"rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text\">\n          Admin\n        </a></nav></div></header><main class=\"relative mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14\"><div class=\"space-y-6\"><section id=\"admin-questions\" class=\"space-y-6\"><header class=\"space-y-2\"><div class=\"flex items-center justify-between gap-3\"><h1 id=\"admin-questions-heading\" class=\"font-display text-3xl font-semibold tracking-tight text-text sm:text-4xl\">\n          Moderasi Pertanyaan\n        </h1><a href=\"/admin\" data-phx-link=\"redirect\" data-phx-link-state=\"push\" class=\"rounded-full border border-stroke/60 bg-surface/60 px-3 py-1.5 text-xs font-semibold text-text-muted transition hover:border-stroke hover:text-text\">\n          Ke Admin\n        </a></div><p class=\"max-w-2xl text-sm leading-6 text-text-muted\">\n        Tandai pertanyaan terjawab, buka kembali, sembunyikan, atau kembalikan. Pertanyaan tersembunyi tetap mempertahankan status terjawab.\n      </p></header><section id=\"admin-date-board\" class=\"space-y-3\"><div id=\"admin-date-group-2026-07-25\" class=\"rounded-2xl border border-stroke/60 bg-background/12\"><button type=\"button\" class=\"flex w-full items-center justify-between px-4 py-3 text-left\" phx-click=\"toggle_date\" phx-value-date=\"2026-07-25\" aria-expanded=\"false\" aria-controls=\"admin-date-list-2026-07-25\"><span class=\"text-sm font-medium text-text\">\n      25 Jul 2026\n    </span><span class=\"text-xs text-text-muted\">\n      1 pertanyaan · 1 terbuka\n    </span></button></div></section></section></div></main><div id=\"flash-group\" aria-live=\"polite\" cl" <> ...
+     right: "1 upvote"
+     stacktrace:
+       test/donatex_web/live/admin_question_live_test.exs:145: (test)
+
+...............................02:48:33.297 REDACTED [warning] Mayar webhook amount mismatch mayar_transaction_id=tx-webhook-3 expected_amount=10000 payload_amount=20000
+.02:48:33.349 REDACTED [warning] Mayar webhook rejected invalid token remote_ip=127.0.0.1
+................................
+
+  5) test list_questions_for_date/2 admin view includes hidden questions (Donatex.QuestionsTest)
+Error:      test/donatex/questions_test.exs:241
+     Assertion with in failed
+     code:  assert q.id in ids
+     left:  "9c75085b-3942-44cf-8cf0-7c9d03431baa"
+     right: []
+     stacktrace:
+       test/donatex/questions_test.exs:248: (test)
+
+..
+
+  6) test list_questions_for_date/2 marks voted? true for the current visitor hash and false otherwise (Donatex.QuestionsTest)
+Error:      test/donatex/questions_test.exs:227
+     ** (KeyError) key :voted not found in: nil
+
+     If you are using the dot syntax, such as map.field, make sure the left-hand side of the dot is a map
+     code: assert Enum.find(rows, &(&1.question.id == q.id)).voted == true
+     stacktrace:
+       test/donatex/questions_test.exs:234: (test)
+
+........................................02:48:34.326 [error] Exqlite.Connection (#PID<0.540.0> ("db_conn_3")) disconnected: ** (DBConnection.ConnectionError) client #PID<0.2592.0> exited
+.02:48:34.342 [error] Exqlite.Connection (#PID<0.538.0> ("db_conn_1")) disconnected: ** (DBConnection.ConnectionError) client #PID<0.2601.0> exited
+.
+Finished in 4.3 seconds (2.6s async, 1.7s sync)
+263 tests, 6 failures
+Checking 83 source files (this might take a while) ...
+
+Please report incorrect results: https://github.com/rrrene/credo/issues
+
+Analysis took 1.1 seconds (0.05s to load, 1.1s running 68 checks on 83 files)
+659 mods/funs, found no issues.
+
+Use `mix credo explain` to explain issues, `mix credo --help` for options.
+Finding suitable PLTs
+Checking PLT...
+[:asn1, :bandit, :compiler, :crypto, :db_connection, :decimal, :dns_cluster, :donatex, :ecto, :ecto_sql, :ecto_sqlite3, :eex, :elixir, :elixir_make, :eqrcode, :ex_ast, :ex_unit, :exqlite, :finch, :fine, :glob_ex, :hpax, :idna, :igniter, :inets, :jason, :kernel, :lazy_html, :logger, :mime, :mint, :nimble_options, :nimble_pool, :owl, :phoenix, :phoenix_ecto, :phoenix_html, :phoenix_live_dashboard, :phoenix_live_view, :phoenix_pubsub, :phoenix_template, :plug, :plug_crypto, :public_key, :req, :rewrite, :runtime_tools, :sourceror, :spitfire, :ssl, ...]
+PLT is up to date!
+No :ignore_warnings opt specified in mix.exs and default does not exist.
+
+Starting Dialyzer
+[
+  check_plt: false,
+  init_plt: ~c"/home/runner/work/donatex/donatex/_build/test/dialyxir_erlang-27.3.4.14_elixir-1.18.4_deps-test.plt",
+  files: [~c"/home/runner/work/donatex/donatex/_build/test/lib/donatex/ebin/Elixir.Donatex.Questions.beam",
+   ~c"/home/runner/work/donatex/donatex/_build/test/lib/donatex/ebin/Elixir.DonatexWeb.Plugs.MayarWebhookAuth.beam",
+   ~c"/home/runner/work/donatex/donatex/_build/test/lib/donatex/ebin/Elixir.Donatex.Mayar.Client.DynamicQr.beam",
+   ~c"/home/runner/work/donatex/donatex/_build/test/lib/donatex/ebin/Elixir.DonatexWeb.beam",
+   ~c"/home/runner/work/donatex/donatex/_build/test/lib/donatex/ebin/Elixir.DonatexWeb.DonateLive.beam",
+   ...],
+  warnings: [:unknown]
+]
+Total errors: 0, Skipped: 0, Unnecessary Skips: 0
+done in 0m7.2s
+done (passed successfully)
+
+  ✓ No code duplication detected (43 files)
+
+  Detection time:     98ms
+
+  Clone budget:       0/0
+
+Analyzing project...
+
+────────────────────────────────────────
+  Architecture Policy
+────────────────────────────────────────
+  OK
+Error: Process completed with exit code 2.
