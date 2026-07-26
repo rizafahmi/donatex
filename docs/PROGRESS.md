@@ -62,6 +62,7 @@
 - [x] Visitor Analytics & Conversion Funnel: Track raw page views on `/` dynamically via connected socket, broadcast page views via PubSub, and render real-time conversion rates (Feedback & Tip Conversion) on `/admin` with a premium glassmorphic visual card.
 - [x] Milestone 9 — Donor Visitor Presence: Track ephemeral signed browser sessions with Phoenix Presence, deduplicate multiple tabs, and show an exact real-time count only at three or more visitors.
 - [x] Milestone 10 — Audience Questions Board: secondary public `/questions` Q&A surface with anonymous upvotes, WIB-grouped ranked board, and authenticated `/admin/questions` moderation (answer/reopen/hide/restore); generalized `SubmissionLimiter`; raw visitor ids hashed and never persisted/logged.
+- [x] Harden webhook amount fallback (#26): fail closed on ambiguous matches, use donor name when available, and atomically claim the unique pending donation.
 
 ## In Progress
 - [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — PR [#34](https://github.com/rizafahmi/donatex/pull/34): atomic pending→paid claim; cursor-agent loop CLEAN.
@@ -75,7 +76,7 @@
 
 ## Next Steps
 1. Merge PR for #25 (`fix/25-concurrency-safe-paid-webhook`; cursor-agent loop clean).
-2. Unblocked by #25: harden amount-fallback correlation (#26) and webhook ops hardening (#31).
+2. Continue webhook ops hardening (#31).
 3. Configure the production environment and deploy using the documented release process.
 4. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
 5. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.

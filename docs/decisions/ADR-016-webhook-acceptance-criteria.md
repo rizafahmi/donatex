@@ -22,8 +22,10 @@ Treat a webhook payload as eligible for payment confirmation only when:
 
 1. `event == "payment.received"`
 2. `transactionStatus` (or fallback `status`) is `paid`
-3. A donation exists for the referenced `transactionId` (or fallback `id`)
+3. The referenced `transactionId` (or fallback `id`) resolves to an existing donation by exact local ID, a Mayar lookup of the original QR transaction ID, or one unique pending amount/name match
 4. The webhook `amount` matches the stored donation amount
+
+The amount/name fallback fails closed when no candidate or multiple candidates match. Claiming a fallback candidate updates its Mayar transaction ID and status in one conditional database write, so concurrent webhook deliveries cannot claim or broadcast the same pending donation twice.
 
 If any condition fails, the webhook request is safely ignored (no state change, no broadcast) while still returning a successful response for authenticated requests.
 
@@ -44,5 +46,6 @@ If any condition fails, the webhook request is safely ignored (no state change, 
 ## Consequences
 
 - Webhook processing becomes stricter and reduces false-positive transitions.
+- Legitimate confirmations that cannot be uniquely correlated remain pending for operational review instead of being guessed by recency.
 - If Mayar changes the meaning or format of `amount`, Donatex may ignore legitimate paid deliveries until the mapping is confirmed and updated.
 - This complements (but does not replace) the need for an official Mayar signing mechanism when available (ADR-008).

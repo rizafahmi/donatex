@@ -356,8 +356,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     assert %Donation{status: "paid"} = Repo.get!(Donation, alice.id)
     assert %Donation{status: "pending"} = Repo.get!(Donation, bob.id)
 
-    assert_received {:donation_paid,
-                     %{id: alice_id, mayar_transaction_id: ^confirmation_tx_id}}
+    assert_received {:donation_paid, %{id: alice_id, mayar_transaction_id: ^confirmation_tx_id}}
 
     assert alice_id == alice.id
     refute_receive {:donation_paid, _payload}, 50
