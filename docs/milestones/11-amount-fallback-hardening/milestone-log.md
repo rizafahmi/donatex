@@ -1,7 +1,7 @@
 # Milestone 11 — Amount-Fallback Payment Correlation Hardening
 
 **Issue:** [#26](https://github.com/rizafahmi/donatex/issues/26) — Harden amount-fallback payment correlation
-**Status:** Implementation complete; pending review
+**Status:** Implementation complete; PR pending
 **Blocked by:** #25 (merged on main via PR #34)
 
 ## Goal
@@ -12,7 +12,7 @@ Make amount-based Mayar webhook fallback correlation atomic and fail-closed when
 
 ### `lib/donatex/donations.ex`
 - Replaced `get_pending_donation_by_amount/2` (returned oldest match via `LIMIT 1`) and `count_pending_by_amount/1` with `claim_pending_by_amount/3`
-- `claim_pending_by_amount/3` runs inside `Repo.transaction`: counts all pending tips matching amount (+ optional donor_name); if exactly one, atomically remaps `mayar_transaction_id` and sets `status = "paid"` in a single `UPDATE ... WHERE status = 'pending'`; if zero, rolls back `:not_found`; if more than one, rolls back `:ambiguous` (fail closed)
+- `claim_pending_by_amount/3` runs inside an immediate `Repo.transaction`, acquiring SQLite's write lock before querying all pending tips matching amount (+ optional donor_name); if exactly one, atomically remaps `mayar_transaction_id` and sets `status = "paid"` in a single `UPDATE ... WHERE status = 'pending'`; if zero, rolls back `:not_found`; if more than one, rolls back `:ambiguous` (fail closed)
 - Returns `{:ok, donation, changed?}` or `{:error, :ambiguous | :not_found | :invalid_state}`
 
 ### `lib/donatex_web/controllers/mayar_webhook_controller.ex`
@@ -34,5 +34,5 @@ Make amount-based Mayar webhook fallback correlation atomic and fail-closed when
 ## Acceptance criteria
 - [x] Claiming a pending tip by amount (+ optional donor name) is a single transactional operation with the paid transition
 - [x] When more than one pending tip matches the amount ambiguously, the system fails closed (no paid mark / no alert) unless disambiguation succeeds
-- [x] Edge-case tests cover: multi-pending same amount, orphan payment (no match), donor_name disambiguation, and failed transaction-id update (now atomic — no separate update step)
+- [x] Edge-case tests cover: multi-pending same amount, orphan payment (no match), donor_name disambiguation, same-name ambiguity, and already-paid no-claim
 - [x] Successful unique fallback still marks paid, persists, then broadcasts once
