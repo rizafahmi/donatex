@@ -70,7 +70,7 @@
 - [x] [#39](https://github.com/rizafahmi/donatex/issues/39) Toast auto-hide — see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md).
 
 ## In Progress
-- [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — PR [#34](https://github.com/rizafahmi/donatex/pull/34): atomic pending→paid claim; cursor-agent loop CLEAN.
+- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — atomic `claim_pending_by_amount/3` (tx id remap + paid in one transaction); fail-closed on ambiguous multi-pending same-amount; 9 new edge-case tests; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/11-amount-fallback-hardening/milestone-log.md). PR pending.
 - [#24](https://github.com/rizafahmi/donatex/issues/24) Questions WIB/today empty listing — fixed on the same PR by making questions tests calendar-relative to `today_wib()` (hardcoded `2026-07-25` drifted).
 
 ## Known Issues

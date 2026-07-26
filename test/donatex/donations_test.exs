@@ -440,4 +440,126 @@ defmodule Donatex.DonationsTest do
       assert stats.pending_count == 1
     end
   end
+
+  describe "claim_pending_by_amount/3" do
+    test "atomically claims, remaps transaction id, and marks paid for a unique match" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-original-1",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_pending_by_amount(15_000, nil, "tx-confirmation-1")
+
+      assert claimed.id == donation.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "tx-confirmation-1"
+
+      reloaded = Repo.get!(Donation, donation.id)
+      assert reloaded.status == "paid"
+      assert reloaded.mayar_transaction_id == "tx-confirmation-1"
+    end
+
+    test "fails closed with :ambiguous when multiple pending tips share the same amount" do
+      {:ok, _d1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amb-1",
+          donor_name: "Alice",
+          reaction: "good",
+          amount: 20_000
+        })
+
+      {:ok, _d2} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amb-2",
+          donor_name: "Bob",
+          reaction: "great",
+          amount: 20_000
+        })
+
+      assert {:error, :ambiguous} =
+               Donations.claim_pending_by_amount(20_000, nil, "tx-confirmation-amb")
+
+      # Both remain pending — no wrong-tip remap
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-amb-1"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-1")
+
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-amb-2"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-2")
+    end
+
+    test "donor_name disambiguates when multiple tips share the same amount" do
+      {:ok, _d1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-dis-1",
+          donor_name: "Alice",
+          reaction: "good",
+          amount: 25_000
+        })
+
+      {:ok, d2} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-dis-2",
+          donor_name: "Bob",
+          reaction: "great",
+          amount: 25_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_pending_by_amount(25_000, "Bob", "tx-confirmation-dis")
+
+      assert claimed.id == d2.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "tx-confirmation-dis"
+
+      # Alice remains pending
+      assert %Donation{status: "pending"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-dis-1")
+    end
+
+    test "returns :not_found for an orphan payment with no matching pending tip" do
+      assert {:error, :not_found} =
+               Donations.claim_pending_by_amount(99_999, nil, "tx-orphan")
+    end
+
+    test "returns :ambiguous when donor_name matches multiple pending tips" do
+      {:ok, _d1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-same-name-1",
+          donor_name: "Alice",
+          reaction: "good",
+          amount: 30_000
+        })
+
+      {:ok, _d2} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-same-name-2",
+          donor_name: "Alice",
+          reaction: "great",
+          amount: 30_000
+        })
+
+      assert {:error, :ambiguous} =
+               Donations.claim_pending_by_amount(30_000, "Alice", "tx-confirmation-same")
+    end
+
+    test "does not claim an already-paid donation" do
+      {:ok, _donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-paid-1",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 40_000
+        })
+
+      assert {:ok, _, true} = Donations.claim_pending_by_amount(40_000, nil, "tx-conf-paid")
+
+      # Second claim for the same amount finds nothing pending
+      assert {:error, :not_found} =
+               Donations.claim_pending_by_amount(40_000, nil, "tx-conf-paid-2")
+    end
+  end
 end
