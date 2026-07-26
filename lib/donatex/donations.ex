@@ -106,7 +106,10 @@ defmodule Donatex.Donations do
   def claim_pending_by_amount(amount, donor_name \\ nil, new_transaction_id)
       when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
              byte_size(new_transaction_id) > 0 do
-    case Repo.transaction(fn -> claim_by_amount_tx(amount, donor_name, new_transaction_id) end) do
+    case Repo.transaction(
+           fn -> claim_by_amount_tx(amount, donor_name, new_transaction_id) end,
+           mode: :immediate
+         ) do
       {:ok, {donation, changed?}} -> {:ok, donation, changed?}
       {:error, reason} -> {:error, reason}
     end

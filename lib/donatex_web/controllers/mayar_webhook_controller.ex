@@ -119,7 +119,7 @@ defmodule DonatexWeb.MayarWebhookController do
          ) do
       {:ok, donation, true} ->
         Logger.info(
-          "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} old_tx_id=#{donation.mayar_transaction_id}"
+          "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id}"
         )
 
         broadcast_paid(donation, payment_received)
