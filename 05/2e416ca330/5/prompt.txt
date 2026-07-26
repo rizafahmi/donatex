@@ -1,0 +1,1 @@
+please do review thoroughly docs/agent-cursor-workflow.md and docs/cursor-workflow-prompt.md look for everything: loophole, edge cases, missing steps, suggestion, something else that I haven't thought of, etc.
