@@ -290,6 +290,32 @@ defmodule Donatex.DonationsTest do
       assert reloaded.mayar_transaction_id == "tx-confirmed-update"
     end
 
+    test "returns an error when the new transaction id is already claimed" do
+      {:ok, _existing} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-update-taken",
+          donor_name: "Existing",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-update-candidate",
+          donor_name: "Candidate",
+          reaction: "good",
+          amount: 20_000
+        })
+
+      assert {:error, :unique_constraint} =
+               Donations.claim_with_transaction_id_update(donation, "tx-update-taken")
+
+      assert %Donation{
+               status: "pending",
+               mayar_transaction_id: "tx-update-candidate"
+             } = Repo.get!(Donation, donation.id)
+    end
+
     test "returns false for already-paid donation" do
       {:ok, donation} =
         Donations.create_pending_donation(%{

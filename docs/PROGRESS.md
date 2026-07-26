@@ -4,7 +4,7 @@
 - Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
 - Webhook ops hardening for [#31](https://github.com/rizafahmi/donatex/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
 - Overlay alert acknowledgement is now persistence-gated: the OBS overlay only clears the current tip alert and advances the queue after `mark_donation_alerted_by_id/1` succeeds; on failure the alert restarts its visible lifecycle, retries persistence, and remains recoverable, fixing [#28](https://github.com/rizafahmi/donatex/issues/28); see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md)
-- Amount-fallback payment correlation is now atomic and fail-closed (#26): `claim_pending_by_amount_with_change/3` updates the transaction ID and marks paid in a single `UPDATE … WHERE status = 'pending'` statement, and returns `{:error, :ambiguous}` when multiple pending donations share the same amount; see [Milestone 13 log](milestones/13-amount-fallback-hardening/milestone-log.md)
+- Amount-fallback payment correlation is now atomic and fail-closed (#26): `claim_pending_by_amount_with_change/3` holds an immediate SQLite write transaction across matching and the single pending-to-paid update, returns `{:error, :ambiguous}` for multiple matches, and normalizes transaction-ID uniqueness conflicts; see [Milestone 13 log](milestones/13-amount-fallback-hardening/milestone-log.md)
 - The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
 - Toast/flash notifications now auto-dismiss after 5 s via a `FlashAutoHide` JS hook on the shared `flash/1` component (fixes [#39](https://github.com/rizafahmi/donatex/issues/39)); per-kind generations reset identical repeated flashes while connection-error toasts stay manual; see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md)
 - Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
@@ -73,7 +73,7 @@
 - [x] [#28](https://github.com/rizafahmi/donatex/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
 
 ## In Progress
-- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — implemented: atomic claim + fail-closed on ambiguity; pending commit and PR.
+- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — implemented: immediate-transaction claim, fail-closed ambiguity handling, and explicit uniqueness-conflict errors; pending commit and PR.
 - [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — PR [#34](https://github.com/rizafahmi/donatex/pull/34) merged: atomic pending→paid claim.
 
 ## Known Issues

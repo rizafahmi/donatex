@@ -36,6 +36,14 @@ previous implementation had two problems:
   ExDNA code clone between `mark_paid_with_change/1` and
   `claim_with_transaction_id_update/2`.
 
+- The amount fallback count and claim now run in an immediate SQLite
+  transaction, preventing another writer from inserting a matching pending
+  donation between selection and update.
+
+- Transaction-ID uniqueness conflicts from the atomic `update_all` are
+  normalized to `{:error, :unique_constraint}` instead of escaping as a
+  database exception.
+
 - Removed `get_pending_donation_by_amount/2`, `count_pending_by_amount/1`,
   and `update_mayar_transaction_id/2` — dead code after the refactor.
 
@@ -77,3 +85,6 @@ previous implementation had two problems:
 ## Verification
 - 279 tests, 0 failures
 - Credo, Dialyzer, ExDNA duplication, architecture: clean (`mix ci`)
+- Review follow-up: `mix format --check-formatted
+  lib/donatex/donations.ex test/donatex/donations_test.exs` and
+  `mix test test/donatex/donations_test.exs` — 29 tests, 0 failures

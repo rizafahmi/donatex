@@ -106,6 +106,19 @@ defmodule Donatex.Donations do
   def claim_pending_by_amount_with_change(amount, donor_name \\ nil, new_transaction_id)
       when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
              byte_size(new_transaction_id) > 0 do
+    Repo.transaction(
+      fn ->
+        claim_pending_by_amount_in_transaction(amount, donor_name, new_transaction_id)
+      end,
+      mode: :immediate
+    )
+    |> case do
+      {:ok, result} -> result
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp claim_pending_by_amount_in_transaction(amount, donor_name, new_transaction_id) do
     case list_pending_by_amount_and_donor(amount, donor_name) do
       [] ->
         {:error, :not_found}
@@ -147,21 +160,36 @@ defmodule Donatex.Donations do
       when is_binary(id) and is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
-    {count, _} =
-      Donation
-      |> where([d], d.id == ^id and d.status == "pending")
-      |> Repo.update_all(
-        set: [status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now]
-      )
+    update_result =
+      try do
+        Donation
+        |> where([d], d.id == ^id and d.status == "pending")
+        |> Repo.update_all(
+          set: [status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now]
+        )
+      rescue
+        error in Exqlite.Error ->
+          if String.starts_with?(
+               error.message,
+               "UNIQUE constraint failed: donations.mayar_transaction_id"
+             ) do
+            {:error, :unique_constraint}
+          else
+            reraise error, __STACKTRACE__
+          end
+      end
 
-    case count do
-      1 ->
+    case update_result do
+      {1, _} ->
         {:ok,
          %{donation | status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now},
          true}
 
-      0 ->
+      {0, _} ->
         paid_claim_result(id)
+
+      {:error, :unique_constraint} = error ->
+        error
     end
   end
 
