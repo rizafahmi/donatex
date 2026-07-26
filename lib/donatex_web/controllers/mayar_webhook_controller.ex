@@ -71,20 +71,8 @@ defmodule DonatexWeb.MayarWebhookController do
     update_transaction_id_and_mark_paid(donation, payment_received)
   end
 
-  defp handle_donation_match({:fallback, donation, _new_transaction_id}, payment_received) do
-    Logger.info(
-      "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} old_tx_id=#{donation.mayar_transaction_id}"
-    )
-
-    update_transaction_id_and_mark_paid(donation, payment_received)
-  end
-
-  defp handle_donation_match(nil, payment_received) do
-    Logger.error(
-      "Mayar webhook orphan payment - no matching donation found mayar_transaction_id=#{payment_received.mayar_transaction_id} amount=#{payment_received.amount} donor_name=#{inspect(payment_received.donor_name)}"
-    )
-
-    :ok
+  defp handle_donation_match(:amount_fallback, payment_received) do
+    claim_amount_fallback(payment_received)
   end
 
   defp update_transaction_id_and_mark_paid(donation, payment_received) do
@@ -99,6 +87,60 @@ defmodule DonatexWeb.MayarWebhookController do
 
         :ok
     end
+  end
+
+  defp claim_amount_fallback(%Webhook.PaymentReceived{} = payment_received) do
+    case Donations.claim_pending_by_amount_as_paid(
+           payment_received.amount,
+           payment_received.mayar_transaction_id,
+           payment_received.donor_name
+         ) do
+      {:ok, donation, true} ->
+        Logger.info(
+          "Mayar webhook fallback claim mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} amount=#{donation.amount}"
+        )
+
+        broadcast_paid(donation)
+        :ok
+
+      {:ok, donation, false} ->
+        Logger.info(
+          "Mayar webhook duplicate delivery mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id}"
+        )
+
+        :ok
+
+      {:error, :ambiguous} ->
+        Logger.warning(
+          "Mayar webhook ambiguous amount fallback mayar_transaction_id=#{payment_received.mayar_transaction_id} amount=#{payment_received.amount} donor_name=#{inspect(payment_received.donor_name)}"
+        )
+
+        :ok
+
+      {:error, :not_found} ->
+        log_orphan_payment(payment_received)
+        :ok
+
+      {:error, :transaction_id_taken} ->
+        Logger.warning(
+          "Mayar webhook failed to update transaction id mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=:transaction_id_taken"
+        )
+
+        :ok
+
+      {:error, reason} ->
+        Logger.warning(
+          "Mayar webhook amount fallback failed mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=#{inspect(reason)}"
+        )
+
+        :ok
+    end
+  end
+
+  defp log_orphan_payment(%Webhook.PaymentReceived{} = payment_received) do
+    Logger.error(
+      "Mayar webhook orphan payment - no matching donation found mayar_transaction_id=#{payment_received.mayar_transaction_id} amount=#{payment_received.amount} donor_name=#{inspect(payment_received.donor_name)}"
+    )
   end
 
   # Try exact match first, then try Mayar lookup, then fallback by amount
@@ -148,29 +190,8 @@ defmodule DonatexWeb.MayarWebhookController do
     end
   end
 
-  # Fallback: match by amount (newest first)
-  defp find_by_amount_fallback(%Webhook.PaymentReceived{} = payment_received) do
-    case Donations.get_pending_donation_by_amount(
-           payment_received.amount,
-           payment_received.donor_name
-         ) do
-      nil ->
-        nil
-
-      donation ->
-        # Check if there are other pending donations with the same amount
-        # This could indicate a potential mismatch
-        other_pending = Donations.count_pending_by_amount(payment_received.amount)
-
-        if other_pending > 1 do
-          Logger.warning(
-            "Mayar webhook multiple pending donations with amount=#{payment_received.amount} (count=#{other_pending}), matched newest"
-          )
-        end
-
-        {:fallback, donation, payment_received.mayar_transaction_id}
-    end
-  end
+  # Fallback: atomic amount (+ optional donor_name) claim — fail closed if ambiguous
+  defp find_by_amount_fallback(%Webhook.PaymentReceived{}), do: :amount_fallback
 
   # Look up transaction in Mayar API to find original QR transaction ID
   defp lookup_original_transaction_id(confirmation_tx_id) do
@@ -206,12 +227,7 @@ defmodule DonatexWeb.MayarWebhookController do
           "Mayar webhook accepted mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} amount=#{donation.amount}"
         )
 
-        Phoenix.PubSub.broadcast(
-          Donatex.PubSub,
-          "donations:paid",
-          {:donation_paid, DonationPresenter.payload(donation)}
-        )
-
+        broadcast_paid(donation)
         :ok
 
       {:ok, donation, false} ->
@@ -228,6 +244,14 @@ defmodule DonatexWeb.MayarWebhookController do
 
         :ok
     end
+  end
+
+  defp broadcast_paid(donation) do
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:paid",
+      {:donation_paid, DonationPresenter.payload(donation)}
+    )
   end
 
   defp paid_status?(status) when is_binary(status) do

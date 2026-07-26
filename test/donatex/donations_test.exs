@@ -66,6 +66,130 @@ defmodule Donatex.DonationsTest do
     end
   end
 
+  describe "claim_pending_by_amount_as_paid/3" do
+    test "claims a unique pending tip by amount and remaps transaction id" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amount-original",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:ok, %Donation{} = paid, true} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-amount-confirmation", "Maya")
+
+      assert paid.id == donation.id
+      assert paid.status == "paid"
+      assert paid.mayar_transaction_id == "tx-amount-confirmation"
+
+      assert %Donation{status: "paid", mayar_transaction_id: "tx-amount-confirmation"} =
+               Repo.get!(Donation, donation.id)
+    end
+
+    test "fails closed when multiple pending tips share the same amount" do
+      {:ok, first} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-ambiguous-1",
+          donor_name: "A",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      {:ok, second} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-ambiguous-2",
+          donor_name: "B",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      assert {:error, :ambiguous} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-ambiguous-confirm")
+
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-ambiguous-1"} =
+               Repo.get!(Donation, first.id)
+
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-ambiguous-2"} =
+               Repo.get!(Donation, second.id)
+    end
+
+    test "disambiguates same-amount tips by donor_name" do
+      {:ok, _other} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-disambig-other",
+          donor_name: "Other",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      {:ok, target} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-disambig-target",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:ok, %Donation{} = paid, true} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-disambig-confirm", "Maya")
+
+      assert paid.id == target.id
+      assert paid.mayar_transaction_id == "tx-disambig-confirm"
+
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-disambig-other"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-disambig-other")
+    end
+
+    test "returns not_found for orphan payments with no pending match" do
+      assert {:error, :not_found} =
+               Donations.claim_pending_by_amount_as_paid(99_000, "tx-orphan-confirm", "Ghost")
+    end
+
+    test "returns transaction_id_taken when remap hits an existing id" do
+      {:ok, _taken} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-already-taken",
+          donor_name: "Keeper",
+          reaction: "good",
+          amount: 20_000
+        })
+
+      {:ok, candidate} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-candidate-original",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:error, :transaction_id_taken} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-already-taken", "Maya")
+
+      assert %Donation{status: "pending", mayar_transaction_id: "tx-candidate-original"} =
+               Repo.get!(Donation, candidate.id)
+    end
+
+    test "is idempotent after a successful amount-fallback claim" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-idem-original",
+          donor_name: "Maya",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:ok, %Donation{}, true} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-idem-confirm", "Maya")
+
+      assert {:ok, %Donation{} = again, false} =
+               Donations.claim_pending_by_amount_as_paid(15_000, "tx-idem-confirm", "Maya")
+
+      assert again.id == donation.id
+      assert again.status == "paid"
+    end
+  end
+
   describe "mark_paid_by_mayar_transaction_id/1" do
     test "marks donation paid by mayar transaction id" do
       {:ok, donation} =

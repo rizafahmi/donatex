@@ -88,43 +88,45 @@ defmodule Donatex.Donations do
 
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
-  @doc """
-  Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
-  Matches by amount (and optional donor_name) for pending donations.
-  Returns the oldest matching pending donation.
-  """
-  def get_pending_donation_by_amount(amount, donor_name \\ nil)
-      when is_integer(amount) and amount > 0 do
-    query =
-      Donation
-      |> where(status: "pending")
-      |> where(amount: ^amount)
-      |> order_by([d], desc: d.inserted_at, asc: d.id)
-      |> limit(1)
-
-    query =
-      if donor_name && byte_size(donor_name) > 0 do
-        where(query, [d], d.donor_name == ^donor_name)
-      else
-        query
-      end
-
-    Repo.one(query)
-  end
-
-  def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
-    Donation
-    |> where(status: "pending")
-    |> where(amount: ^amount)
-    |> Repo.aggregate(:count)
-  end
-
   def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)
       when is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
     donation
     |> Donation.changeset(%{mayar_transaction_id: new_transaction_id})
     |> Repo.update()
   end
+
+  @doc """
+  Atomically claims a unique pending tip via amount fallback correlation.
+
+  When Mayar's paid webhook uses a different transaction id than the QR create
+  response, remaps `mayar_transaction_id` and marks the tip paid in a single
+  `UPDATE … WHERE status = 'pending'`.
+
+  Fails closed unless exactly one pending tip matches `amount` (and optional
+  `donor_name` when present). Concurrent same-amount payments therefore never
+  silently remap the wrong pending tip.
+  """
+  def claim_pending_by_amount_as_paid(amount, new_transaction_id, donor_name \\ nil)
+
+  def claim_pending_by_amount_as_paid(amount, new_transaction_id, donor_name)
+      when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) > 0 do
+    case already_paid_by_transaction_id(new_transaction_id) do
+      %Donation{} = paid ->
+        {:ok, paid, false}
+
+      nil ->
+        case Repo.transaction(fn ->
+               claim_pending_by_amount_in_tx(amount, new_transaction_id, donor_name)
+             end) do
+          {:ok, {donation, changed?}} -> {:ok, donation, changed?}
+          {:error, reason} -> {:error, reason}
+        end
+    end
+  end
+
+  def claim_pending_by_amount_as_paid(_amount, _new_transaction_id, _donor_name),
+    do: {:error, :invalid_attrs}
 
   def get_donation_by_id(id) when is_binary(id) and byte_size(id) > 0 do
     Repo.get(Donation, id)
@@ -237,4 +239,88 @@ defmodule Donatex.Donations do
         acc
     end)
   end
+
+  defp claim_pending_by_amount_in_tx(amount, new_transaction_id, donor_name) do
+    case pending_amount_matches(amount, donor_name) do
+      [] ->
+        Repo.rollback(:not_found)
+
+      [_first, _second | _] ->
+        Repo.rollback(:ambiguous)
+
+      [%Donation{id: id} = donation] ->
+        claim_unique_pending_amount_match(donation, id, amount, new_transaction_id)
+    end
+  end
+
+  defp already_paid_by_transaction_id(mayar_transaction_id) do
+    case Repo.get_by(Donation, mayar_transaction_id: mayar_transaction_id) do
+      %Donation{status: "paid"} = paid -> paid
+      _ -> nil
+    end
+  end
+
+  defp pending_amount_matches(amount, donor_name) do
+    Donation
+    |> where([d], d.status == "pending" and d.amount == ^amount)
+    |> maybe_filter_donor_name(donor_name)
+    |> order_by([d], asc: d.inserted_at, asc: d.id)
+    |> limit(2)
+    |> Repo.all()
+  end
+
+  defp maybe_filter_donor_name(query, donor_name)
+       when is_binary(donor_name) and byte_size(donor_name) > 0 do
+    where(query, [d], d.donor_name == ^donor_name)
+  end
+
+  defp maybe_filter_donor_name(query, _donor_name), do: query
+
+  defp claim_unique_pending_amount_match(donation, id, amount, new_transaction_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      Donation
+      |> where([d], d.id == ^id and d.status == "pending" and d.amount == ^amount)
+      |> Repo.update_all(
+        set: [
+          mayar_transaction_id: new_transaction_id,
+          status: "paid",
+          updated_at: now
+        ]
+      )
+
+    case count do
+      1 ->
+        {%{donation | mayar_transaction_id: new_transaction_id, status: "paid", updated_at: now},
+         true}
+
+      0 ->
+        case already_paid_by_transaction_id(new_transaction_id) do
+          %Donation{} = paid -> {paid, false}
+          nil -> Repo.rollback(:not_found)
+        end
+    end
+  rescue
+    error in [Ecto.ConstraintError, Exqlite.Error] ->
+      if unique_mayar_transaction_id_error?(error) do
+        Repo.rollback(:transaction_id_taken)
+      else
+        reraise error, __STACKTRACE__
+      end
+  end
+
+  defp unique_mayar_transaction_id_error?(%Ecto.ConstraintError{
+         constraint: "donations_mayar_transaction_id_index"
+       }),
+       do: true
+
+  defp unique_mayar_transaction_id_error?(%Ecto.ConstraintError{constraint: constraint})
+       when is_binary(constraint),
+       do: String.contains?(constraint, "mayar_transaction_id")
+
+  defp unique_mayar_transaction_id_error?(%Exqlite.Error{} = error),
+    do: String.contains?(Exception.message(error), "mayar_transaction_id")
+
+  defp unique_mayar_transaction_id_error?(_error), do: false
 end
