@@ -1,0 +1,17 @@
+I want to generate qr code for https://feedback.rizafahmi.com/questions that resonate with `/` page, similar vibe, color scheme, etc. There is AI & Parametric QR code generation https://qrbtf.com/en Help me prompt it and set the parameters to generat the QR code
+
+---
+
+I want to generate qr code for https://feedback.rizafahmi.com/questions that resonate with `/` page, similar vibe, color scheme, etc. I want to show it to audience with doom-emacs or png, svg or animated one. What should we do? can you generate me one?
+
+---
+
+I want to generate qr code for https://feedback.rizafahmi.com/questions that resonate with `/` page, similar vibe, color scheme, etc. I want to show it to audience with doom-emacs or png, svg or animated one. What should we do? can you generate me one? Image or put it on new page `/qr-feedback` page is ok
+
+---
+
+I want to generate qr code for https://feedback.rizafahmi.com/questions that resonate with `/` page, similar vibe, color scheme, etc. I want to show it to audience with doom-emacs or png, svg or animated one. What should we do? can you generate me one? Image or put it on new page `/qr-feedback` page is ok. Do not use `/qr` as a reference. create new and thinking fresh
+
+---
+
+Remove the page `/qr-feedback`. Let use png or svg version instead. Put it at priv/static/images

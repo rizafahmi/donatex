@@ -1,0 +1,78 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "052e416ca330",
+  "session_id": "b27e57bb-578e-4cdc-8ec4-11599f322fd0",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-26T02:21:42.086068Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "save_step_count": 3,
+  "files_touched": [
+    "priv/static/images/qr-questions-branded.png",
+    "priv/static/images/qr-questions-branded.svg",
+    "priv/static/images/qr-questions.png",
+    "priv/static/images/qr-questions.svg"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "46c864cfdb67",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 161852,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2241024,
+    "output_tokens": 17527,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-26T02:21:42.067091Z",
+    "agent_lines": 8,
+    "agent_removed": 0,
+    "human_added": 872,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 880,
+    "total_lines_changed": 1316,
+    "agent_percentage": 0.60790273556231,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 1,
+      "user_lines_removed": 1,
+      "agent_lines_added": 640,
+      "agent_lines_removed": 4,
+      "user_added_per_file": {
+        ".scratch/qr-export/qr-questions.svg": 1
+      },
+      "user_removed_per_file": {
+        ".scratch/qr-export/qr-questions.svg": 1
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 8,
+      "agent_lines_removed": 0
+    }
+  ]
+}
