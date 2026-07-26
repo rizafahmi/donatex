@@ -79,6 +79,7 @@ Hooks.PlaySound = {
 Hooks.QrCode = {
   mounted() {
     this._initExpandMinimize()
+    this._initCanvasQr()
 
     this.handleEvent("qr:download", () => this._downloadPNG())
     this.handleEvent("qr:share", ({url}) => this._share(url))
@@ -87,6 +88,96 @@ Hooks.QrCode = {
   destroyed() {
     if (this._expandTimer) clearTimeout(this._expandTimer)
     if (this._minimizeTimer) clearTimeout(this._minimizeTimer)
+    if (this._raf) cancelAnimationFrame(this._raf)
+    this._raf = null
+  },
+
+  _initCanvasQr() {
+    const canvas = this.el.querySelector("#qr-canvas")
+    if (!canvas) return
+
+    let matrix
+    try {
+      matrix = JSON.parse(canvas.dataset.matrix || "[]")
+    } catch (_e) {
+      return
+    }
+
+    const size = Number(canvas.dataset.size) || matrix.length
+    if (!size || !matrix.length) return
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Rosé Pine brand palette
+    const BG = "#ffffff"
+    const DARK = ["#1f1d2e", "#26233a", "#191724"]
+    const ACCENT = "#9ccfd8"
+    const IRIS = "#c4a7e7"
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    const cssSize = canvas.clientWidth || 280
+    canvas.width = Math.round(cssSize * dpr)
+    canvas.height = Math.round(cssSize * dpr)
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+    const draw = (t) => {
+      const w = cssSize
+      const cell = w / size
+      ctx.clearRect(0, 0, w, w)
+      ctx.fillStyle = BG
+      ctx.fillRect(0, 0, w, w)
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (!matrix[r][c]) continue
+
+          // Traveling phase across the matrix (QRMove-like motion)
+          const phase = prefersReducedMotion ? 0 : (r + c) * 0.35 + t * 0.0025
+          const wave = (Math.sin(phase) + 1) / 2
+          const colorIdx = Math.floor(wave * (DARK.length - 0.001))
+          ctx.fillStyle = DARK[colorIdx]
+
+          // Full-bleed modules for scannability; motion is color + sparkle only
+          const inset = 0.02
+          const x = c * cell + cell * inset
+          const y = r * cell + cell * inset
+          const s = cell * (1 - inset * 2)
+          const radius = Math.min(s * 0.18, 3)
+
+          ctx.beginPath()
+          if (typeof ctx.roundRect === "function") {
+            ctx.roundRect(x, y, s, s, radius)
+          } else {
+            ctx.rect(x, y, s, s)
+          }
+          ctx.fill()
+
+          // Soft accent sparkle on wave crest — low alpha, does not erase fill
+          if (!prefersReducedMotion && wave > 0.85) {
+            ctx.fillStyle = wave > 0.93 ? IRIS : ACCENT
+            ctx.globalAlpha = 0.22
+            const spark = s * 0.28
+            ctx.beginPath()
+            ctx.arc(x + s * 0.5, y + s * 0.5, spark, 0, Math.PI * 2)
+            ctx.fill()
+            ctx.globalAlpha = 1
+          }
+        }
+      }
+    }
+
+    if (prefersReducedMotion) {
+      draw(0)
+      return
+    }
+
+    const tick = (now) => {
+      draw(now)
+      this._raf = requestAnimationFrame(tick)
+    }
+    this._raf = requestAnimationFrame(tick)
   },
 
   _initExpandMinimize() {
