@@ -1,1 +1,22 @@
-/compound
+Create a commit for this branch.
+- Current branch: main.
+- Base branch: main.
+- Commit only the already-staged files listed below.
+- The staged file list below is authoritative; do not re-check it.
+- Do not stage additional files; commit only the staged portions.
+- Write a concise commit message.
+- Do not push.
+
+Staged files to commit:
+- .gitignore (modified)
+- docs/agent-cursor-workflow.md (added)
+- docs/agent-workflow.md (modified)
+- docs/cursor-workflow-prompt.md (added)
+- priv/static/images/qr-questions-branded.png (added)
+- priv/static/images/qr-questions-branded.svg (added)
+- priv/static/images/qr-questions-monkey.png (added)
+- priv/static/images/qr-questions.png (added)
+- priv/static/images/qr-questions.svg (added)
+<timestamp>Sunday, Jul 26, 2026, 9:21 AM (UTC+7)</timestamp>
+
+Execute the selected diff-tab commit action.
