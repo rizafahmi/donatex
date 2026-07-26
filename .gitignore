@@ -56,3 +56,9 @@ npm-debug.log
 
 # Agent run resume state (quota-interrupted runs)
 /docs/agent-run-resume.md
+
+# Agent loop local concurrency lock (see docs/agent-cursor-workflow.md)
+/.agent.lock
+
+# Cursor's native worktree tool nests worktrees inside the repo
+/.worktrees/
