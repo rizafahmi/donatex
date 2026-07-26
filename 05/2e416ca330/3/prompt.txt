@@ -1,0 +1,11 @@
+the loop prompt docs/cursor-workflow-prompt.md is still not doing re-prioritizng and put label in gh issues https://github.com/rizafahmi/donatex/issues/
+
+And it stop, not take one issue and working on it. Read /Users/riza/.cursor/projects/Users-riza-code-donatex/agent-transcripts/0cb9b686-4894-4ce2-b611-ce6ffa6ac06b/0cb9b686-4894-4ce2-b611-ce6ffa6ac06b.jsonl 
+
+Figure out what happened. What do you suggest? What haven't I thought of?
+
+---
+
+Implement the plan as specified, it is attached for your reference. Do NOT edit the plan file itself.
+
+To-do's from the plan have already been created. Do not create them again. Mark them as in_progress as you work, starting with the first one. Don't stop until you have completed all the to-dos.
