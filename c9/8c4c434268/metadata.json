@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "c98c4c434268",
+  "strategy": "manual-commit",
+  "branch": "fix/25-concurrency-safe-paid-webhook",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "lib/donatex/donations.ex",
+    "test/donatex/donations_test.exs",
+    "test/donatex_web/controllers/mayar_webhook_controller_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c9/8c4c434268/0/metadata.json",
+      "transcript": "/c9/8c4c434268/0/full.jsonl",
+      "compact_transcript": "/c9/8c4c434268/0/transcript.jsonl",
+      "content_hash": "/c9/8c4c434268/0/content_hash.txt",
+      "prompt": "/c9/8c4c434268/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 77710,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1586496,
+    "output_tokens": 14793,
+    "api_call_count": 3
+  }
+}

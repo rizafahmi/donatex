@@ -1,0 +1,13 @@
+/codex-loop take one high impact issue from github issues then start working
+
+---
+
+We're not using codex, w're using Cursor. There is `cursor-agent` for TUI or CLI version
+
+---
+
+--aut
+
+---
+
+--auto
