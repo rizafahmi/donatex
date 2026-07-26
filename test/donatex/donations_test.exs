@@ -110,6 +110,30 @@ defmodule Donatex.DonationsTest do
     test "returns not_found when transaction id does not exist" do
       assert {:error, :not_found} = Donations.mark_paid_by_mayar_transaction_id("tx-missing")
     end
+
+    test "claims paid at most once under concurrent mark_paid calls" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-concurrent-claim",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 25_000
+        })
+
+      results =
+        1..12
+        |> Enum.map(fn _ ->
+          Task.async(fn -> Donations.mark_paid_with_change(donation) end)
+        end)
+        |> Enum.map(&Task.await(&1, 5_000))
+
+      winners = for {:ok, %Donation{status: "paid"}, true} <- results, do: true
+      losers = for {:ok, %Donation{status: "paid"}, false} <- results, do: true
+
+      assert length(winners) == 1
+      assert length(losers) == 11
+      assert %Donation{status: "paid"} = Repo.get!(Donation, donation.id)
+    end
   end
 
   describe "list_paid_unalerted_donations/0" do
