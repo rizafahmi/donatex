@@ -229,12 +229,13 @@ defmodule Donatex.QuestionsTest do
       Questions.toggle_vote(q.id, "visitor-a")
 
       hash = :crypto.hash(:sha256, "visitor-a") |> Base.encode16(case: :lower)
+      today = Questions.wib_date_of_utc_datetime(q.inserted_at)
 
-      rows = Questions.list_questions_for_date(~D[2026-07-25], visitor_hash: hash)
+      rows = Questions.list_questions_for_date(today, visitor_hash: hash)
       assert Enum.find(rows, &(&1.question.id == q.id)).voted == true
 
       other = :crypto.hash(:sha256, "visitor-b") |> Base.encode16(case: :lower)
-      rows_other = Questions.list_questions_for_date(~D[2026-07-25], visitor_hash: other)
+      rows_other = Questions.list_questions_for_date(today, visitor_hash: other)
       assert Enum.find(rows_other, &(&1.question.id == q.id)).voted == false
     end
 
@@ -243,7 +244,8 @@ defmodule Donatex.QuestionsTest do
       hidden = question_fixture(%{"body" => "hidden"})
       Questions.hide(hidden.id)
 
-      rows = Questions.list_questions_for_date(~D[2026-07-25], include_hidden: true)
+      today = Questions.wib_date_of_utc_datetime(q.inserted_at)
+      rows = Questions.list_questions_for_date(today, include_hidden: true)
       ids = Enum.map(rows, & &1.question.id)
       assert q.id in ids
       assert hidden.id in ids

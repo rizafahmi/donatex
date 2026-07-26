@@ -64,7 +64,8 @@
 - [x] Milestone 10 — Audience Questions Board: secondary public `/questions` Q&A surface with anonymous upvotes, WIB-grouped ranked board, and authenticated `/admin/questions` moderation (answer/reopen/hide/restore); generalized `SubmissionLimiter`; raw visitor ids hashed and never persisted/logged.
 
 ## In Progress
-- [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — branch `fix/25-concurrency-safe-paid-webhook`: atomic `UPDATE … WHERE status = 'pending'` claim; winner path returns in-memory paid struct (no post-claim `Repo.get`); concurrent context + webhook tests green. Cursor-agent loop CLEAN (1 fix: P2 winner-error footgun).
+- [#25](https://github.com/rizafahmi/donatex/issues/25) Make paid webhook transitions concurrency-safe — PR [#34](https://github.com/rizafahmi/donatex/pull/34): atomic pending→paid claim; cursor-agent loop CLEAN.
+- [#24](https://github.com/rizafahmi/donatex/issues/24) Questions WIB/today empty listing — fixed on the same PR by making questions tests calendar-relative to `today_wib()` (hardcoded `2026-07-25` drifted).
 
 ## Known Issues
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism

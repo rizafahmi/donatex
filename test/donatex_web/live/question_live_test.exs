@@ -29,6 +29,12 @@ defmodule DonatexWeb.QuestionLiveTest do
     DateTime.new!(date, Time.new!(h, m, s), "Etc/UTC")
   end
 
+  # Seconds after WIB midnight for a calendar date (calendar-stable vs wall clock).
+  defp seconds_into_wib_date(%Date{} = date, seconds) when is_integer(seconds) do
+    {start_utc, _} = Questions.wib_date_range(date)
+    DateTime.add(start_utc, seconds, :second)
+  end
+
   describe "route, navigation, and metadata" do
     test "GET /questions renders the board", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/questions")
@@ -209,13 +215,19 @@ defmodule DonatexWeb.QuestionLiveTest do
 
   describe "ranking and tie-breaking" do
     test "open before answered, then votes desc, then oldest first", %{conn: conn} do
-      q1 = Questions.create_question!(%{"body" => "a"})
-      q2 = Questions.create_question!(%{"body" => "b"})
-      q3 = Questions.create_question!(%{"body" => "c"})
+      today = Questions.today_wib()
 
-      set_inserted_at(q1, utc(~D[2026-07-25], {0, 0, 0}))
-      set_inserted_at(q2, utc(~D[2026-07-25], {0, 0, 1}))
-      set_inserted_at(q3, utc(~D[2026-07-25], {0, 0, 2}))
+      q1 =
+        Questions.create_question!(%{"body" => "a"})
+        |> set_inserted_at(seconds_into_wib_date(today, 0))
+
+      q2 =
+        Questions.create_question!(%{"body" => "b"})
+        |> set_inserted_at(seconds_into_wib_date(today, 1))
+
+      q3 =
+        Questions.create_question!(%{"body" => "c"})
+        |> set_inserted_at(seconds_into_wib_date(today, 2))
 
       {:ok, _} = Questions.toggle_vote(q2.id, "v1")
       {:ok, _} = Questions.toggle_vote(q2.id, "v2")
@@ -234,21 +246,24 @@ defmodule DonatexWeb.QuestionLiveTest do
 
   describe "historical lazy loading and hidden removal" do
     test "previous dates are collapsed and load on expand", %{conn: conn} do
-      yesterday =
+      yesterday = Date.add(Questions.today_wib(), -1)
+
+      q_yesterday =
         Questions.create_question!(%{"body" => "lama"})
-        |> set_inserted_at(utc(~D[2026-07-24], {10, 0, 0}))
+        |> set_inserted_at(seconds_into_wib_date(yesterday, 10 * 3600))
 
       {:ok, view, html} = live(conn, ~p"/questions")
 
-      assert html =~ "date-group-2026-07-24"
-      refute html =~ "question-#{yesterday.id}"
+      assert html =~ "date-group-#{Date.to_iso8601(yesterday)}"
+      refute html =~ "question-#{q_yesterday.id}"
 
-      _html = render_click(view, "toggle_date", %{"date" => "2026-07-24"})
-      assert has_element?(view, "#question-#{yesterday.id}")
+      date_str = Date.to_iso8601(yesterday)
+      _html = render_click(view, "toggle_date", %{"date" => date_str})
+      assert has_element?(view, "#question-#{q_yesterday.id}")
       assert has_element?(view, "button[aria-expanded='true']")
 
-      _html = render_click(view, "toggle_date", %{"date" => "2026-07-24"})
-      refute has_element?(view, "#question-#{yesterday.id}")
+      _html = render_click(view, "toggle_date", %{"date" => date_str})
+      refute has_element?(view, "#question-#{q_yesterday.id}")
     end
 
     test "hidden questions are absent from the public DOM", %{conn: conn} do
@@ -264,13 +279,15 @@ defmodule DonatexWeb.QuestionLiveTest do
 
   describe "realtime updates" do
     test "a committed vote reorders the board in a connected browser", %{conn: conn} do
+      today = Questions.today_wib()
+
       q1 =
         Questions.create_question!(%{"body" => "a"})
-        |> set_inserted_at(utc(~D[2026-07-25], {0, 0, 0}))
+        |> set_inserted_at(seconds_into_wib_date(today, 0))
 
       q2 =
         Questions.create_question!(%{"body" => "b"})
-        |> set_inserted_at(utc(~D[2026-07-25], {0, 0, 1}))
+        |> set_inserted_at(seconds_into_wib_date(today, 1))
 
       {:ok, view, html} = live(conn, ~p"/questions")
       # Initially ordered by age: q1 (created first) before q2.
@@ -287,26 +304,31 @@ defmodule DonatexWeb.QuestionLiveTest do
 
   describe "midnight rollover" do
     test "rolls today into a collapsed historical group at the WIB boundary", %{conn: conn} do
+      # Freeze on a known WIB day, then create the question inside that day before mount
+      # so wall-clock "now" cannot land it on a different WIB date.
+      day = ~D[2026-07-25]
       before_midnight = utc(~D[2026-07-25], {16, 59, 0})
+      after_midnight = utc(~D[2026-07-25], {17, 1, 0})
+
+      q_today =
+        Questions.create_question!(%{"body" => "hari ini"})
+        |> set_inserted_at(before_midnight)
 
       {:ok, view, _html} =
         live_isolated(conn, DonatexWeb.QuestionLive, session: %{"current_now" => before_midnight})
 
-      q_today = Questions.create_question!(%{"body" => "hari ini"})
-      _ = render(view)
       assert has_element?(view, "#today-board")
       assert has_element?(view, "#question-#{q_today.id}")
 
       # Advance the clock past the WIB midnight (17:00 UTC == 00:00 WIB next day).
-      send(view.pid, {:set_current_now, utc(~D[2026-07-25], {17, 1, 0})})
+      send(view.pid, {:set_current_now, after_midnight})
       send(view.pid, :midnight_rollover)
 
       html = render(view)
 
-      # Today is now 2026-07-26; the old today's question is no longer in the
-      # today board and 2026-07-25 appears as a collapsed historical group.
+      # Today is now the next WIB date; the prior day's question is only in history.
       refute html =~ "question-#{q_today.id}"
-      assert html =~ "date-group-2026-07-25"
+      assert html =~ "date-group-#{Date.to_iso8601(day)}"
     end
   end
 

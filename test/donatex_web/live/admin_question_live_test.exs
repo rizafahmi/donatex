@@ -28,10 +28,6 @@ defmodule DonatexWeb.AdminQuestionLiveTest do
     Repo.get!(Question, question.id)
   end
 
-  defp utc(date, {h, m, s}) do
-    DateTime.new!(date, Time.new!(h, m, s), "Etc/UTC")
-  end
-
   test "unauthenticated request is rejected", %{conn: conn} do
     conn = conn |> Plug.Conn.delete_req_header("authorization") |> get(~p"/admin/questions")
     assert conn.status == 401
@@ -128,8 +124,12 @@ defmodule DonatexWeb.AdminQuestionLiveTest do
   end
 
   test "cross-page broadcast: a vote from the public page reaches admin", %{conn: conn} do
-    q = Questions.create_question!(%{"body" => "vote me"})
-    set_inserted_at(q, utc(~D[2026-07-25], {1, 0, 0}))
+    yesterday = Date.add(Questions.today_wib(), -1)
+    {start_utc, _} = Questions.wib_date_range(yesterday)
+
+    q =
+      Questions.create_question!(%{"body" => "vote me"})
+      |> set_inserted_at(DateTime.add(start_utc, 3600, :second))
 
     # Public viewer (no auth) votes.
     public_conn = build_conn()
