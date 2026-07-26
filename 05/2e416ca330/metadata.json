@@ -3,7 +3,7 @@
   "checkpoint_id": "052e416ca330",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 14,
+  "checkpoints_count": 16,
   "files_touched": [
     ".gitignore",
     "docs/agent-workflow.md"
@@ -50,13 +50,20 @@
       "compact_transcript": "/05/2e416ca330/5/transcript.jsonl",
       "content_hash": "/05/2e416ca330/5/content_hash.txt",
       "prompt": "/05/2e416ca330/5/prompt.txt"
+    },
+    {
+      "metadata": "/05/2e416ca330/6/metadata.json",
+      "transcript": "/05/2e416ca330/6/full.jsonl",
+      "compact_transcript": "/05/2e416ca330/6/transcript.jsonl",
+      "content_hash": "/05/2e416ca330/6/content_hash.txt",
+      "prompt": "/05/2e416ca330/6/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 574918,
+    "input_tokens": 814996,
     "cache_creation_tokens": 429781,
-    "cache_read_tokens": 6454659,
-    "output_tokens": 112519,
-    "api_call_count": 12
+    "cache_read_tokens": 8704387,
+    "output_tokens": 144917,
+    "api_call_count": 14
   }
 }
