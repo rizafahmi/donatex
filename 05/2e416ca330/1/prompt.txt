@@ -1,0 +1,5 @@
+/loop 45m docs/cursor-workflow-prompt.md
+
+---
+
+what happened? it's 1h already, when the next tick?
