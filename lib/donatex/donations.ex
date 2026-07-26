@@ -146,14 +146,38 @@ defmodule Donatex.Donations do
   def mark_paid_by_mayar_transaction_id_with_change(_mayar_transaction_id),
     do: {:error, :invalid_transaction_id}
 
+  @doc """
+  Atomically claims a pending donation as paid.
+
+  Uses `UPDATE … WHERE status = 'pending'` so concurrent webhook deliveries
+  produce exactly one winner (`changed? = true`). Losers see an already-paid
+  row and return `changed? = false` without a second broadcast.
+  """
   def mark_paid_with_change(%Donation{status: "paid"} = donation), do: {:ok, donation, false}
 
-  def mark_paid_with_change(%Donation{} = donation) do
-    case donation |> Donation.changeset(%{status: "paid"}) |> Repo.update() do
-      {:ok, updated} -> {:ok, updated, true}
-      {:error, _changeset} = error -> error
+  def mark_paid_with_change(%Donation{id: id} = donation) when is_binary(id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      Donation
+      |> where([d], d.id == ^id and d.status == "pending")
+      |> Repo.update_all(set: [status: "paid", updated_at: now])
+
+    case count do
+      1 ->
+        # Claim already persisted; do not re-get (nil would drop the live broadcast).
+        {:ok, %{donation | status: "paid", updated_at: now}, true}
+
+      0 ->
+        case Repo.get(Donation, id) do
+          %Donation{status: "paid"} = paid -> {:ok, paid, false}
+          nil -> {:error, :not_found}
+          %Donation{} -> {:error, :invalid_state}
+        end
     end
   end
+
+  def mark_paid_with_change(_donation), do: {:error, :invalid_donation}
 
   def mark_paid_by_mayar_transaction_id(mayar_transaction_id)
       when is_binary(mayar_transaction_id) and byte_size(mayar_transaction_id) > 0 do

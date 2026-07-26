@@ -71,6 +71,49 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     refute_receive {:donation_paid, _payload}, 50
   end
 
+  test "concurrent paid webhooks for the same transaction broadcast only once", %{conn: _conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = donation} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-webhook-concurrent-1",
+               donor_name: "Donor",
+               reaction: "good",
+               amount: 10_000
+             })
+
+    payload = %{
+      "event" => "payment.received",
+      "data" => %{
+        "transactionId" => "tx-webhook-concurrent-1",
+        "amount" => 10_000,
+        "customerName" => "Donor",
+        "transactionStatus" => "paid"
+      }
+    }
+
+    token = Config.mayar_webhook_token()
+
+    results =
+      1..8
+      |> Enum.map(fn _ ->
+        Task.async(fn ->
+          build_conn()
+          |> put_req_header("accept", "application/json")
+          |> post(~p"/webhooks/mayar/#{token}", payload)
+        end)
+      end)
+      |> Enum.map(&Task.await(&1, 5_000))
+
+    assert Enum.all?(results, fn result_conn ->
+             json_response(result_conn, 200) == %{"ok" => true}
+           end)
+
+    assert %Donation{id: id, status: "paid"} = Repo.get!(Donation, donation.id)
+    assert_receive {:donation_paid, %{id: ^id, mayar_transaction_id: "tx-webhook-concurrent-1"}}
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
   test "treats SUCCESS as paid for donation confirmation", %{conn: conn} do
     Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
 
