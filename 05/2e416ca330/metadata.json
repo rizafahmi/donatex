@@ -3,9 +3,10 @@
   "checkpoint_id": "052e416ca330",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 22,
+  "checkpoints_count": 31,
   "files_touched": [
     ".gitignore",
+    "docs/agent-cursor-workflow.md",
     "docs/agent-workflow.md",
     "priv/static/images/qr-questions-branded.png",
     "priv/static/images/qr-questions-branded.svg",
@@ -68,13 +69,20 @@
       "compact_transcript": "/05/2e416ca330/7/transcript.jsonl",
       "content_hash": "/05/2e416ca330/7/content_hash.txt",
       "prompt": "/05/2e416ca330/7/prompt.txt"
+    },
+    {
+      "metadata": "/05/2e416ca330/8/metadata.json",
+      "transcript": "/05/2e416ca330/8/full.jsonl",
+      "compact_transcript": "/05/2e416ca330/8/transcript.jsonl",
+      "content_hash": "/05/2e416ca330/8/content_hash.txt",
+      "prompt": "/05/2e416ca330/8/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 976848,
+    "input_tokens": 1066994,
     "cache_creation_tokens": 429781,
-    "cache_read_tokens": 10945411,
-    "output_tokens": 162444,
-    "api_call_count": 16
+    "cache_read_tokens": 11579011,
+    "output_tokens": 176587,
+    "api_call_count": 18
   }
 }
