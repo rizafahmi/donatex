@@ -89,41 +89,91 @@ defmodule Donatex.Donations do
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
   @doc """
-  Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
-  Matches by amount (and optional donor_name) for pending donations.
-  Returns the oldest matching pending donation.
+  Atomically claims a pending donation by amount (and optional donor_name) as paid.
+
+  Sets the new Mayar transaction ID in the same `UPDATE … WHERE status = 'pending'`
+  statement, so the transaction-id update and paid transition cannot be split by a
+  crash or a concurrent webhook. Fails closed with `{:error, :ambiguous}` when more
+  than one pending donation matches the criteria, preventing remapped correlation
+  under concurrent same-amount payments.
+
+  Returns:
+    * `{:ok, donation, true}`  — claimed and marked paid (broadcast once)
+    * `{:ok, donation, false}` — already paid by a concurrent delivery (no broadcast)
+    * `{:error, :not_found}`   — no matching pending donation (orphan payment)
+    * `{:error, :ambiguous}`   — multiple matching pending donations, fail closed
   """
-  def get_pending_donation_by_amount(amount, donor_name \\ nil)
-      when is_integer(amount) and amount > 0 do
+  def claim_pending_by_amount_with_change(amount, donor_name \\ nil, new_transaction_id)
+      when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) > 0 do
+    case list_pending_by_amount_and_donor(amount, donor_name) do
+      [] ->
+        {:error, :not_found}
+
+      [donation] ->
+        claim_with_transaction_id_update(donation, new_transaction_id)
+
+      _multiple ->
+        {:error, :ambiguous}
+    end
+  end
+
+  defp list_pending_by_amount_and_donor(amount, donor_name) do
     query =
       Donation
       |> where(status: "pending")
       |> where(amount: ^amount)
-      |> order_by([d], desc: d.inserted_at, asc: d.id)
-      |> limit(1)
+      |> order_by([d], asc: d.inserted_at, asc: d.id)
 
-    query =
-      if donor_name && byte_size(donor_name) > 0 do
-        where(query, [d], d.donor_name == ^donor_name)
-      else
-        query
-      end
-
-    Repo.one(query)
+    if donor_name && byte_size(donor_name) > 0 do
+      query |> where([d], d.donor_name == ^donor_name) |> Repo.all()
+    else
+      Repo.all(query)
+    end
   end
 
-  def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
-    Donation
-    |> where(status: "pending")
-    |> where(amount: ^amount)
-    |> Repo.aggregate(:count)
+  @doc """
+  Atomically updates a donation's Mayar transaction ID and marks it paid.
+
+  Uses `UPDATE … WHERE status = 'pending'` so concurrent webhook deliveries produce
+  exactly one winner (`changed? = true`). The transaction-id update and paid
+  transition happen in a single SQL statement, preventing orphaned state between
+  steps.
+  """
+  def claim_with_transaction_id_update(%Donation{status: "paid"} = donation, _new_transaction_id),
+    do: {:ok, donation, false}
+
+  def claim_with_transaction_id_update(%Donation{id: id} = donation, new_transaction_id)
+      when is_binary(id) and is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      Donation
+      |> where([d], d.id == ^id and d.status == "pending")
+      |> Repo.update_all(
+        set: [status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now]
+      )
+
+    case count do
+      1 ->
+        {:ok,
+         %{donation | status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now},
+         true}
+
+      0 ->
+        paid_claim_result(id)
+    end
   end
 
-  def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)
-      when is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
-    donation
-    |> Donation.changeset(%{mayar_transaction_id: new_transaction_id})
-    |> Repo.update()
+  def claim_with_transaction_id_update(_donation, _new_transaction_id),
+    do: {:error, :invalid_args}
+
+  defp paid_claim_result(id) do
+    case Repo.get(Donation, id) do
+      %Donation{status: "paid"} = paid -> {:ok, paid, false}
+      nil -> {:error, :not_found}
+      %Donation{} -> {:error, :invalid_state}
+    end
   end
 
   def get_donation_by_id(id) when is_binary(id) and byte_size(id) > 0 do
@@ -169,11 +219,7 @@ defmodule Donatex.Donations do
         {:ok, %{donation | status: "paid", updated_at: now}, true}
 
       0 ->
-        case Repo.get(Donation, id) do
-          %Donation{status: "paid"} = paid -> {:ok, paid, false}
-          nil -> {:error, :not_found}
-          %Donation{} -> {:error, :invalid_state}
-        end
+        paid_claim_result(id)
     end
   end
 

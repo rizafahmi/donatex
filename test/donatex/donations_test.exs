@@ -136,6 +136,205 @@ defmodule Donatex.DonationsTest do
     end
   end
 
+  describe "claim_pending_by_amount_with_change/3" do
+    test "atomically claims the single matching pending donation by amount" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amount-1",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 50_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_pending_by_amount_with_change(50_000, nil, "tx-confirmed-1")
+
+      assert claimed.id == donation.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "tx-confirmed-1"
+
+      reloaded = Repo.get!(Donation, donation.id)
+      assert reloaded.status == "paid"
+      assert reloaded.mayar_transaction_id == "tx-confirmed-1"
+    end
+
+    test "fails closed when multiple pending donations share the same amount" do
+      {:ok, _first} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amb-1",
+          donor_name: "Alice",
+          reaction: "good",
+          amount: 30_000
+        })
+
+      {:ok, _second} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-amb-2",
+          donor_name: "Bob",
+          reaction: "ok",
+          amount: 30_000
+        })
+
+      assert {:error, :ambiguous} =
+               Donations.claim_pending_by_amount_with_change(30_000, nil, "tx-confirmed-amb")
+
+      # Neither donation should be marked paid
+      assert %Donation{status: "pending"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-1")
+
+      assert %Donation{status: "pending"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-2")
+    end
+
+    test "disambiguates by donor_name when only one matches" do
+      {:ok, _other} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-name-1",
+          donor_name: "Alice",
+          reaction: "good",
+          amount: 20_000
+        })
+
+      {:ok, target} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-name-2",
+          donor_name: "Bob",
+          reaction: "ok",
+          amount: 20_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_pending_by_amount_with_change(20_000, "Bob", "tx-confirmed-name")
+
+      assert claimed.id == target.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "tx-confirmed-name"
+
+      # The other donation stays pending
+      assert %Donation{status: "pending"} =
+               Repo.get_by!(Donation, mayar_transaction_id: "tx-name-1")
+    end
+
+    test "returns not_found for orphan payment with no matching amount" do
+      assert {:error, :not_found} =
+               Donations.claim_pending_by_amount_with_change(99_999, nil, "tx-orphan")
+    end
+
+    test "returns not_found after the donation is already claimed (idempotency via exact match)" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-idem-1",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 40_000
+        })
+
+      assert {:ok, _, true} =
+               Donations.claim_pending_by_amount_with_change(40_000, nil, "tx-confirmed-idem")
+
+      # Second amount-based claim finds no pending donation — idempotency is
+      # handled by the exact-match path (confirmation tx_id now matches).
+      assert {:error, :not_found} =
+               Donations.claim_pending_by_amount_with_change(40_000, nil, "tx-confirmed-idem")
+
+      assert %Donation{status: "paid", mayar_transaction_id: "tx-confirmed-idem"} =
+               Repo.get!(Donation, donation.id)
+    end
+
+    test "claims the oldest pending donation (FIFO) when disambiguated by donor_name" do
+      {:ok, first} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fifo-1",
+          donor_name: "Same",
+          reaction: "good",
+          amount: 60_000
+        })
+
+      # Simulate a small time gap so inserted_at differs
+      Process.sleep(10)
+
+      {:ok, _second} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fifo-2",
+          donor_name: "Same",
+          reaction: "ok",
+          amount: 60_000
+        })
+
+      # Two pending with same amount and donor_name → ambiguous
+      assert {:error, :ambiguous} =
+               Donations.claim_pending_by_amount_with_change(60_000, "Same", "tx-confirmed-fifo")
+
+      assert %Donation{status: "pending"} = Repo.get!(Donation, first.id)
+    end
+  end
+
+  describe "claim_with_transaction_id_update/2" do
+    test "atomically updates transaction id and marks paid" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-update-1",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_with_transaction_id_update(donation, "tx-confirmed-update")
+
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "tx-confirmed-update"
+
+      reloaded = Repo.get!(Donation, donation.id)
+      assert reloaded.status == "paid"
+      assert reloaded.mayar_transaction_id == "tx-confirmed-update"
+    end
+
+    test "returns false for already-paid donation" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-update-2",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 15_000
+        })
+
+      assert {:ok, _, true} =
+               Donations.claim_with_transaction_id_update(donation, "tx-confirmed-2")
+
+      assert {:ok, paid, false} =
+               Donations.claim_with_transaction_id_update(donation, "tx-confirmed-2")
+
+      assert paid.status == "paid"
+    end
+
+    test "claims at most once under concurrent calls" do
+      {:ok, donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-update-concurrent",
+          donor_name: "Donor",
+          reaction: "good",
+          amount: 25_000
+        })
+
+      results =
+        1..12
+        |> Enum.map(fn _ ->
+          Task.async(fn ->
+            Donations.claim_with_transaction_id_update(donation, "tx-confirmed-concurrent")
+          end)
+        end)
+        |> Enum.map(&Task.await(&1, 5_000))
+
+      winners = for {:ok, %Donation{status: "paid"}, true} <- results, do: true
+      losers = for {:ok, %Donation{status: "paid"}, false} <- results, do: true
+
+      assert length(winners) == 1
+      assert length(losers) == 11
+      assert %Donation{status: "paid"} = Repo.get!(Donation, donation.id)
+    end
+  end
+
   describe "list_paid_unalerted_donations/0" do
     test "returns only paid and unalerted donations for overlay recovery" do
       {:ok, _pending} =

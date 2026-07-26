@@ -503,4 +503,158 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     # Redacted placeholders should be present instead
     assert logs =~ "[redacted]"
   end
+
+  test "amount fallback fails closed when multiple pending donations share the same amount", %{
+    conn: conn
+  } do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    {:ok, _first} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-amb-a",
+        donor_name: "Alice",
+        reaction: "good",
+        amount: 12_000
+      })
+
+    {:ok, _second} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-amb-b",
+        donor_name: "Bob",
+        reaction: "ok",
+        amount: 12_000
+      })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-confirmation-amb",
+          "amount" => 12_000,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Neither donation should be marked paid
+    assert %Donation{status: "pending"} = Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-a")
+    assert %Donation{status: "pending"} = Repo.get_by!(Donation, mayar_transaction_id: "tx-amb-b")
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
+  test "amount fallback disambiguates by donor_name", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    {:ok, _other} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-disamb-other",
+        donor_name: "Alice",
+        reaction: "good",
+        amount: 18_000
+      })
+
+    {:ok, target} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-disamb-target",
+        donor_name: "Charlie",
+        reaction: "ok",
+        amount: 18_000
+      })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-confirmation-disamb",
+          "amount" => 18_000,
+          "customerName" => "Charlie",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Only the matching donation should be paid
+    assert %Donation{status: "paid", mayar_transaction_id: "tx-confirmation-disamb"} =
+             Repo.get!(Donation, target.id)
+
+    assert %Donation{status: "pending"} =
+             Repo.get_by!(Donation, mayar_transaction_id: "tx-disamb-other")
+
+    assert_received {:donation_paid, %{id: id, mayar_transaction_id: "tx-confirmation-disamb"}}
+    assert id == target.id
+  end
+
+  test "amount fallback logs orphan payment when no donation matches", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-orphan-no-match",
+          "amount" => 77_777,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
+  test "amount fallback claims the unique pending donation and broadcasts once", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    {:ok, donation} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-unique-fallback",
+        donor_name: "Donor",
+        reaction: "great",
+        amount: 22_000
+      })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-confirmation-unique",
+          "amount" => 22_000,
+          "customerName" => "Donor",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    updated = Repo.get!(Donation, donation.id)
+    assert updated.status == "paid"
+    assert updated.mayar_transaction_id == "tx-confirmation-unique"
+
+    assert_received {:donation_paid, %{id: id, mayar_transaction_id: "tx-confirmation-unique"}}
+    assert id == donation.id
+
+    # Duplicate delivery does not rebroadcast
+    conn
+    |> recycle()
+    |> put_req_header("accept", "application/json")
+    |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+      "event" => "payment.received",
+      "data" => %{
+        "transactionId" => "tx-confirmation-unique",
+        "amount" => 22_000,
+        "transactionStatus" => "paid"
+      }
+    })
+
+    refute_receive {:donation_paid, _payload}, 50
+  end
 end
