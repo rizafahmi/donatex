@@ -1,0 +1,1 @@
+/codex-loop take one high impact issue from github issues then start working. After finish working, run /no-mistakes

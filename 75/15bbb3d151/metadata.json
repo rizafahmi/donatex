@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "7515bbb3d151",
+  "strategy": "manual-commit",
+  "branch": "fix/26-harden-amount-fallback-correlation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "lib/donatex/donations.ex",
+    "lib/donatex_web/controllers/mayar_webhook_controller.ex",
+    "test/donatex/donations_test.exs",
+    "test/donatex_web/controllers/mayar_webhook_controller_test.exs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/75/15bbb3d151/0/metadata.json",
+      "transcript": "/75/15bbb3d151/0/full.jsonl",
+      "compact_transcript": "/75/15bbb3d151/0/transcript.jsonl",
+      "content_hash": "/75/15bbb3d151/0/content_hash.txt",
+      "prompt": "/75/15bbb3d151/0/prompt.txt"
+    }
+  ]
+}

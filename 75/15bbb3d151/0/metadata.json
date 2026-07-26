@@ -1,0 +1,66 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "7515bbb3d151",
+  "session_id": "28d08fce-9527-4b47-8102-2d3fefe654cb",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-26T03:11:23.620195Z",
+  "branch": "fix/26-harden-amount-fallback-correlation",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/PROGRESS.md",
+    "lib/donatex/donations.ex",
+    "lib/donatex_web/controllers/mayar_webhook_controller.ex",
+    "test/donatex/donations_test.exs",
+    "test/donatex_web/controllers/mayar_webhook_controller_test.exs"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "7add656156c8",
+  "compact_transcript_start": 0,
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-codex-loop-2026-07-26T03:06:24.916502Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "codex-loop"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "7add656156c8",
+      "timestamp": "2026-07-26T03:06:24.916502Z",
+      "native": {
+        "command": "/codex-loop"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/codex-loop",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "initial_attribution": {
+    "calculated_at": "2026-07-26T03:11:23.60791Z",
+    "agent_lines": 421,
+    "agent_removed": 81,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 421,
+    "total_lines_changed": 502,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
