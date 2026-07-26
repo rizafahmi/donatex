@@ -97,6 +97,33 @@ defmodule DonatexWeb.QuestionLiveTest do
   end
 
   describe "submission" do
+    test "success toast carries the FlashAutoHide hook so it dismisses on its own", %{
+      conn: conn
+    } do
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      html =
+        render_submit(view, "submit", %{
+          "question_form" => %{"name" => "Riza", "body" => "Apa rencana stream besok?"}
+        })
+
+      assert html =~ "Pertanyaan terkirim"
+      assert html =~ ~s(id="flash-info")
+      assert html =~ ~s(phx-hook="FlashAutoHide")
+      assert html =~ ~s(data-flash-key="info")
+    end
+
+    test "connection-error toasts do not auto-hide", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/questions")
+
+      assert html =~ ~s(id="client-error")
+      assert html =~ ~s(id="server-error")
+      # On initial render no flash is set, so the only visible flash
+      # elements are the connection-error toasts — none should carry
+      # the auto-hide hook (they are managed by phx-connected/disconnected).
+      refute html =~ ~s(phx-hook="FlashAutoHide")
+    end
+
     test "immediately publishes a question to Today", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/questions")
 

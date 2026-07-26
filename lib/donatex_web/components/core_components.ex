@@ -34,6 +34,11 @@ defmodule DonatexWeb.CoreComponents do
   attr :flash, :map, default: %{}, doc: "the map of flash messages to display"
   attr :title, :string, default: nil
   attr :kind, :atom, values: [:info, :error], doc: "used for styling and flash lookup"
+
+  attr :auto_hide, :boolean,
+    default: true,
+    doc: "whether to auto-dismiss the toast after a few seconds via the FlashAutoHide hook"
+
   attr :rest, :global, doc: "the arbitrary HTML attributes to add to the flash container"
 
   slot :inner_block, doc: "the optional inner block that renders the flash message"
@@ -46,6 +51,8 @@ defmodule DonatexWeb.CoreComponents do
       :if={msg = render_slot(@inner_block) || Phoenix.Flash.get(@flash, @kind)}
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
+      phx-hook={@auto_hide && "FlashAutoHide"}
+      data-flash-key={if @auto_hide, do: @kind}
       role="alert"
       class={[
         "group pointer-events-auto flex w-full items-start gap-3 rounded-2xl border bg-surface/80 px-4 py-3 text-sm text-text shadow-lg shadow-black/30 backdrop-blur",

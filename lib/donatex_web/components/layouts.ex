@@ -131,6 +131,7 @@ defmodule DonatexWeb.Layouts do
         id="client-error"
         kind={:error}
         title="We can't find the internet"
+        auto_hide={false}
         phx-disconnected={show(".phx-client-error #client-error") |> JS.remove_attribute("hidden")}
         phx-connected={hide("#client-error") |> JS.set_attribute({"hidden", ""})}
         hidden
@@ -143,6 +144,7 @@ defmodule DonatexWeb.Layouts do
         id="server-error"
         kind={:error}
         title="Something went wrong!"
+        auto_hide={false}
         phx-disconnected={show(".phx-server-error #server-error") |> JS.remove_attribute("hidden")}
         phx-connected={hide("#server-error") |> JS.set_attribute({"hidden", ""})}
         hidden
