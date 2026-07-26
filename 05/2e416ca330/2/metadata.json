@@ -1,0 +1,135 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "052e416ca330",
+  "session_id": "147983fe-55a9-4b68-b7bc-a1d1b6ec5fbc",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-26T02:21:41.535054Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 5,
+  "files_touched": [
+    ".gitignore",
+    "docs/agent-workflow.md"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.5-high-fast",
+  "turn_id": "5e6076203509",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 250702,
+    "cache_creation_tokens": 49261,
+    "cache_read_tokens": 746913,
+    "output_tokens": 12428,
+    "api_call_count": 5
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-cursor-review-2026-07-26T01:03:23.020683Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "review"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "c29e8c2a083b",
+      "timestamp": "2026-07-26T01:03:23.020683Z",
+      "native": {
+        "command": "/review"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/review",
+        "default_collapsed": true
+      }
+    },
+    {
+      "id": "prompt-skill-cursor-to-issues-2026-07-26T01:43:12.423949Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "to-issues"
+      },
+      "source": {
+        "agent": "cursor",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "d31ecaf00d99",
+      "timestamp": "2026-07-26T01:43:12.423949Z",
+      "native": {
+        "command": "/to-issues"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/to-issues",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-26T02:21:41.52116Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 436,
+    "total_committed": 0,
+    "total_lines_changed": 436,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1375,
+      "user_lines_removed": 436,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".gitignore": 6,
+        "docs/agent-cursor-workflow.md": 489,
+        "docs/agent-workflow.md": 11,
+        "docs/cursor-workflow-prompt.md": 861,
+        "priv/static/images/qr-questions-branded.svg": 4,
+        "priv/static/images/qr-questions.svg": 4
+      },
+      "user_removed_per_file": {
+        "docs/agent-workflow.md": 436
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1375,
+      "agent_lines_removed": 436
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1375,
+      "agent_lines_removed": 436
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1375,
+      "agent_lines_removed": 436
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1375,
+      "agent_lines_removed": 436
+    }
+  ]
+}
