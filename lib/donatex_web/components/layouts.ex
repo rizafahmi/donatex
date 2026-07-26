@@ -20,7 +20,7 @@ defmodule DonatexWeb.Layouts do
 
   ## Examples
 
-      <Layouts.app flash={@flash}>
+      <Layouts.app flash={@flash} flash_generations={@flash_generations}>
         <h1>Content</h1>
       </Layouts.app>
 
@@ -117,10 +117,14 @@ defmodule DonatexWeb.Layouts do
 
   ## Examples
 
-      <.flash_group flash={@flash} />
+      <.flash_group flash={@flash} flash_generations={@flash_generations} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :flash_generations, :map, required: true
+
+  attr :flash_generations, :map,
+    required: true,
+    doc: "per-kind counters used to reset auto-hide timers"
+
   attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
 
   def flash_group(assigns) do
