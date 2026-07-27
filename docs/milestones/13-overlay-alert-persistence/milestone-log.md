@@ -6,8 +6,9 @@
 The OBS overlay cleared the current tip alert and advanced the queue
 unconditionally on `:dismiss_current`, even when
 `Donations.mark_donation_alerted_by_id/1` failed. A failed acknowledgement
-dropped the alert from the in-memory queue as if it had been acknowledged, so
-the tip would never replay on remount recovery and could loop forever.
+dropped the alert from the active overlay session as if it had been
+acknowledged. The persisted row remained unalerted, so it appeared again only
+after remount recovery and could repeat that failure on every remount.
 
 ## Fix
 - `handle_info({:dismiss_current, id}, socket)` now matches on the result of

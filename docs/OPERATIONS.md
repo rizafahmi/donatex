@@ -133,7 +133,8 @@ If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Donatex performs a fo
 
 - The overlay LiveView loads missed alerts on mount by querying `paid AND alerted = false` donations.
 - Alerts are displayed sequentially. The current overlay keeps each alert mounted for about 8.5 seconds end-to-end so the 6-second audio cue and exit animation can finish cleanly.
-- Each displayed alert is marked `alerted=true` in SQLite.
+- At the end of that lifecycle, the overlay marks the alert `alerted=true` in SQLite before advancing the queue.
+- If that write fails, the same alert starts a fresh visible lifecycle and retries; queued alerts remain blocked, and the application logs an `Overlay alert acknowledgement failed` warning.
 
 ### Admin replay
 

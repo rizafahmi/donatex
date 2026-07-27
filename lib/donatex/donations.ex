@@ -211,15 +211,13 @@ defmodule Donatex.Donations do
   def mark_donation_alerted(%Donation{}), do: {:error, :invalid_state}
 
   def mark_donation_alerted_by_id(id) when is_binary(id) and byte_size(id) > 0 do
-    try do
-      case Repo.get(Donation, id) do
-        nil -> {:error, :not_found}
-        donation -> mark_donation_alerted(donation)
-      end
-    rescue
-      _error in [DBConnection.ConnectionError, Exqlite.Error] ->
-        {:error, :persistence_failed}
+    case Repo.get(Donation, id) do
+      nil -> {:error, :not_found}
+      donation -> mark_donation_alerted(donation)
     end
+  rescue
+    _error in [DBConnection.ConnectionError, Exqlite.Error] ->
+      {:error, :persistence_failed}
   end
 
   def mark_donation_alerted_by_id(_id), do: {:error, :invalid_id}

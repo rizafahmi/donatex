@@ -369,7 +369,8 @@ Suggested behavior:
 - If nothing is showing, display the next donation immediately
 - If an alert is already visible, append new donations to the queue
 - Use `Process.send_after/3` to dismiss after ~8.5 seconds
-- On dismissal, mark the displayed donation as alerted and move to the next one
+- On dismissal, persist the displayed donation as alerted; move to the next one only after that write succeeds
+- Keep the current alert visible and retry after another lifecycle when acknowledgement persistence fails; see [OPERATIONS.md](OPERATIONS.md#overlay-recovery)
 
 ### Explicit Non-Goal
 
