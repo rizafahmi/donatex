@@ -1,6 +1,8 @@
 defmodule DonatexWeb.OverlayLive do
   use DonatexWeb, :live_view
 
+  require Logger
+
   alias Donatex.Donations
   alias Donatex.Reactions
   alias DonatexWeb.DonationPresenter
@@ -74,12 +76,16 @@ defmodule DonatexWeb.OverlayLive do
               )
 
               socket
+              |> assign(:current, nil)
+              |> start_next_alert()
 
-            _ ->
+            {:error, reason} ->
+              Logger.warning(
+                "Overlay alert acknowledgement failed: id=#{id} reason=#{inspect(reason)}"
+              )
+
               socket
           end
-          |> assign(:current, nil)
-          |> start_next_alert()
 
         _ ->
           socket

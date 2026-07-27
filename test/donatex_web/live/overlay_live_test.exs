@@ -74,6 +74,76 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert Repo.get!(Donation, second.id).alerted
   end
 
+  test "keeps the current alert when acknowledgement persistence fails", %{conn: conn} do
+    {:ok, first_pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-failure-1",
+        donor_name: "Failed Acknowledgement",
+        reaction: "good",
+        amount: 10_000
+      })
+
+    {:ok, second_pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-failure-2",
+        donor_name: "Queued Alert",
+        reaction: "great",
+        amount: 20_000
+      })
+
+    {:ok, first} = Donations.mark_paid_by_mayar_transaction_id(first_pending.mayar_transaction_id)
+
+    {:ok, second} =
+      Donations.mark_paid_by_mayar_transaction_id(second_pending.mayar_transaction_id)
+
+    Repo.update_all(from(d in Donation, where: d.id == ^first.id),
+      set: [inserted_at: ~U[2020-01-01 00:00:01Z]]
+    )
+
+    Repo.update_all(from(d in Donation, where: d.id == ^second.id),
+      set: [inserted_at: ~U[2020-01-01 00:00:02Z]]
+    )
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
+
+    # Force mark_donation_alerted_by_id/1 to fail with {:error, :not_found}
+    # by removing the row while the overlay still holds it as current. The
+    # row is paid/alerted=false at the moment of failure, matching the real
+    # recovery state; we re-insert it below to verify recoverability.
+    Repo.delete_all(from(d in Donation, where: d.id == ^first.id))
+
+    send(view.pid, {:dismiss_current, first.id})
+    render(view)
+
+    assert has_element?(view, "div.obs-overlay-main-text", "Failed Acknowledgement")
+    refute has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
+
+    # No acknowledgement broadcast may fire for the failed donation, whether
+    # the payload carries alerted=false or alerted=true.
+    first_id = first.id
+    refute_receive {:donation_alerted, %{id: ^first_id}}
+
+    # A paid/alerted=false row stays recoverable by the mount-recovery query,
+    # so a remount replays the alert instead of looping forever. The failed
+    # row is gone (the failure mode under test), so verify with a fresh
+    # paid/alerted=false donation that the recovery query still surfaces it.
+    {:ok, recovered} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-failure-recovered",
+        donor_name: "Failed Acknowledgement",
+        reaction: "good",
+        amount: 10_000
+      })
+
+    {:ok, _} = Donations.mark_paid_by_mayar_transaction_id(recovered.mayar_transaction_id)
+
+    recovered_ids = Enum.map(Donations.list_paid_unalerted_donations(), & &1.id)
+    assert recovered.id in recovered_ids
+    assert second.id in recovered_ids
+  end
+
   test "brands the tip alert title bar as Notable", %{conn: conn} do
     {:ok, pending} =
       Donations.create_pending_donation(%{
