@@ -15,8 +15,9 @@ the tip would never replay on remount recovery and could loop forever.
   - `{:ok, donation}` — broadcasts `:donation_alerted`, clears `current`, and
     starts the next queued alert (unchanged happy path).
   - `{:error, reason}` — logs the failure with the donation id and a sanitized
-    atom or changeset error list, and leaves `current` and the queue untouched
-    so the alert stays rendered and sequential delivery is preserved.
+    atom or changeset error list, leaves the queue untouched, replaces the
+    alert DOM identity to restart its animation, and schedules another
+    acknowledgement attempt after the new 8.5-second lifecycle.
 - The donation remains `paid` / `alerted = false`, so the existing mount
   recovery path (`list_paid_unalerted_donations/0`) replays it after an overlay
   restart.
@@ -25,13 +26,15 @@ the tip would never replay on remount recovery and could loop forever.
 - `lib/donatex/donations.ex` — normalizes SQLite and connection failures during
   acknowledgement to `{:error, :persistence_failed}`.
 - `lib/donatex_web/live/overlay_live.ex` — `require Logger`, pattern-match on
-  `mark_donation_alerted_by_id/1` result, keep alert on error.
+  `mark_donation_alerted_by_id/1` result, and visibly replay/retry the alert on
+  error without advancing the queue.
 - `test/donatex_web/live/overlay_live_test.exs` — regression test that uses a
   temporary SQLite trigger to reject the alerted update without deleting or
-  changing the donation, asserts the current alert stays rendered, the queued
-  alert does not start, no `:donation_alerted` broadcast fires, and verifies the
-  same `paid`/`alerted = false` row remains recoverable via
-  `list_paid_unalerted_donations/0`.
+  changing the donation, asserts the current alert gets a fresh DOM lifecycle,
+  the queued alert does not start, no `:donation_alerted` broadcast fires, and
+  verifies the same `paid`/`alerted = false` row remains recoverable via
+  `list_paid_unalerted_donations/0`; after removing the trigger, the retried
+  acknowledgement succeeds and advances the queue.
 
 ## Verification
 - 267 tests, 0 failures (`mix ci`) — #28-only branch (no unrelated #26 commit).

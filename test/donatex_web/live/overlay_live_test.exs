@@ -108,6 +108,7 @@ defmodule DonatexWeb.OverlayLiveTest do
     {:ok, view, _html} = live(conn, ~p"/overlay")
 
     Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
+    assert has_element?(view, "#obs-alert-#{first.id}-0")
 
     SQL.query!(
       Repo,
@@ -126,6 +127,8 @@ defmodule DonatexWeb.OverlayLiveTest do
       render(view)
 
       assert has_element?(view, "div.obs-overlay-main-text", "Failed Acknowledgement")
+      assert has_element?(view, "#obs-alert-#{first.id}-1")
+      refute has_element?(view, "#obs-alert-#{first.id}-0")
       refute has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
 
       first_id = first.id
@@ -135,6 +138,14 @@ defmodule DonatexWeb.OverlayLiveTest do
       assert first.id in recovered_ids
       assert second.id in recovered_ids
       refute Repo.get!(Donation, first.id).alerted
+
+      SQL.query!(Repo, "DROP TRIGGER IF EXISTS prevent_alerted_update")
+
+      send(view.pid, {:dismiss_current, first.id})
+      render(view)
+
+      assert has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
+      assert Repo.get!(Donation, first.id).alerted
     after
       SQL.query!(Repo, "DROP TRIGGER IF EXISTS prevent_alerted_update")
     end
