@@ -238,7 +238,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     assert response(conn, 404)
   end
 
-  test "falls back to amount lookup when transaction ID differs (Mayar confirmation ID)", %{
+  test "falls back to amount lookup when transaction ID differs and donor_name disambiguates", %{
     conn: conn
   } do
     Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
@@ -271,7 +271,7 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
 
     assert json_response(conn, 200) == %{"ok" => true}
 
-    # Donation should be marked as paid and transaction ID updated
+    # Donation should be marked as paid and transaction ID updated atomically
     updated_donation = Repo.get!(Donation, donation.id)
     assert updated_donation.status == "paid"
     assert updated_donation.mayar_transaction_id == confirmation_tx_id
@@ -279,5 +279,103 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     # Broadcast should have been sent with updated transaction ID
     assert_received {:donation_paid, %{id: id, mayar_transaction_id: ^confirmation_tx_id}}
     assert id == donation.id
+  end
+
+  test "rejects amount fallback when multiple pending share same amount without donor_name", %{
+    conn: conn
+  } do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = _alice} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-ambiguous-a",
+               donor_name: "Alice",
+               reaction: "great",
+               amount: 10_000
+             })
+
+    assert {:ok, %Donation{} = _bob} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-ambiguous-b",
+               donor_name: "Bob",
+               reaction: "good",
+               amount: 10_000
+             })
+
+    # Webhook arrives with a different confirmation ID but no donor_name to disambiguate
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "unknown-confirmation-tx",
+          "amount" => 10_000,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    # Still returns 200 (webhook is idempotent)
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Neither donation should be marked paid — fail-closed
+    assert Repo.get_by!(Donation, mayar_transaction_id: "tx-ambiguous-a").status == "pending"
+    assert Repo.get_by!(Donation, mayar_transaction_id: "tx-ambiguous-b").status == "pending"
+
+    # No alert broadcast
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
+  test "amount fallback disambiguates with donor_name when multiple pending share same amount",
+       %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = alice} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-name-amb-a",
+               donor_name: "Alice",
+               reaction: "great",
+               amount: 10_000
+             })
+
+    assert {:ok, %Donation{} = _bob} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-name-amb-b",
+               donor_name: "Bob",
+               reaction: "good",
+               amount: 10_000
+             })
+
+    confirmation_tx_id = "confirmed-by-name-123"
+
+    # Webhook with donor_name "Alice" disambiguates
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => confirmation_tx_id,
+          "amount" => 10_000,
+          "customerName" => "Alice",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Alice should be paid, Bob still pending
+    updated_alice = Repo.get!(Donation, alice.id)
+    assert updated_alice.status == "paid"
+    assert updated_alice.mayar_transaction_id == confirmation_tx_id
+
+    assert Repo.get_by!(Donation, mayar_transaction_id: "tx-name-amb-b").status == "pending"
+
+    # Exactly one broadcast
+    assert_received {:donation_paid,
+                     %{id: id, mayar_transaction_id: ^confirmation_tx_id, donor_name: "Alice"}}
+
+    assert id == alice.id
+    refute_receive {:donation_paid, _payload}, 50
   end
 end

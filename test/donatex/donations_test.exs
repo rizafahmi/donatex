@@ -405,6 +405,107 @@ defmodule Donatex.DonationsTest do
     end
   end
 
+  describe "claim_fallback_donation/3" do
+    test "atomically claims a unique pending donation by amount" do
+      {:ok, %Donation{} = donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-1",
+          donor_name: "Alice",
+          reaction: "great",
+          amount: 15_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_fallback_donation(15_000, nil, "confirmation-tx-1")
+
+      assert claimed.id == donation.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "confirmation-tx-1"
+      assert Repo.get!(Donation, donation.id).status == "paid"
+    end
+
+    test "returns :ambiguous when multiple pending share same amount without donor_name" do
+      {:ok, _d1} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-multi-1",
+          donor_name: "Alice",
+          reaction: "great",
+          amount: 10_000
+        })
+
+      {:ok, _d2} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-multi-2",
+          donor_name: "Bob",
+          reaction: "good",
+          amount: 10_000
+        })
+
+      assert {:error, :ambiguous} =
+               Donations.claim_fallback_donation(10_000, nil, "confirmation-tx-2")
+
+      # Both should still be pending
+      assert Repo.get_by!(Donation, mayar_transaction_id: "tx-fallback-multi-1").status ==
+               "pending"
+
+      assert Repo.get_by!(Donation, mayar_transaction_id: "tx-fallback-multi-2").status ==
+               "pending"
+    end
+
+    test "disambiguates with donor_name when multiple pending share same amount" do
+      {:ok, alice} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-name-1",
+          donor_name: "Alice",
+          reaction: "great",
+          amount: 20_000
+        })
+
+      {:ok, _bob} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-name-2",
+          donor_name: "Bob",
+          reaction: "good",
+          amount: 20_000
+        })
+
+      assert {:ok, claimed, true} =
+               Donations.claim_fallback_donation(20_000, "Alice", "confirmation-tx-3")
+
+      assert claimed.id == alice.id
+      assert claimed.status == "paid"
+      assert claimed.mayar_transaction_id == "confirmation-tx-3"
+      assert Repo.get!(Donation, alice.id).status == "paid"
+
+      assert Repo.get_by!(Donation, mayar_transaction_id: "tx-fallback-name-2").status ==
+               "pending"
+    end
+
+    test "returns :not_found when no pending donation at that amount" do
+      assert {:error, :not_found} =
+               Donations.claim_fallback_donation(50_000, nil, "confirmation-tx-4")
+    end
+
+    test "returns :not_found when all matching are already paid" do
+      {:ok, %Donation{} = donation} =
+        Donations.create_pending_donation(%{
+          mayar_transaction_id: "tx-fallback-paid-1",
+          donor_name: "Alice",
+          reaction: "great",
+          amount: 30_000
+        })
+
+      # Manually mark as paid first
+      Repo.update_all(
+        from(d in Donation, where: d.id == ^donation.id),
+        set: [status: "paid"]
+      )
+
+      assert {:error, :not_found} =
+               Donations.claim_fallback_donation(30_000, nil, "confirmation-tx-5")
+    end
+  end
+
   describe "get_donation_stats/0" do
     test "calculates paid and pending counts and paid sum" do
       {:ok, _pending1} =

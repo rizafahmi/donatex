@@ -73,10 +73,17 @@ defmodule DonatexWeb.MayarWebhookController do
 
   defp handle_donation_match({:fallback, donation, _new_transaction_id}, payment_received) do
     Logger.info(
-      "Mayar webhook fallback match mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id} old_tx_id=#{donation.mayar_transaction_id}"
+      "Mayar webhook fallback atomic claim mayar_transaction_id=#{payment_received.mayar_transaction_id} donation_id=#{donation.id}"
     )
 
-    update_transaction_id_and_mark_paid(donation, payment_received)
+    # Atomic claim already set the tx_id and marked paid — just broadcast
+    Phoenix.PubSub.broadcast(
+      Donatex.PubSub,
+      "donations:paid",
+      {:donation_paid, DonationPresenter.payload(donation)}
+    )
+
+    :ok
   end
 
   defp handle_donation_match(nil, payment_received) do
@@ -148,27 +155,34 @@ defmodule DonatexWeb.MayarWebhookController do
     end
   end
 
-  # Fallback: match by amount (newest first)
+  # Fallback: atomic claim by amount (fail-closed when ambiguous)
   defp find_by_amount_fallback(%Webhook.PaymentReceived{} = payment_received) do
-    case Donations.get_pending_donation_by_amount(
+    case Donations.claim_fallback_donation(
            payment_received.amount,
-           payment_received.donor_name
+           payment_received.donor_name,
+           payment_received.mayar_transaction_id
          ) do
-      nil ->
-        nil
-
-      donation ->
-        # Check if there are other pending donations with the same amount
-        # This could indicate a potential mismatch
+      {:ok, donation, true} ->
+        # Log warning if this was a risky match (amount-only, no donor_name)
         other_pending = Donations.count_pending_by_amount(payment_received.amount)
 
-        if other_pending > 1 do
+        if other_pending > 0 do
           Logger.warning(
-            "Mayar webhook multiple pending donations with amount=#{payment_received.amount} (count=#{other_pending}), matched newest"
+            "Mayar webhook claim_fallback: atomically claimed donation_id=#{donation.id} at amount=#{payment_received.amount}, #{other_pending} other pending remain"
           )
         end
 
         {:fallback, donation, payment_received.mayar_transaction_id}
+
+      {:error, :ambiguous} ->
+        Logger.warning(
+          "Mayar webhook ambiguous amount fallback rejected: amount=#{payment_received.amount} donor_name=#{inspect(payment_received.donor_name)}"
+        )
+
+        nil
+
+      {:error, :not_found} ->
+        nil
     end
   end
 

@@ -5,6 +5,8 @@ defmodule Donatex.Donations do
 
   import Ecto.Query, warn: false
 
+  require Logger
+
   alias Donatex.Donations.Donation
   alias Donatex.Repo
 
@@ -91,25 +93,68 @@ defmodule Donatex.Donations do
   @doc """
   Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
   Matches by amount (and optional donor_name) for pending donations.
-  Returns the oldest matching pending donation.
+
+  Returns the newest matching pending donation when unambiguous (exactly one pending
+  at that amount, or donor_name disambiguates). Returns nil when ambiguous (multiple
+  pending at same amount without donor_name) or no match.
   """
   def get_pending_donation_by_amount(amount, donor_name \\ nil)
       when is_integer(amount) and amount > 0 do
-    query =
+    case count_pending_by_amount(amount) do
+      0 ->
+        nil
+
+      1 ->
+        fetch_newest_pending_by_amount(amount)
+
+      _count when is_binary(donor_name) and byte_size(donor_name) > 0 ->
+        disambiguate_by_donor_name(amount, donor_name)
+
+      count ->
+        Logger.warning(
+          "Mayar webhook ambiguous amount fallback: #{count} pending donations at amount=#{amount}, no donor_name to disambiguate"
+        )
+
+        nil
+    end
+  end
+
+  defp disambiguate_by_donor_name(amount, donor_name) do
+    named_count =
       Donation
       |> where(status: "pending")
       |> where(amount: ^amount)
-      |> order_by([d], desc: d.inserted_at, asc: d.id)
-      |> limit(1)
+      |> where([d], d.donor_name == ^donor_name)
+      |> Repo.aggregate(:count)
 
-    query =
-      if donor_name && byte_size(donor_name) > 0 do
-        where(query, [d], d.donor_name == ^donor_name)
-      else
-        query
-      end
+    if named_count == 1 do
+      fetch_newest_pending_by_amount_and_name(amount, donor_name)
+    else
+      Logger.warning(
+        "Mayar webhook ambiguous amount fallback: donor_name=#{inspect(donor_name)} narrowed to #{named_count} at amount=#{amount} — still ambiguous"
+      )
 
-    Repo.one(query)
+      nil
+    end
+  end
+
+  defp fetch_newest_pending_by_amount(amount) do
+    Donation
+    |> where(status: "pending")
+    |> where(amount: ^amount)
+    |> order_by([d], desc: d.inserted_at, asc: d.id)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  defp fetch_newest_pending_by_amount_and_name(amount, donor_name) do
+    Donation
+    |> where(status: "pending")
+    |> where(amount: ^amount)
+    |> where([d], d.donor_name == ^donor_name)
+    |> order_by([d], desc: d.inserted_at, asc: d.id)
+    |> limit(1)
+    |> Repo.one()
   end
 
   def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
@@ -118,6 +163,109 @@ defmodule Donatex.Donations do
     |> where(amount: ^amount)
     |> Repo.aggregate(:count)
   end
+
+  @doc """
+  Atomically claims a pending donation by amount (and optional donor_name) and
+  updates its mayar_transaction_id to the confirmation ID — all in one operation.
+
+  Returns `{:ok, donation}` when exactly one row is claimed, or
+  `{:error, :ambiguous}` when multiple pending donations share the amount with
+  no donor_name disambiguation, or `{:error, :not_found}` when no match.
+  """
+  def claim_fallback_donation(amount, donor_name, new_transaction_id)
+      when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) > 0 do
+    case count_pending_by_amount(amount) do
+      0 ->
+        {:error, :not_found}
+
+      1 ->
+        do_atomic_claim(amount, nil, new_transaction_id)
+
+      _count when donor_name == nil or donor_name == "" ->
+        {:error, :ambiguous}
+
+      _count ->
+        claim_with_donor_name(amount, donor_name, new_transaction_id)
+    end
+  end
+
+  defp claim_with_donor_name(amount, donor_name, new_transaction_id) do
+    named_count =
+      Donation
+      |> where(status: "pending")
+      |> where(amount: ^amount)
+      |> where([d], d.donor_name == ^donor_name)
+      |> Repo.aggregate(:count)
+
+    if named_count == 1 do
+      do_atomic_claim(amount, donor_name, new_transaction_id)
+    else
+      {:error, :ambiguous}
+    end
+  end
+
+  defp do_atomic_claim(amount, donor_name, new_transaction_id) do
+    candidate_id = fetch_candidate_id(amount, donor_name)
+
+    if is_nil(candidate_id) do
+      {:error, :not_found}
+    else
+      attempt_atomic_update(candidate_id, new_transaction_id, amount, donor_name)
+    end
+  end
+
+  defp fetch_candidate_id(amount, donor_name) do
+    Donation
+    |> where(status: "pending")
+    |> where(amount: ^amount)
+    |> maybe_filter_donor_name(donor_name)
+    |> order_by([d], desc: d.inserted_at, asc: d.id)
+    |> limit(1)
+    |> select([d], d.id)
+    |> Repo.one()
+  end
+
+  defp attempt_atomic_update(candidate_id, new_transaction_id, amount, donor_name) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      Donation
+      |> where([d], d.id == ^candidate_id and d.status == "pending")
+      |> Repo.update_all(
+        set: [status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now]
+      )
+
+    if count == 1 do
+      {:ok, Repo.get!(Donation, candidate_id), true}
+    else
+      handle_update_race(candidate_id, new_transaction_id, amount, donor_name)
+    end
+  end
+
+  defp handle_update_race(candidate_id, new_transaction_id, amount, donor_name) do
+    case Repo.get(Donation, candidate_id) do
+      %Donation{status: "paid", mayar_transaction_id: ^new_transaction_id} = donation ->
+        {:ok, donation, false}
+
+      _ ->
+        pending_count =
+          Donation
+          |> where(status: "pending")
+          |> where(amount: ^amount)
+          |> maybe_filter_donor_name(donor_name)
+          |> Repo.aggregate(:count)
+
+        if pending_count > 0, do: {:error, :ambiguous}, else: {:error, :not_found}
+    end
+  end
+
+  defp maybe_filter_donor_name(query, donor_name)
+       when is_binary(donor_name) and byte_size(donor_name) > 0 do
+    where(query, [d], d.donor_name == ^donor_name)
+  end
+
+  defp maybe_filter_donor_name(query, _donor_name), do: query
 
   def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)
       when is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
