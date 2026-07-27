@@ -51,6 +51,11 @@ defmodule DonatexWeb do
     quote do
       use Phoenix.LiveView
 
+      import Phoenix.LiveView, except: [put_flash: 3]
+      import DonatexWeb.Flash, only: [put_flash: 3]
+
+      on_mount DonatexWeb.Flash
+
       unquote(html_helpers())
     end
   end

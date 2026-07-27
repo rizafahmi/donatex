@@ -91,7 +91,7 @@ defmodule DonatexWeb.OverlayLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} variant="overlay">
+    <Layouts.app flash={@flash} flash_generations={@flash_generations} variant="overlay">
       <div class="obs-overlay-container">
         <div
           :for={{id, float} <- @floats}

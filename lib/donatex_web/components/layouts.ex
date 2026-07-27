@@ -20,12 +20,13 @@ defmodule DonatexWeb.Layouts do
 
   ## Examples
 
-      <Layouts.app flash={@flash}>
+      <Layouts.app flash={@flash} flash_generations={@flash_generations}>
         <h1>Content</h1>
       </Layouts.app>
 
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+  attr :flash_generations, :map, default: %{}
 
   attr :current_scope, :map,
     default: nil,
@@ -102,7 +103,11 @@ defmodule DonatexWeb.Layouts do
         </div>
       </main>
 
-      <.flash_group :if={@variant == "app"} flash={@flash} />
+      <.flash_group
+        :if={@variant == "app"}
+        flash={@flash}
+        flash_generations={@flash_generations}
+      />
     </div>
     """
   end
@@ -112,9 +117,14 @@ defmodule DonatexWeb.Layouts do
 
   ## Examples
 
-      <.flash_group flash={@flash} />
+      <.flash_group flash={@flash} flash_generations={@flash_generations} />
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
+
+  attr :flash_generations, :map,
+    required: true,
+    doc: "per-kind counters used to reset auto-hide timers"
+
   attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
 
   def flash_group(assigns) do
@@ -124,13 +134,22 @@ defmodule DonatexWeb.Layouts do
       aria-live="polite"
       class="fixed right-4 top-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3"
     >
-      <.flash kind={:info} flash={@flash} />
-      <.flash kind={:error} flash={@flash} />
+      <.flash
+        kind={:info}
+        flash={@flash}
+        flash_generation={@flash_generations["info"]}
+      />
+      <.flash
+        kind={:error}
+        flash={@flash}
+        flash_generation={@flash_generations["error"]}
+      />
 
       <.flash
         id="client-error"
         kind={:error}
         title="We can't find the internet"
+        auto_hide={false}
         phx-disconnected={show(".phx-client-error #client-error") |> JS.remove_attribute("hidden")}
         phx-connected={hide("#client-error") |> JS.set_attribute({"hidden", ""})}
         hidden
@@ -143,6 +162,7 @@ defmodule DonatexWeb.Layouts do
         id="server-error"
         kind={:error}
         title="Something went wrong!"
+        auto_hide={false}
         phx-disconnected={show(".phx-server-error #server-error") |> JS.remove_attribute("hidden")}
         phx-connected={hide("#server-error") |> JS.set_attribute({"hidden", ""})}
         hidden

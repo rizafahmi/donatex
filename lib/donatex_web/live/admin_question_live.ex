@@ -107,7 +107,7 @@ defmodule DonatexWeb.AdminQuestionLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} flash_generations={@flash_generations}>
       <section id="admin-questions" class="space-y-6">
         <header class="space-y-2">
           <div class="flex items-center justify-between gap-3">

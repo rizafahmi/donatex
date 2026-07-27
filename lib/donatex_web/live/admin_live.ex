@@ -133,7 +133,7 @@ defmodule DonatexWeb.AdminLive do
   @impl Phoenix.LiveView
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash}>
+    <Layouts.app flash={@flash} flash_generations={@flash_generations}>
       <.header>
         Admin Panel
         <:subtitle>

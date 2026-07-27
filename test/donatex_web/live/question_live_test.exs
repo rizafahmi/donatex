@@ -97,6 +97,34 @@ defmodule DonatexWeb.QuestionLiveTest do
   end
 
   describe "submission" do
+    test "success toast carries the FlashAutoHide hook so it dismisses on its own", %{
+      conn: conn
+    } do
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      html =
+        render_submit(view, "submit", %{
+          "question_form" => %{"name" => "Riza", "body" => "Apa rencana stream besok?"}
+        })
+
+      assert html =~ "Pertanyaan terkirim"
+      assert html =~ ~s(id="flash-info")
+      assert html =~ ~s(phx-hook="FlashAutoHide")
+      assert html =~ ~s(data-flash-key="info")
+      assert html =~ ~r/data-flash-generation="\d+"/
+    end
+
+    test "connection-error toasts do not auto-hide", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/questions")
+
+      assert html =~ ~s(id="client-error")
+      assert html =~ ~s(id="server-error")
+      # On initial render no flash is set, so the only visible flash
+      # elements are the connection-error toasts — none should carry
+      # the auto-hide hook (they are managed by phx-connected/disconnected).
+      refute html =~ ~s(phx-hook="FlashAutoHide")
+    end
+
     test "immediately publishes a question to Today", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/questions")
 
@@ -210,6 +238,23 @@ defmodule DonatexWeb.QuestionLiveTest do
 
       {:ok, view, _html} = live(conn, ~p"/questions")
       assert has_element?(view, "#question-#{q.id} button[disabled]")
+    end
+
+    test "repeated identical flash gets a fresh auto-hide generation", %{conn: conn} do
+      q = Questions.create_question!(%{"body" => "answered q"})
+      {:ok, _} = Questions.mark_answered(q.id)
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      first_html = render_click(view, "toggle_vote", %{"id" => q.id})
+      second_html = render_click(view, "toggle_vote", %{"id" => q.id})
+
+      [first_generation] =
+        Regex.run(~r/data-flash-generation="(\d+)"/, first_html, capture: :all_but_first)
+
+      [second_generation] =
+        Regex.run(~r/data-flash-generation="(\d+)"/, second_html, capture: :all_but_first)
+
+      refute first_generation == second_generation
     end
   end
 

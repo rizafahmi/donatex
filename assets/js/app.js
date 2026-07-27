@@ -222,6 +222,48 @@ Hooks.QrCode = {
   }
 }
 
+// ===== Flash Auto-Hide Hook =====
+// Auto-dismisses toast/flash notices after a few seconds so they don't
+// stick around indefinitely. The timer resets on `updated` so a second
+// flash (e.g. another form submission) gets a fresh window. Connection
+// error toasts opt out via `auto_hide={false}` and stay managed by
+// `phx-connected` / `phx-disconnected`.
+Hooks.FlashAutoHide = {
+  mounted() {
+    this._flashGeneration = this.el.dataset.flashGeneration
+    this._scheduleClear()
+  },
+  updated() {
+    const flashGeneration = this.el.dataset.flashGeneration
+
+    if (flashGeneration !== this._flashGeneration) {
+      this._flashGeneration = flashGeneration
+      this._scheduleClear()
+    }
+  },
+  destroyed() {
+    this._clearTimer()
+  },
+  _scheduleClear() {
+    this._clearTimer()
+    const key = this.el.dataset.flashKey
+    if (!key) return
+    const flashGeneration = this._flashGeneration
+
+    this._timer = setTimeout(() => {
+      if (this.el.dataset.flashGeneration === flashGeneration) {
+        this.pushEvent("lv:clear-flash", {key})
+      }
+    }, 5000)
+  },
+  _clearTimer() {
+    if (this._timer) {
+      clearTimeout(this._timer)
+      this._timer = null
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
