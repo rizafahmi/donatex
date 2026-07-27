@@ -8,6 +8,7 @@ defmodule DonatexWeb.OverlayLiveTest do
   alias Donatex.Donations.Donation
   alias Donatex.Reactions
   alias Donatex.Repo
+  alias Ecto.Adapters.SQL
 
   test "renders SEO metadata with noindex robots and self-referential canonical URL", %{
     conn: conn
@@ -108,40 +109,35 @@ defmodule DonatexWeb.OverlayLiveTest do
 
     Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
 
-    # Force mark_donation_alerted_by_id/1 to fail with {:error, :not_found}
-    # by removing the row while the overlay still holds it as current. The
-    # row is paid/alerted=false at the moment of failure, matching the real
-    # recovery state; we re-insert it below to verify recoverability.
-    Repo.delete_all(from(d in Donation, where: d.id == ^first.id))
+    SQL.query!(
+      Repo,
+      """
+      CREATE TEMPORARY TRIGGER prevent_alerted_update
+      UPDATE OF alerted ON donations
+      WHEN NEW.alerted = 1
+      BEGIN
+        SELECT RAISE(ABORT, 'test_forced_failure');
+      END
+      """
+    )
 
-    send(view.pid, {:dismiss_current, first.id})
-    render(view)
+    try do
+      send(view.pid, {:dismiss_current, first.id})
+      render(view)
 
-    assert has_element?(view, "div.obs-overlay-main-text", "Failed Acknowledgement")
-    refute has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
+      assert has_element?(view, "div.obs-overlay-main-text", "Failed Acknowledgement")
+      refute has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
 
-    # No acknowledgement broadcast may fire for the failed donation, whether
-    # the payload carries alerted=false or alerted=true.
-    first_id = first.id
-    refute_receive {:donation_alerted, %{id: ^first_id}}
+      first_id = first.id
+      refute_receive {:donation_alerted, %{id: ^first_id}}
 
-    # A paid/alerted=false row stays recoverable by the mount-recovery query,
-    # so a remount replays the alert instead of looping forever. The failed
-    # row is gone (the failure mode under test), so verify with a fresh
-    # paid/alerted=false donation that the recovery query still surfaces it.
-    {:ok, recovered} =
-      Donations.create_pending_donation(%{
-        mayar_transaction_id: "tx-overlay-failure-recovered",
-        donor_name: "Failed Acknowledgement",
-        reaction: "good",
-        amount: 10_000
-      })
-
-    {:ok, _} = Donations.mark_paid_by_mayar_transaction_id(recovered.mayar_transaction_id)
-
-    recovered_ids = Enum.map(Donations.list_paid_unalerted_donations(), & &1.id)
-    assert recovered.id in recovered_ids
-    assert second.id in recovered_ids
+      recovered_ids = Enum.map(Donations.list_paid_unalerted_donations(), & &1.id)
+      assert first.id in recovered_ids
+      assert second.id in recovered_ids
+      refute Repo.get!(Donation, first.id).alerted
+    after
+      SQL.query!(Repo, "DROP TRIGGER IF EXISTS prevent_alerted_update")
+    end
   end
 
   test "brands the tip alert title bar as Notable", %{conn: conn} do

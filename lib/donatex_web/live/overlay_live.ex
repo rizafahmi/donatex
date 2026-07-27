@@ -81,7 +81,7 @@ defmodule DonatexWeb.OverlayLive do
 
             {:error, reason} ->
               Logger.warning(
-                "Overlay alert acknowledgement failed: id=#{id} reason=#{inspect(reason)}"
+                "Overlay alert acknowledgement failed: id=#{id} reason=#{acknowledgement_error(reason)}"
               )
 
               socket
@@ -201,4 +201,8 @@ defmodule DonatexWeb.OverlayLive do
   end
 
   defp start_next_alert(socket), do: socket
+
+  defp acknowledgement_error(%Ecto.Changeset{errors: errors}), do: inspect(errors)
+  defp acknowledgement_error(reason) when is_atom(reason), do: reason
+  defp acknowledgement_error(_reason), do: :unknown
 end

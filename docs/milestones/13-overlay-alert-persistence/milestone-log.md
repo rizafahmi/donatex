@@ -14,27 +14,27 @@ the tip would never replay on remount recovery and could loop forever.
   `mark_donation_alerted_by_id/1`:
   - `{:ok, donation}` — broadcasts `:donation_alerted`, clears `current`, and
     starts the next queued alert (unchanged happy path).
-  - `{:error, reason}` — logs the failure with the donation id and reason
-    (no donor message or payment URL), and leaves `current` and the queue
-    untouched so the alert stays rendered and sequential delivery is preserved.
+  - `{:error, reason}` — logs the failure with the donation id and a sanitized
+    atom or changeset error list, and leaves `current` and the queue untouched
+    so the alert stays rendered and sequential delivery is preserved.
 - The donation remains `paid` / `alerted = false`, so the existing mount
   recovery path (`list_paid_unalerted_donations/0`) replays it after an overlay
   restart.
 
 ## Files
+- `lib/donatex/donations.ex` — normalizes SQLite and connection failures during
+  acknowledgement to `{:error, :persistence_failed}`.
 - `lib/donatex_web/live/overlay_live.ex` — `require Logger`, pattern-match on
   `mark_donation_alerted_by_id/1` result, keep alert on error.
-- `test/donatex_web/live/overlay_live_test.exs` — regression test that forces an
-  acknowledgement failure by deleting the donation row (so
-  `mark_donation_alerted_by_id/1` returns `{:error, :not_found}`), asserts the
-  current alert stays rendered, the queued alert does not start, no
-  `:donation_alerted` broadcast fires for the donation's id (matched on `id`
-  alone so a success payload with `alerted: true` would still be caught), and
-  verifies a `paid`/`alerted = false` row remains recoverable via
+- `test/donatex_web/live/overlay_live_test.exs` — regression test that uses a
+  temporary SQLite trigger to reject the alerted update without deleting or
+  changing the donation, asserts the current alert stays rendered, the queued
+  alert does not start, no `:donation_alerted` broadcast fires, and verifies the
+  same `paid`/`alerted = false` row remains recoverable via
   `list_paid_unalerted_donations/0`.
 
 ## Verification
 - 267 tests, 0 failures (`mix ci`) — #28-only branch (no unrelated #26 commit).
 - Credo, Dialyzer, duplication, architecture: clean.
 - Focused overlay suite (14 tests) passes; the warning log line confirms the
-  error branch is exercised (`:not_found` failure seam).
+  error branch is exercised through a rejected persistence update.
