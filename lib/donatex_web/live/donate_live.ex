@@ -929,11 +929,11 @@ defmodule DonatexWeb.DonateLive do
          |> put_flash(:error, qr_error_message(reason))
          |> assign_form(changeset)}
 
-      {:error, :donation, _donation_changeset} ->
+      {:error, :donation, donation_changeset} ->
         {:noreply,
          socket
          |> put_flash(:error, donation_persist_error_message())
-         |> assign_form(changeset)}
+         |> assign_form(copy_changeset_errors(changeset, donation_changeset))}
     end
   end
 
@@ -975,7 +975,7 @@ defmodule DonatexWeb.DonateLive do
     client_ip = socket.assigns.client_ip
 
     with :ok <- reserve_feedback_rate_limit(client_ip),
-         {:ok, feedback} <- Donations.create_feedback(feedback_attrs(changeset)) do
+         {:ok, feedback} <- donations().create_feedback(feedback_attrs(changeset)) do
       broadcast_donation_created(feedback)
 
       {:noreply,
@@ -989,15 +989,31 @@ defmodule DonatexWeb.DonateLive do
          |> put_flash(:error, "Tunggu sebentar ya, coba lagi dalam beberapa detik.")
          |> assign_form(Map.put(changeset, :action, :validate))}
 
-      {:error, _changeset} ->
+      {:error, %Ecto.Changeset{} = error_changeset} ->
         release_feedback_rate_limit(client_ip)
 
         {:noreply,
          socket
          |> put_flash(:error, "Feedback belum bisa dikirim. Coba lagi.")
-         |> assign_form(Map.put(changeset, :action, :insert))}
+         |> assign_form(copy_changeset_errors(changeset, error_changeset))}
     end
   end
+
+  # Persist/constraint errors come back on the schema changeset; copy overlapping
+  # field errors onto the LiveView form changeset so shared `<.input>`s render them.
+  defp copy_changeset_errors(form_changeset, error_changeset) do
+    error_changeset.errors
+    |> Enum.reduce(form_changeset, fn {field, {msg, opts}}, cs ->
+      if Map.has_key?(form_changeset.types, field) do
+        add_error(cs, field, msg, opts)
+      else
+        cs
+      end
+    end)
+    |> Map.put(:action, :insert)
+  end
+
+  defp donations, do: Application.get_env(:donatex, :donations, Donations)
 
   defp broadcast_donation_created(donation) do
     Phoenix.PubSub.broadcast(
@@ -1196,7 +1212,7 @@ defmodule DonatexWeb.DonateLive do
          amount: amount,
          message: message
        }) do
-    case Donations.create_pending_donation(%{
+    case donations().create_pending_donation(%{
            mayar_transaction_id: qr.mayar_transaction_id,
            donor_name: donor_name,
            reaction: reaction,

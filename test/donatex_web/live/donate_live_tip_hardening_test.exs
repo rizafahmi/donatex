@@ -201,6 +201,67 @@ defmodule DonatexWeb.DonateLiveTipHardeningTest do
     assert donation.amount == 25_000
   end
 
+  defmodule PersistFailingDonations do
+    @moduledoc false
+
+    def create_pending_donation(attrs) do
+      changeset =
+        %Donation{}
+        |> Donation.changeset(attrs)
+        |> Ecto.Changeset.add_error(:donor_name, "nama tip tidak bisa digunakan")
+        |> Map.put(:action, :insert)
+
+      {:error, changeset}
+    end
+  end
+
+  test "tip persist changeset errors re-render on form inputs", %{conn: conn} do
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => "tx-tip-persist-fail",
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/tip-persist-fail"
+        }
+      })
+    end)
+
+    original = Application.get_env(:donatex, :donations)
+
+    on_exit(fn ->
+      restore_env(:donations, original)
+    end)
+
+    Application.put_env(:donatex, :donations, PersistFailingDonations)
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    tip_params = %{
+      "donation_form" => %{
+        "donor_name" => "Tip Persist Fail",
+        "reaction" => "good",
+        "message" => "keep me",
+        "show_appreciation" => "true",
+        "amount_option" => "10000"
+      }
+    }
+
+    capture_log(fn ->
+      html = render_submit(view, "submit_feedback", tip_params)
+
+      assert html =~ "Tip belum bisa disimpan"
+      assert html =~ "nama tip tidak bisa digunakan"
+      assert html =~ ~s(value="Tip Persist Fail")
+      assert has_element?(view, "#donation-form")
+      assert has_element?(view, "#amount-options")
+      refute html =~ "Scan QRIS untuk Apresiasi"
+    end)
+
+    assert Repo.get_by(Donation, donor_name: "Tip Persist Fail") == nil
+  end
+
   defp verify_req_expectations!(_context) do
     Req.Test.verify_on_exit!()
   end

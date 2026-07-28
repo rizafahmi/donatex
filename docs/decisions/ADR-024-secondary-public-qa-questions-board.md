@@ -24,7 +24,7 @@ Add a secondary public Q&A surface as a separate bounded context rather than ext
 - Reuse the existing `DonatexWeb.Plugs.VisitorId` signed session for anonymous identity, but store only a SHA-256 hash (`visitor_hash`) on vote rows — never the raw visitor id.
 - Generalize the per-IP feedback rate limiter into `Donatex.SubmissionLimiter` with namespaced keys so feedback (`{:feedback, ip}`) and question submission (`{:question, visitor_id}`) cooldowns remain independent.
 
-Locked product rules: immediate public publication, blank name rendered `Anonim`, max 500 visible characters, one question per visitor per 10 seconds, toggle vote (one upvote per visitor per question), voting closes/reopens with answered status, no pinning, status-only answer (no written answer text), and hidden state orthogonal to answered/open status.
+Locked product rules: immediate public publication, blank name rendered `Anonim`, max 500 visible characters, one question per visitor per 10 seconds, toggle vote (one upvote per visitor per question), voting closes/reopens with answered status, no pinning, status-only answer (no written answer text), and hidden state orthogonal to answered/open status. When `create_question` fails with an `Ecto.Changeset`, re-assign that changeset to the LiveView form (`action: :insert`) so shared `<.input>`s render field errors alongside the flash.
 
 ## Consequences
 
