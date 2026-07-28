@@ -28,7 +28,7 @@ The MVP must prefer correct accounting and recoverability over “always show a 
 If Mayar QR creation succeeds but persisting the pending donation fails:
 
 1. Do not render the QR to the donor.
-2. Keep the donor on the form screen and show an error message asking them to retry.
+2. Keep the donor on the form screen, show an error flash asking them to retry, and re-assign overlapping field errors from the donation changeset onto the LiveView form so shared `<.input>`s render them (same persist-error surfacing as free feedback; see [ADR-013](ADR-013-donor-form-validation.md)).
 3. Warn the donor not to complete payment if they already scanned the QR code.
 4. Log an operational warning containing:
    - `mayar_transaction_id`

@@ -26,12 +26,13 @@ Implement donor form validation using `Ecto.Changeset` in `DonatexWeb.DonateLive
 
 - Validate required fields on submit (and on change for LiveView validation UX).
 - Enforce server-side length bounds for text fields:
-  - `donor_name` max 40 characters
-  - `message` max 160 characters
+  - `donor_name` max 64 characters
+  - `message` max 280 characters
 - Validate amount selection by:
   - accepting preset amounts from an allowlist
   - requiring and validating `custom_amount` only when `amount_option == "custom"`
   - enforcing `custom_amount >= 1000` and `custom_amount` in multiples of 1000 to match the mobile-friendly input step size
+- When free-feedback or tip persistence returns an `Ecto.Changeset` error, copy overlapping field errors onto the LiveView form changeset (with `action: :insert`) so shared `<.input>` components render them alongside the flash, instead of flash-only state
 
 ## Alternatives Considered
 
