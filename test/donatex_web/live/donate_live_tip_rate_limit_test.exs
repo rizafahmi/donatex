@@ -1,9 +1,12 @@
 defmodule DonatexWeb.DonateLiveTipRateLimitTest do
   use DonatexWeb.ConnCase, async: false
 
+  import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
   import Plug.Test, only: [put_peer_data: 2]
 
+  alias Donatex.Donations.Donation
+  alias Donatex.Repo
   alias Donatex.SubmissionLimiter
 
   setup :verify_req_expectations!
@@ -71,6 +74,75 @@ defmodule DonatexWeb.DonateLiveTipRateLimitTest do
     assert html =~ "Tunggu sebentar"
     refute html =~ "Scan QRIS untuk Apresiasi"
     assert has_element?(view, "#donation-form")
+  end
+
+  test "keeps the IP reservation after Mayar fails", %{conn: conn} do
+    conn = put_peer_data(conn, %{address: {203, 0, 113, 28}, port: 44_328, ssl_cert: nil})
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      Plug.Conn.send_resp(conn, 401, "unauthorized")
+    end)
+
+    capture_log(fn ->
+      {:ok, first_view, _html} = live(conn, ~p"/")
+      assert render_submit(first_view, "submit_feedback", tip_params()) =~ "QR belum bisa dibuat"
+
+      {:ok, second_view, _html} = live(conn, ~p"/")
+      html = render_submit(second_view, "submit_feedback", tip_params())
+
+      assert html =~ "Tunggu sebentar ya, coba lagi dalam beberapa detik."
+      refute html =~ "Scan QRIS untuk Apresiasi"
+      assert has_element?(second_view, "#donation-form")
+    end)
+  end
+
+  test "keeps the IP reservation and donor fail-closed state after persistence fails", %{
+    conn: conn
+  } do
+    conn = put_peer_data(conn, %{address: {203, 0, 113, 29}, port: 44_329, ssl_cert: nil})
+    mayar_transaction_id = String.duplicate("x", 200)
+
+    Req.Test.expect(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "statusCode" => 200,
+        "messages" => "Success",
+        "data" => %{
+          "transactionId" => mayar_transaction_id,
+          "amount" => 10_000,
+          "url" => "https://example.invalid/qr/persist-failed-rate-limit"
+        }
+      })
+    end)
+
+    capture_log(fn ->
+      {:ok, first_view, _html} = live(conn, ~p"/")
+      first_html = render_submit(first_view, "submit_feedback", tip_params())
+
+      assert first_html =~ "Tip belum bisa disimpan"
+      refute first_html =~ "Scan QRIS untuk Apresiasi"
+      assert has_element?(first_view, "#donation-form")
+
+      {:ok, second_view, _html} = live(conn, ~p"/")
+      second_html = render_submit(second_view, "submit_feedback", tip_params())
+
+      assert second_html =~ "Tunggu sebentar ya, coba lagi dalam beberapa detik."
+      refute second_html =~ "Scan QRIS untuk Apresiasi"
+      assert has_element?(second_view, "#donation-form")
+    end)
+
+    assert Repo.get_by(Donation, mayar_transaction_id: mayar_transaction_id) == nil
+  end
+
+  defp tip_params do
+    %{
+      "donation_form" => %{
+        "donor_name" => "Rate Limited Tip",
+        "reaction" => "good",
+        "message" => "",
+        "show_appreciation" => "true",
+        "amount_option" => "10000"
+      }
+    }
   end
 
   defp verify_req_expectations!(_context) do
