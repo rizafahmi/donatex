@@ -82,6 +82,7 @@ LiveView pages should follow Phoenix 1.8 layout conventions, including wrapping 
 - Do not introduce a separate queue service or external broker unless the simple single-node LiveView + PubSub approach proves insufficient.
 
 ## Guidelines
+- LiveView websocket mount/reconnect bypasses the plug pipeline: a plug like `AdminBasicAuth` only guards the initial HTTP request. Any admin LiveView must re-check auth via an `on_mount` callback wrapped in `live_session` (see `DonatexWeb.LiveAdminAuth` + the `:admin` `live_session` in the router).
 - Use ExAST when code structure matters; prefer it over regex for Elixir code transformations. Example:
 
 ```shell
@@ -283,3 +284,10 @@ mix usage_rules.search_docs "Enum.zip" --query-by title
 The `docs/` folder contains the initial PRD and per-milestone prompts used to scaffold this codebase during its initial build-out phase. These files are **temporary** — they exist for documentation and guidance only. They are **not** functional: no code, configuration, or runtime logic in this codebase should import, reference, or depend on anything inside `docs/`.
 
 Do not treat `docs/` as long-living documentation for the codebase. The codebase will evolve past the assumptions and decisions captured here. Once the initial milestones are complete, this folder is expected to be deleted.
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.
