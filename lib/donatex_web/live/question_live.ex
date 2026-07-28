@@ -78,8 +78,13 @@ defmodule DonatexWeb.QuestionLive do
   end
 
   def handle_event("toggle_vote", %{"id" => id}, socket) do
-    case Questions.toggle_vote(id, socket.assigns.visitor_id) do
+    case questions().toggle_vote(id, socket.assigns.visitor_id) do
       {:ok, _} ->
+        {:noreply, reload_visible(socket, id)}
+
+      {:error, :already_voted} ->
+        # Concurrent double-toggle lost the unique-index race; reload so the UI
+        # matches the single persisted vote row instead of crashing the LiveView.
         {:noreply, reload_visible(socket, id)}
 
       {:error, reason} when reason in [:answered, :hidden] ->
@@ -616,6 +621,8 @@ defmodule DonatexWeb.QuestionLive do
   defp vote_label(row, false), do: "Upvote pertanyaan (#{row.vote_count} upvote)"
 
   defp vote_closed_message, do: "Pertanyaan ini sudah ditutup untuk voting."
+
+  defp questions, do: Application.get_env(:donatex, :questions, Questions)
 
   defp wib_timestamp(utc_datetime) do
     wib = DateTime.add(utc_datetime, 7 * 3600, :second)
