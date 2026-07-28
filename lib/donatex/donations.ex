@@ -157,7 +157,8 @@ defmodule Donatex.Donations do
     do: {:ok, donation, false}
 
   def claim_with_transaction_id_update(%Donation{id: id} = donation, new_transaction_id)
-      when is_binary(id) and is_binary(new_transaction_id) and byte_size(new_transaction_id) > 0 do
+      when is_binary(id) and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) in 1..128 do
     now = DateTime.utc_now() |> DateTime.truncate(:second)
 
     update_result =
