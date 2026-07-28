@@ -1,6 +1,7 @@
 # Project Progress
 
 ## Current State
+- Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
 - The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
 - Toast/flash notifications now auto-dismiss after 5 s via a `FlashAutoHide` JS hook on the shared `flash/1` component (fixes [#39](https://github.com/rizafahmi/donatex/issues/39)); per-kind generations reset identical repeated flashes while connection-error toasts stay manual; see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md)
 - Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
@@ -13,6 +14,7 @@
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
+- [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
 - [x] Replace the decorative `/qr` lightning-dot grid with a scannable EQRCode SVG and SVG-based PNG download
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
 - [x] Mayar webhook → DB transition to `paid` (deduped) → PubSub broadcast
@@ -76,8 +78,8 @@
 - Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps
-1. Merge PR for #25 (`fix/25-concurrency-safe-paid-webhook`; cursor-agent loop clean).
-2. Unblocked by #25: harden amount-fallback correlation (#26) and webhook ops hardening (#31).
+1. Merge open hardening PRs still awaiting review (#26 amount-fallback, #28 overlay persist, #31 webhook ops) as they land.
+2. Next high-impact bugs without PRs: admin LiveView re-auth (#30), questions vote race (#29), flaky admin/donor suite (#32).
 3. Configure the production environment and deploy using the documented release process.
 4. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
 5. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
@@ -96,4 +98,5 @@
 - Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
 - Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 10 log: [docs/milestones/10-audience-questions-board/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md)
+- Milestone 14 log: [docs/milestones/14-tip-rate-limit/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/14-tip-rate-limit/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

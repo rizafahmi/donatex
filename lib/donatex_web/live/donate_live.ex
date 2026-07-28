@@ -896,6 +896,24 @@ defmodule DonatexWeb.DonateLive do
   end
 
   defp create_tip_or_assign_error(socket, changeset) do
+    client_ip = socket.assigns.client_ip
+
+    case reserve_tip_rate_limit(client_ip) do
+      :ok ->
+        create_tip_after_rate_limit(socket, changeset)
+
+      {:error, :rate_limited} ->
+        {:noreply,
+         socket
+         |> assign(:tip_submitting, false)
+         |> put_flash(:error, "Tunggu sebentar ya, coba lagi dalam beberapa detik.")
+         |> assign_form(Map.put(changeset, :action, :validate))}
+    end
+  end
+
+  defp create_tip_after_rate_limit(socket, changeset) do
+    # Reservation is kept whether Mayar/persist succeeds or fails so the same IP
+    # cannot spam Mayar create_qr (and orphan QRIS) within the cooldown window.
     case create_pending_donation_with_qr(changeset) do
       {:ok, donation, qr} ->
         {:noreply,
@@ -949,6 +967,9 @@ defmodule DonatexWeb.DonateLive do
 
   defp release_feedback_rate_limit(nil), do: :ok
   defp release_feedback_rate_limit(ip), do: SubmissionLimiter.release({:feedback, ip})
+
+  defp reserve_tip_rate_limit(nil), do: :ok
+  defp reserve_tip_rate_limit(ip), do: SubmissionLimiter.reserve({:tip, ip})
 
   defp submit_valid_feedback(socket, changeset) do
     client_ip = socket.assigns.client_ip

@@ -6,10 +6,13 @@ defmodule DonatexWeb.DonorQrFlowTest do
   alias Donatex.Config
   alias Donatex.Donations.Donation
   alias Donatex.Repo
+  alias Donatex.SubmissionLimiter
 
   setup :verify_req_expectations!
 
   setup do
+    SubmissionLimiter.reset()
+
     original_mayar = Application.get_env(:donatex, :mayar)
     original_impl = Application.get_env(:donatex, :mayar_client_impl)
     original_req_options = Application.get_env(:donatex, :mayar_req_options)
