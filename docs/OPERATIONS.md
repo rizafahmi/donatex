@@ -165,7 +165,7 @@ Donatex differs from the article’s example in one major way: Donatex uses SQLi
 5. Create a deploy user + configure SSH access.
 6. Put secrets/env vars on the VM (systemd drop-in, env file readable only by root, or equivalent).
 7. Build and run a release, then manage it via systemd.
-8. Back up the SQLite database file (`DATABASE_PATH`) regularly.
+8. Back up SQLite regularly (see [SQLite Notes](#sqlite-notes); WAL adds `-wal`/`-shm` companions).
 
 ### Release Commands
 
@@ -202,3 +202,5 @@ WantedBy=multi-user.target
 
 - Keep the database file outside the release directory so deploys don’t overwrite it.
 - Use an absolute path like `/var/lib/donatex/donatex.db` and ensure the directory exists and is writable by the app user.
+- `Donatex.Repo` runs with SQLite WAL and a 5s busy timeout (`journal_mode: :wal`, `busy_timeout: 5_000` in `config/config.exs`, reasserted in `config/dev.exs` and production `config/runtime.exs`).
+- WAL creates companion files next to `DATABASE_PATH` (`*.db-wal`, `*.db-shm`). For a consistent backup of a live database, stop the app briefly, use SQLite’s online backup API / `.backup`, or copy the main file together with any present `-wal`/`-shm` companions from a quiescent moment—do not copy only the main `.db` while writers are active.
