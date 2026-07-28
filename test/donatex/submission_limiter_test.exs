@@ -36,10 +36,12 @@ defmodule Donatex.SubmissionLimiterTest do
     ip = {10, 0, 0, 3}
 
     assert :ok = SubmissionLimiter.reserve({:question, visitor})
-    # A question submission does not consume the feedback cooldown and vice versa.
+    # A question submission does not consume the feedback/tip cooldown and vice versa.
     assert :ok = SubmissionLimiter.reserve({:feedback, ip})
+    assert :ok = SubmissionLimiter.reserve({:tip, ip})
 
     assert {:error, :rate_limited} = SubmissionLimiter.reserve({:question, visitor})
     assert {:error, :rate_limited} = SubmissionLimiter.reserve({:feedback, ip})
+    assert {:error, :rate_limited} = SubmissionLimiter.reserve({:tip, ip})
   end
 end

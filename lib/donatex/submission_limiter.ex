@@ -11,8 +11,8 @@ defmodule Donatex.SubmissionLimiter do
   end
 
   @doc """
-  Reserve a submission slot for a namespaced key (e.g. `{:feedback, ip}` or
-  `{:question, visitor_id}`). Returns `:ok` when reserved, or
+  Reserve a submission slot for a namespaced key (e.g. `{:feedback, ip}`,
+  `{:tip, ip}`, or `{:question, visitor_id}`). Returns `:ok` when reserved, or
   `{:error, :rate_limited}` when the key is still within the cooldown window.
   """
   @spec reserve(term(), keyword()) :: :ok | {:error, :rate_limited}
