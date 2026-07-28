@@ -378,6 +378,22 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert reduced_motion_rules =~ "animation: none"
   end
 
+  test "renders feedback emoji floats at a size visible in OBS at 1080p" do
+    css = File.read!(Path.expand("../../../assets/css/app.css", __DIR__))
+
+    assert [_, font_size] =
+             Regex.run(~r/\.obs-float-emoji \{[^}]*font-size:\s*([^;]+);/s, css)
+
+    assert [_, min_size] = Regex.run(~r/clamp\(([\d.]+)rem/, font_size)
+
+    min_rem =
+      if String.contains?(min_size, "."),
+        do: String.to_float(min_size),
+        else: String.to_integer(min_size) * 1.0
+
+    assert min_rem >= 5.0, "expected font-size minimum >= 5rem, got #{min_rem}rem"
+  end
+
   defp donation_payload(donation) do
     %{
       id: donation.id,
