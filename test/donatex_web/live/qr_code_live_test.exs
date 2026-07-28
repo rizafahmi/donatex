@@ -101,14 +101,13 @@ defmodule DonatexWeb.QrCodeLiveTest do
       refute has_element?(view, "#server-error")
     end
 
-    test "renders the animated canvas QR with matrix data and hidden SVG", %{conn: conn} do
-      {:ok, view, html} = live(conn, ~p"/qr")
+    test "renders the animated SVG QR overlay with hidden SVG for download", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/qr")
 
       assert has_element?(view, "#qr-code.qr-scannable-card")
-      assert has_element?(view, "#qr-canvas.qr-canvas")
+      assert has_element?(view, ".qr-svg-base svg")
+      assert has_element?(view, ".qr-animation-overlay")
       assert has_element?(view, "#qr-svg-hidden svg")
-      assert html =~ ~s(data-matrix=)
-      assert html =~ ~s(data-size=)
     end
 
     test "download button is present and triggers push event", %{conn: conn} do
