@@ -219,6 +219,11 @@ defmodule DonatexWeb.QuestionLiveTest do
   end
 
   describe "voting" do
+    defmodule AlreadyVotedQuestions do
+      @moduledoc false
+      def toggle_vote(_id, _visitor_id), do: {:error, :already_voted}
+    end
+
     test "toggling a vote updates the count", %{conn: conn} do
       q = Questions.create_question!(%{"body" => "vote me"})
 
@@ -230,6 +235,46 @@ defmodule DonatexWeb.QuestionLiveTest do
         Questions.list_questions_for_date(Questions.wib_date_of_utc_datetime(q.inserted_at))
 
       assert updated.vote_count == 1
+    end
+
+    test "already_voted race reloads board without crashing QuestionLive", %{conn: conn} do
+      q = Questions.create_question!(%{"body" => "race me"})
+      conn = get(conn, ~p"/questions")
+      visitor_id = Plug.Conn.get_session(conn, "visitor_id")
+      assert is_binary(visitor_id)
+
+      # Persist the winning concurrent insert so reload must match DB state.
+      assert {:ok, :added} = Questions.toggle_vote(q.id, visitor_id)
+
+      original = Application.get_env(:donatex, :questions)
+
+      on_exit(fn ->
+        if original do
+          Application.put_env(:donatex, :questions, original)
+        else
+          Application.delete_env(:donatex, :questions)
+        end
+      end)
+
+      Application.put_env(:donatex, :questions, AlreadyVotedQuestions)
+
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      html = render_click(view, "toggle_vote", %{"id" => q.id})
+
+      # Survived the already_voted arm; UI still reflects the single persisted vote.
+      assert html =~ "race me"
+      assert html =~ "Batal upvote pertanyaan (1 upvote)"
+      assert html =~ ~s(id="vote-count-#{q.id}")
+      assert [_vote] = Repo.all(Donatex.Questions.QuestionVote)
+
+      [row] =
+        Questions.list_questions_for_date(Questions.wib_date_of_utc_datetime(q.inserted_at),
+          visitor_hash: Questions.hash_visitor_id(visitor_id)
+        )
+
+      assert row.vote_count == 1
+      assert row.voted == true
     end
 
     test "answered questions render a disabled vote button", %{conn: conn} do
