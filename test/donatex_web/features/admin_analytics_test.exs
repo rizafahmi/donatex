@@ -6,6 +6,7 @@ defmodule DonatexWeb.AdminAnalyticsTest do
   alias Donatex.Donations
   alias Donatex.Repo
 
+  import Phoenix.LiveViewTest, only: [render: 1]
   import PhoenixTest
 
   setup do
@@ -35,20 +36,19 @@ defmodule DonatexWeb.AdminAnalyticsTest do
     conn
     |> visit(~p"/")
 
-    # Wait for the async task to insert and broadcast
-    Process.sleep(50)
-
-    # Re-fetch the page view count directly to verify it was stored
+    # track_page_view runs synchronously in test env; verify DB insert
     assert %{views: 1} = Analytics.get_funnel_stats()
 
-    # The admin panel should update dynamically due to PubSub subscription
+    # Sync the admin LiveView so it processes the PubSub message
+    session = unwrap(session, fn view -> render(view) end)
+
     session
     |> assert_has("div", "1 loads")
 
     # 3. Simulate another page view via track_page_view (inserts and broadcasts)
     Analytics.track_page_view("/")
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> assert_has("div", "2 loads")
@@ -67,7 +67,7 @@ defmodule DonatexWeb.AdminAnalyticsTest do
       {:donation_created, feedback}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     # 2 views, 1 feedback note -> 50.0% conversion
     session
@@ -92,7 +92,7 @@ defmodule DonatexWeb.AdminAnalyticsTest do
       {:donation_paid, DonatexWeb.DonationPresenter.payload(paid_tip)}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     # 2 views, 1 paid tip -> 50.0% conversion
     session

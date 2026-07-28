@@ -72,6 +72,7 @@
 - [x] [#39](https://github.com/rizafahmi/donatex/issues/39) Toast auto-hide — see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md).
 - [x] [#28](https://github.com/rizafahmi/donatex/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
 - [x] [#30](https://github.com/rizafahmi/donatex/issues/30) Admin LiveView re-auth — `AdminBasicAuth` stamps `admin_authenticated` into the session; `live_session :admin` + `DonatexWeb.LiveAdminAuth` `on_mount` rejects mounts without the flag (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
+- [x] [#32](https://github.com/rizafahmi/donatex/issues/32) Flaky admin/donor ExUnit suite — replace `Process.sleep/1` in admin analytics/filters feature tests with `unwrap` + `render` LiveView sync; set Repo-touching `donate_live_test.exs` to `async: false`.
 
 ## In Progress
 - [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — atomic `claim_pending_by_amount/3` (tx id remap + paid in one transaction); fail-closed on ambiguous multi-pending same-amount; 9 new edge-case tests; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/11-amount-fallback-hardening/milestone-log.md). PR pending.
@@ -84,11 +85,10 @@
 - Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps
-1. Merge open hardening PRs still awaiting review (#26 amount-fallback, #28 overlay persist, #31 webhook ops) as they land.
-2. Next high-impact bugs without PRs: flaky admin/donor suite (#32).
-3. Configure the production environment and deploy using the documented release process.
-4. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
-5. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
+1. Merge open hardening PRs still awaiting review (#26 amount-fallback) as they land.
+2. Configure the production environment and deploy using the documented release process.
+3. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
+4. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
 
 ## References
 - [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)

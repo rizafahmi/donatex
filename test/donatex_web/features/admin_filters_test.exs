@@ -6,6 +6,8 @@ defmodule DonatexWeb.AdminFiltersTest do
   alias Donatex.Donations.Donation
   alias Donatex.Repo
 
+  import Phoenix.LiveViewTest, only: [render: 1]
+
   setup do
     # Create one paid and one pending donation for testing filters
     {:ok, pending} =
@@ -227,7 +229,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_created, feedback}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> refute_has("#donation-#{feedback.id}", "Live Free Note")
@@ -247,7 +249,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_created, new_pending}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> assert_has("#donation-#{new_pending.id}", "Live Pending Tip")
@@ -274,7 +276,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_created, feedback}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> assert_has("#donation-#{feedback.id}", "Live Feedback Note")
@@ -293,7 +295,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_created, tip}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> refute_has("#donation-#{tip.id}", "Live Tip Ignored")
@@ -324,7 +326,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_created, new_pending}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> assert_has("#donation-#{new_pending.id}", "New Pending")
@@ -344,7 +346,7 @@ defmodule DonatexWeb.AdminFiltersTest do
       {:donation_paid, DonatexWeb.DonationPresenter.payload(paid_new_pending)}
     )
 
-    Process.sleep(50)
+    session = unwrap(session, fn view -> render(view) end)
 
     session
     |> assert_has("#donation-#{new_pending.id}", "New Pending")

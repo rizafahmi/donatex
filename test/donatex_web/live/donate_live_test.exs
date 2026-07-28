@@ -1,5 +1,5 @@
 defmodule DonatexWeb.DonateLiveTest do
-  use DonatexWeb.ConnCase, async: true
+  use DonatexWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import Plug.Test, only: [put_peer_data: 2]
@@ -273,6 +273,11 @@ defmodule DonatexWeb.DonateLiveTest do
   end
 
   test "accepts a valid custom amount", %{conn: conn} do
+    # Unique peer IP avoids tip rate-limit collisions with other sync suites that
+    # submit tips under LiveViewTest's default 127.0.0.1 peer.
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 24}, port: 44_326, ssl_cert: nil})
+
     {:ok, view, _html} = live(conn, ~p"/")
 
     html =
