@@ -1,5 +1,5 @@
 defmodule DonatexWeb.DonateLiveTest do
-  use DonatexWeb.ConnCase, async: true
+  use DonatexWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import Plug.Test, only: [put_peer_data: 2]
