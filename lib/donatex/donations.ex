@@ -89,34 +89,75 @@ defmodule Donatex.Donations do
   def get_donation_by_mayar_transaction_id(_mayar_transaction_id), do: nil
 
   @doc """
-  Fallback lookup for when Mayar sends a different transaction ID at payment confirmation.
-  Matches by amount (and optional donor_name) for pending donations.
-  Returns the oldest matching pending donation.
+  Atomically claims a single pending donation matching the given amount
+  (and optional donor_name), remapping the Mayar transaction id and marking
+  paid in one transactional operation.
+
+  Fails closed with `{:error, :ambiguous}` when more than one pending tip
+  matches, preventing wrong-tip correlation under concurrent same-amount
+  payments.
+
+  Returns:
+    `{:ok, donation, true}`  — claimed (winner; broadcast once)
+    `{:ok, donation, false}` — already paid by a concurrent delivery (no broadcast)
+    `{:error, :ambiguous}`   — multiple pending tips match; fail closed
+    `{:error, :not_found}`   — no pending tip matches
   """
-  def get_pending_donation_by_amount(amount, donor_name \\ nil)
-      when is_integer(amount) and amount > 0 do
+  def claim_pending_by_amount(amount, donor_name \\ nil, new_transaction_id)
+      when is_integer(amount) and amount > 0 and is_binary(new_transaction_id) and
+             byte_size(new_transaction_id) > 0 do
+    case Repo.transaction(
+           fn -> claim_by_amount_tx(amount, donor_name, new_transaction_id) end,
+           mode: :immediate
+         ) do
+      {:ok, {donation, changed?}} -> {:ok, donation, changed?}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp claim_by_amount_tx(amount, donor_name, new_transaction_id) do
+    case Repo.all(pending_by_amount_query(amount, donor_name)) do
+      [] -> Repo.rollback(:not_found)
+      [donation] -> claim_single_pending(donation, new_transaction_id)
+      [_ | _] -> Repo.rollback(:ambiguous)
+    end
+  end
+
+  defp pending_by_amount_query(amount, donor_name) do
     query =
       Donation
       |> where(status: "pending")
       |> where(amount: ^amount)
-      |> order_by([d], desc: d.inserted_at, asc: d.id)
-      |> limit(1)
 
-    query =
-      if donor_name && byte_size(donor_name) > 0 do
-        where(query, [d], d.donor_name == ^donor_name)
-      else
-        query
-      end
-
-    Repo.one(query)
+    if donor_name && byte_size(donor_name) > 0 do
+      where(query, [d], d.donor_name == ^donor_name)
+    else
+      query
+    end
   end
 
-  def count_pending_by_amount(amount) when is_integer(amount) and amount > 0 do
-    Donation
-    |> where(status: "pending")
-    |> where(amount: ^amount)
-    |> Repo.aggregate(:count)
+  defp claim_single_pending(%Donation{id: id} = donation, new_transaction_id) do
+    now = DateTime.utc_now() |> DateTime.truncate(:second)
+
+    {count, _} =
+      Donation
+      |> where([d], d.id == ^id and d.status == "pending")
+      |> Repo.update_all(
+        set: [status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now]
+      )
+
+    case count do
+      1 ->
+        {%{donation | status: "paid", mayar_transaction_id: new_transaction_id, updated_at: now},
+         true}
+
+      0 ->
+        case Repo.get(Donation, id) do
+          %Donation{status: "paid"} = paid -> {paid, false}
+          nil -> Repo.rollback(:not_found)
+          %Donation{} -> Repo.rollback(:invalid_state)
+        end
+    end
   end
 
   def update_mayar_transaction_id(%Donation{} = donation, new_transaction_id)

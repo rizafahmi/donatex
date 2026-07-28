@@ -503,4 +503,115 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     # Redacted placeholders should be present instead
     assert logs =~ "[redacted]"
   end
+
+  test "amount fallback fails closed when multiple pending tips share the same amount", %{
+    conn: conn
+  } do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = d1} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-fallback-amb-1",
+               donor_name: "Alice",
+               reaction: "good",
+               amount: 50_000
+             })
+
+    assert {:ok, %Donation{} = d2} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-fallback-amb-2",
+               donor_name: "Bob",
+               reaction: "great",
+               amount: 50_000
+             })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-confirmation-ambiguous",
+          "amount" => 50_000,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Both donations remain pending — no wrong-tip remap
+    assert %Donation{status: "pending", mayar_transaction_id: "tx-fallback-amb-1"} =
+             Repo.get!(Donation, d1.id)
+
+    assert %Donation{status: "pending", mayar_transaction_id: "tx-fallback-amb-2"} =
+             Repo.get!(Donation, d2.id)
+
+    # No alert broadcast
+    refute_receive {:donation_paid, _payload}, 50
+  end
+
+  test "amount fallback disambiguates by donor_name when multiple tips share the same amount", %{
+    conn: conn
+  } do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    assert {:ok, %Donation{} = alice} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-fallback-dis-1",
+               donor_name: "Alice",
+               reaction: "good",
+               amount: 60_000
+             })
+
+    assert {:ok, %Donation{} = bob} =
+             Donations.create_pending_donation(%{
+               mayar_transaction_id: "tx-fallback-dis-2",
+               donor_name: "Bob",
+               reaction: "great",
+               amount: 60_000
+             })
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-confirmation-disambig",
+          "amount" => 60_000,
+          "customerName" => "Bob",
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+
+    # Bob's donation is claimed; Alice remains pending
+    assert %Donation{status: "paid", mayar_transaction_id: "tx-confirmation-disambig"} =
+             Repo.get!(Donation, bob.id)
+
+    assert %Donation{status: "pending"} = Repo.get!(Donation, alice.id)
+
+    assert_received {:donation_paid, %{id: id, mayar_transaction_id: "tx-confirmation-disambig"}}
+    assert id == bob.id
+  end
+
+  test "amount fallback logs orphan when no pending tip matches", %{conn: conn} do
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:paid")
+
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => %{
+          "transactionId" => "tx-orphan-no-match",
+          "amount" => 77_777,
+          "transactionStatus" => "paid"
+        }
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+    refute_receive {:donation_paid, _payload}, 50
+  end
 end
