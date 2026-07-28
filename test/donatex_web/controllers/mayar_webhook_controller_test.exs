@@ -451,12 +451,26 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
     assert_received {:donation_paid, %{id: id}} when id == donation.id
   end
 
+  test "malformed non-map webhook data still returns 200", %{conn: conn} do
+    conn =
+      conn
+      |> put_req_header("accept", "application/json")
+      |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
+        "event" => "payment.received",
+        "data" => "malformed"
+      })
+
+    assert json_response(conn, 200) == %{"ok" => true}
+  end
+
   test "redacts QR-containing keys from webhook payload logs", %{conn: conn} do
     import ExUnit.CaptureLog
 
     # Build a webhook payload with QR-related keys that are NOT in the
     # hardcoded drop list. The redaction must catch any key containing "qr".
     qr_url = "https://media.mayar.club/images/resized/480/secret-qr-asset.png"
+    top_level_secret = "top-level-qr-secret"
+    nested_secret = "nested-qr-secret"
 
     original_level = Logger.level()
     Logger.configure(level: :info)
@@ -467,13 +481,15 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
         |> put_req_header("accept", "application/json")
         |> post(~p"/webhooks/mayar/#{Config.mayar_webhook_token()}", %{
           "event" => "payment.received",
+          "qrisPayload" => top_level_secret,
           "data" => %{
             "transactionId" => "tx-redaction-test",
             "amount" => 5_000,
             "transactionStatus" => "paid",
             "qrCodeUrl" => qr_url,
             "qrImageData" => "data:image/png;base64,abc123",
-            "url" => qr_url
+            "url" => qr_url,
+            "metadata" => [%{"details" => %{"nestedQrToken" => nested_secret}}]
           }
         })
       end)
@@ -482,6 +498,8 @@ defmodule DonatexWeb.MayarWebhookControllerTest do
 
     # The actual QR URL must never appear in logs
     refute logs =~ qr_url
+    refute logs =~ top_level_secret
+    refute logs =~ nested_secret
     # Redacted placeholders should be present instead
     assert logs =~ "[redacted]"
   end

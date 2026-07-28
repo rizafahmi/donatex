@@ -26,33 +26,44 @@ defmodule DonatexWeb.MayarWebhookController do
     # Redact sensitive fields while keeping structure for debugging.
     # Consistent with ADR-017: redact known URL keys and any key containing "qr".
     params
+    |> redact_url_keys()
+    |> redact_qr_keys()
     |> Map.update("data", %{}, fn data ->
-      data
-      |> redact_url_keys()
-      |> redact_qr_keys()
-      |> Map.update("amount", "[amount]", &to_string/1)
+      redact_amount(data)
     end)
   end
 
   defp redact_url_keys(data) when is_map(data) do
-    Enum.reduce(["url", "qrImageUrl", "qr_image_url"], data, fn key, acc ->
-      Map.replace(acc, key, "[redacted]")
+    Map.new(data, fn
+      {key, _value} when key in ["url", "qrImageUrl", "qr_image_url"] ->
+        {key, "[redacted]"}
+
+      {key, value} ->
+        {key, redact_url_keys(value)}
     end)
   end
+
+  defp redact_url_keys(data) when is_list(data), do: Enum.map(data, &redact_url_keys/1)
+  defp redact_url_keys(data), do: data
 
   defp redact_qr_keys(data) when is_map(data) do
-    Enum.reduce(Map.keys(data), data, fn
-      key, acc when is_binary(key) ->
-        if String.contains?(String.downcase(key), "qr") do
-          Map.put(acc, key, "[redacted]")
-        else
-          acc
-        end
-
-      _key, acc ->
-        acc
+    Map.new(data, fn {key, value} ->
+      if is_binary(key) and String.contains?(String.downcase(key), "qr") do
+        {key, "[redacted]"}
+      else
+        {key, redact_qr_keys(value)}
+      end
     end)
   end
+
+  defp redact_qr_keys(data) when is_list(data), do: Enum.map(data, &redact_qr_keys/1)
+  defp redact_qr_keys(data), do: data
+
+  defp redact_amount(data) when is_map(data) do
+    Map.update(data, "amount", "[amount]", &to_string/1)
+  end
+
+  defp redact_amount(data), do: data
 
   defp maybe_process_webhook(params) do
     case Webhook.parse(params) do
