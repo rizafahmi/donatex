@@ -215,6 +215,9 @@ defmodule Donatex.Donations do
       nil -> {:error, :not_found}
       donation -> mark_donation_alerted(donation)
     end
+  rescue
+    _error in [DBConnection.ConnectionError, Exqlite.Error] ->
+      {:error, :persistence_failed}
   end
 
   def mark_donation_alerted_by_id(_id), do: {:error, :invalid_id}

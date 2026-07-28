@@ -8,6 +8,7 @@ defmodule DonatexWeb.OverlayLiveTest do
   alias Donatex.Donations.Donation
   alias Donatex.Reactions
   alias Donatex.Repo
+  alias Ecto.Adapters.SQL
 
   test "renders SEO metadata with noindex robots and self-referential canonical URL", %{
     conn: conn
@@ -72,6 +73,82 @@ defmodule DonatexWeb.OverlayLiveTest do
     assert has_element?(view, "h1", "Overlay")
 
     assert Repo.get!(Donation, second.id).alerted
+  end
+
+  test "keeps the current alert when acknowledgement persistence fails", %{conn: conn} do
+    {:ok, first_pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-failure-1",
+        donor_name: "Failed Acknowledgement",
+        reaction: "good",
+        amount: 10_000
+      })
+
+    {:ok, second_pending} =
+      Donations.create_pending_donation(%{
+        mayar_transaction_id: "tx-overlay-failure-2",
+        donor_name: "Queued Alert",
+        reaction: "great",
+        amount: 20_000
+      })
+
+    {:ok, first} = Donations.mark_paid_by_mayar_transaction_id(first_pending.mayar_transaction_id)
+
+    {:ok, second} =
+      Donations.mark_paid_by_mayar_transaction_id(second_pending.mayar_transaction_id)
+
+    Repo.update_all(from(d in Donation, where: d.id == ^first.id),
+      set: [inserted_at: ~U[2020-01-01 00:00:01Z]]
+    )
+
+    Repo.update_all(from(d in Donation, where: d.id == ^second.id),
+      set: [inserted_at: ~U[2020-01-01 00:00:02Z]]
+    )
+
+    {:ok, view, _html} = live(conn, ~p"/overlay")
+
+    Phoenix.PubSub.subscribe(Donatex.PubSub, "donations:alerted")
+    assert has_element?(view, "#obs-alert-#{first.id}-0")
+
+    SQL.query!(
+      Repo,
+      """
+      CREATE TEMPORARY TRIGGER prevent_alerted_update
+      UPDATE OF alerted ON donations
+      WHEN NEW.alerted = 1
+      BEGIN
+        SELECT RAISE(ABORT, 'test_forced_failure');
+      END
+      """
+    )
+
+    try do
+      send(view.pid, {:dismiss_current, first.id})
+      render(view)
+
+      assert has_element?(view, "div.obs-overlay-main-text", "Failed Acknowledgement")
+      assert has_element?(view, "#obs-alert-#{first.id}-1")
+      refute has_element?(view, "#obs-alert-#{first.id}-0")
+      refute has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
+
+      first_id = first.id
+      refute_receive {:donation_alerted, %{id: ^first_id}}
+
+      recovered_ids = Enum.map(Donations.list_paid_unalerted_donations(), & &1.id)
+      assert first.id in recovered_ids
+      assert second.id in recovered_ids
+      refute Repo.get!(Donation, first.id).alerted
+
+      SQL.query!(Repo, "DROP TRIGGER IF EXISTS prevent_alerted_update")
+
+      send(view.pid, {:dismiss_current, first.id})
+      render(view)
+
+      assert has_element?(view, "div.obs-overlay-main-text", "Queued Alert")
+      assert Repo.get!(Donation, first.id).alerted
+    after
+      SQL.query!(Repo, "DROP TRIGGER IF EXISTS prevent_alerted_update")
+    end
   end
 
   test "brands the tip alert title bar as Notable", %{conn: conn} do

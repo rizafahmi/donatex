@@ -1,6 +1,8 @@
 defmodule DonatexWeb.OverlayLive do
   use DonatexWeb, :live_view
 
+  require Logger
+
   alias Donatex.Donations
   alias Donatex.Reactions
   alias DonatexWeb.DonationPresenter
@@ -64,7 +66,7 @@ defmodule DonatexWeb.OverlayLive do
   def handle_info({:dismiss_current, id}, socket) do
     socket =
       case socket.assigns.current do
-        %{id: ^id} ->
+        %{id: ^id} = current ->
           case Donations.mark_donation_alerted_by_id(id) do
             {:ok, donation} ->
               Phoenix.PubSub.broadcast(
@@ -74,12 +76,16 @@ defmodule DonatexWeb.OverlayLive do
               )
 
               socket
+              |> assign(:current, nil)
+              |> start_next_alert()
 
-            _ ->
-              socket
+            {:error, reason} ->
+              Logger.warning(
+                "Overlay alert acknowledgement failed: id=#{id} reason=#{acknowledgement_error(reason)}"
+              )
+
+              retry_current_alert(socket, current)
           end
-          |> assign(:current, nil)
-          |> start_next_alert()
 
         _ ->
           socket
@@ -111,7 +117,10 @@ defmodule DonatexWeb.OverlayLive do
             class="hidden"
           >
           </audio>
-          <div class="obs-overlay-line">
+          <div
+            id={"obs-alert-#{@current.id}-#{@current.render_attempt}"}
+            class="obs-overlay-line"
+          >
             <div class="obs-overlay-box"></div>
             
     <!-- Terminal Header Title Bar -->
@@ -183,10 +192,11 @@ defmodule DonatexWeb.OverlayLive do
   defp start_next_alert(%{assigns: %{current: nil, queue: queue}} = socket) do
     case :queue.out(queue) do
       {{:value, next}, rest} ->
-        Process.send_after(self(), {:dismiss_current, next.id}, 8_500)
+        current = Map.put(next, :render_attempt, 0)
+        schedule_dismiss(current)
 
         socket
-        |> assign(:current, next)
+        |> assign(:current, current)
         |> assign(:queue, rest)
 
       {:empty, _queue} ->
@@ -195,4 +205,18 @@ defmodule DonatexWeb.OverlayLive do
   end
 
   defp start_next_alert(socket), do: socket
+
+  defp retry_current_alert(socket, current) do
+    current = Map.update!(current, :render_attempt, &(&1 + 1))
+    schedule_dismiss(current)
+    assign(socket, :current, current)
+  end
+
+  defp schedule_dismiss(current) do
+    Process.send_after(self(), {:dismiss_current, current.id}, 8_500)
+  end
+
+  defp acknowledgement_error(%Ecto.Changeset{errors: errors}), do: inspect(errors)
+  defp acknowledgement_error(reason) when is_atom(reason), do: reason
+  defp acknowledgement_error(_reason), do: :unknown
 end
