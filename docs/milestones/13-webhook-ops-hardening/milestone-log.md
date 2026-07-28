@@ -17,9 +17,11 @@ Harden the Mayar webhook controller for production reliability: return retryable
 
 3. **Log redaction (AC3)**: `redacted_webhook_payload/1` now redacts any key containing "qr" via `redact_qr_keys/1` plus known URL keys via `redact_url_keys/1`, consistent with ADR-017. Previously only 3 hardcoded keys were dropped.
 
+4. **Non-retryable inputs unchanged (AC4)**: malformed payloads and orphan payments remain acknowledged with HTTP 200 rather than requesting a retry.
+
 ### `test/donatex_web/controllers/mayar_webhook_controller_test.exs`
 
-5 new test cases covering all four acceptance criteria.
+6 new test cases cover all four acceptance criteria.
 
 ## Verification
 

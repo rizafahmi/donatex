@@ -126,7 +126,8 @@ If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Donatex performs a fo
 - Donatex updates the DB before broadcasting `donations:paid`. A duplicate webhook delivery should not rebroadcast.
 - If a webhook arrives for a `mayar_transaction_id` that does not exist locally, Donatex logs a warning and does not create a donation row.
 - Requests with an invalid webhook token are rejected with `404` before controller logic runs.
-- Requests that pass the token check currently return `200 {"ok":true}` even when the payload is ignored or logged as malformed, duplicate, unknown, or amount-mismatched. Check application logs, not only HTTP status codes, when validating webhook wiring.
+- Requests that pass the token check return `200 {"ok":true}` when the payload is processed or intentionally ignored as malformed, duplicate, orphaned, non-paid, or amount-mismatched.
+- A failure while marking a donation paid or updating its Mayar transaction ID returns `500 {"ok":false}` so Mayar can retry. Check application logs as well as HTTP status codes when validating webhook wiring.
 
 ### Overlay recovery
 
