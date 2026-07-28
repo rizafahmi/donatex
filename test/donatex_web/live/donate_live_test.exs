@@ -433,6 +433,57 @@ defmodule DonatexWeb.DonateLiveTest do
     assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Thanks Guard 2") == nil
   end
 
+  defmodule PersistFailingDonations do
+    @moduledoc false
+
+    def create_feedback(attrs) do
+      changeset =
+        %Donatex.Donations.Donation{}
+        |> Donatex.Donations.Donation.changeset(
+          Map.merge(%{status: "sent", alerted: true}, attrs)
+        )
+        |> Ecto.Changeset.add_error(:donor_name, "nama tidak bisa digunakan")
+        |> Map.put(:action, :insert)
+
+      {:error, changeset}
+    end
+  end
+
+  test "free feedback persist changeset errors re-render on form inputs", %{conn: conn} do
+    conn =
+      put_peer_data(conn, %{address: {203, 0, 113, 33}, port: 44_333, ssl_cert: nil})
+
+    original = Application.get_env(:donatex, :donations)
+
+    on_exit(fn ->
+      if original do
+        Application.put_env(:donatex, :donations, original)
+      else
+        Application.delete_env(:donatex, :donations)
+      end
+    end)
+
+    Application.put_env(:donatex, :donations, PersistFailingDonations)
+
+    {:ok, view, _html} = live(conn, ~p"/")
+
+    html =
+      render_submit(view, "submit_feedback", %{
+        "donation_form" => %{
+          "donor_name" => "Persist Fail",
+          "reaction" => "good",
+          "message" => "should stay on form"
+        }
+      })
+
+    assert html =~ "Feedback belum bisa dikirim"
+    assert html =~ "nama tidak bisa digunakan"
+    assert html =~ ~s(value="Persist Fail")
+    assert has_element?(view, "#donation-form")
+    refute has_element?(view, "#feedback-thanks")
+    assert Donatex.Repo.get_by(Donatex.Donations.Donation, donor_name: "Persist Fail") == nil
+  end
+
   defp submit_button_count(view) do
     view
     |> render()

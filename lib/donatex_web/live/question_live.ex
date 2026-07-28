@@ -567,7 +567,7 @@ defmodule DonatexWeb.QuestionLive do
     key = {:question, socket.assigns.visitor_id}
 
     with :ok <- SubmissionLimiter.reserve(key),
-         {:ok, _question} <- Questions.create_question(form_params(changeset)) do
+         {:ok, _question} <- questions().create_question(form_params(changeset)) do
       {:noreply,
        socket
        |> put_flash(:info, "Pertanyaan terkirim!")
@@ -583,14 +583,14 @@ defmodule DonatexWeb.QuestionLive do
          |> assign(:form_expanded, true)
          |> assign_form(changeset)}
 
-      {:error, _changeset} ->
+      {:error, %Ecto.Changeset{} = error_changeset} ->
         _ = SubmissionLimiter.release(key)
 
         {:noreply,
          socket
          |> put_flash(:error, "Pertanyaan belum bisa dikirim. Coba lagi.")
          |> assign(:form_expanded, true)
-         |> assign_form(changeset)}
+         |> assign_form(Map.put(error_changeset, :action, :insert))}
     end
   end
 

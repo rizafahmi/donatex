@@ -216,6 +216,50 @@ defmodule DonatexWeb.QuestionLiveTest do
       refute html =~ "Pertanyaan terkirim"
       assert [] == Repo.all(Question)
     end
+
+    defmodule PersistFailingQuestions do
+      @moduledoc false
+
+      def create_question(attrs) do
+        changeset =
+          %Question{}
+          |> Question.create_changeset(attrs)
+          |> Ecto.Changeset.add_error(:body, "pertanyaan tidak bisa disimpan")
+          |> Map.put(:action, :insert)
+
+        {:error, changeset}
+      end
+    end
+
+    test "create constraint errors re-render on question form inputs", %{conn: conn} do
+      original = Application.get_env(:donatex, :questions)
+
+      on_exit(fn ->
+        if original do
+          Application.put_env(:donatex, :questions, original)
+        else
+          Application.delete_env(:donatex, :questions)
+        end
+      end)
+
+      Application.put_env(:donatex, :questions, PersistFailingQuestions)
+
+      {:ok, view, _html} = live(conn, ~p"/questions")
+
+      html =
+        render_submit(view, "submit", %{
+          "question_form" => %{
+            "name" => "Riza",
+            "body" => "Apa rencana stream besok?"
+          }
+        })
+
+      assert html =~ "Pertanyaan belum bisa dikirim"
+      assert html =~ "pertanyaan tidak bisa disimpan"
+      assert html =~ "Apa rencana stream besok?"
+      assert html =~ ~s(id="question-form")
+      assert [] == Repo.all(Question)
+    end
   end
 
   describe "voting" do
