@@ -11,19 +11,59 @@ defmodule DonatexWeb.MayarWebhookController do
   def create(conn, params) do
     # Always log raw payload for debugging webhook issues
     Logger.info("Mayar webhook raw_payload=#{inspect(redacted_webhook_payload(params))}")
-    _ = maybe_process_webhook(params)
-    json(conn, %{ok: true})
+
+    case maybe_process_webhook(params) do
+      :ok ->
+        json(conn, %{ok: true})
+
+      {:error, reason} ->
+        Logger.warning("Mayar webhook processing failed reason=#{inspect(reason)}")
+        conn |> put_status(:internal_server_error) |> json(%{ok: false})
+    end
   end
 
   defp redacted_webhook_payload(params) do
-    # Redact sensitive fields while keeping structure for debugging
+    # Redact sensitive fields while keeping structure for debugging.
+    # Consistent with ADR-017: redact known URL keys and any key containing "qr".
     params
+    |> redact_url_keys()
+    |> redact_qr_keys()
     |> Map.update("data", %{}, fn data ->
-      data
-      |> Map.drop(["qrImageUrl", "qr_image_url", "url"])
-      |> Map.update("amount", "[amount]", &to_string/1)
+      redact_amount(data)
     end)
   end
+
+  defp redact_url_keys(data) when is_map(data) do
+    Map.new(data, fn
+      {key, _value} when key in ["url", "qrImageUrl", "qr_image_url"] ->
+        {key, "[redacted]"}
+
+      {key, value} ->
+        {key, redact_url_keys(value)}
+    end)
+  end
+
+  defp redact_url_keys(data) when is_list(data), do: Enum.map(data, &redact_url_keys/1)
+  defp redact_url_keys(data), do: data
+
+  defp redact_qr_keys(data) when is_map(data) do
+    Map.new(data, fn {key, value} ->
+      if is_binary(key) and String.contains?(String.downcase(key), "qr") do
+        {key, "[redacted]"}
+      else
+        {key, redact_qr_keys(value)}
+      end
+    end)
+  end
+
+  defp redact_qr_keys(data) when is_list(data), do: Enum.map(data, &redact_qr_keys/1)
+  defp redact_qr_keys(data), do: data
+
+  defp redact_amount(data) when is_map(data) do
+    Map.update(data, "amount", "[amount]", &to_string/1)
+  end
+
+  defp redact_amount(data), do: data
 
   defp maybe_process_webhook(params) do
     case Webhook.parse(params) do
@@ -97,7 +137,7 @@ defmodule DonatexWeb.MayarWebhookController do
           "Mayar webhook failed to update transaction id mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=#{inspect(reason)}"
         )
 
-        :ok
+        {:error, reason}
     end
   end
 
@@ -193,7 +233,9 @@ defmodule DonatexWeb.MayarWebhookController do
         {:error, :lookup_failed}
     end
   rescue
-    _ -> {:error, :lookup_failed}
+    e in Req.TransportError ->
+      Logger.warning("Mayar lookup transport error: #{Exception.message(e)}")
+      {:error, :lookup_failed}
   end
 
   defp non_empty_binary(value) when is_binary(value) and byte_size(value) > 0, do: value
@@ -226,7 +268,7 @@ defmodule DonatexWeb.MayarWebhookController do
           "Mayar webhook failed to mark paid mayar_transaction_id=#{payment_received.mayar_transaction_id} reason=#{inspect(reason)}"
         )
 
-        :ok
+        {:error, reason}
     end
   end
 
