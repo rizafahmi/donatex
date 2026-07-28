@@ -41,8 +41,10 @@ defmodule DonatexWeb.Router do
   scope "/", DonatexWeb do
     pipe_through [:browser, :admin]
 
-    live "/admin", AdminLive
-    live "/admin/questions", AdminQuestionLive
+    live_session :admin, on_mount: [DonatexWeb.LiveAdminAuth] do
+      live "/admin", AdminLive
+      live "/admin/questions", AdminQuestionLive
+    end
   end
 
   scope "/", DonatexWeb do

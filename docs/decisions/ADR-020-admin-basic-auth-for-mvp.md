@@ -19,10 +19,11 @@ The MVP does not require multi-user accounts, role management, password resets, 
 
 ## Decision
 
-Protect the admin LiveView at `/admin` with HTTP Basic Authentication:
+Protect admin LiveViews (`/admin`, `/admin/questions`) with HTTP Basic Authentication:
 
 - credentials are provided via `ADMIN_USERNAME` and `ADMIN_PASSWORD` runtime config
-- the router applies a dedicated `:admin` pipeline using `Plug.BasicAuth`
+- the router applies a dedicated `:admin` pipeline via `DonatexWeb.Plugs.AdminBasicAuth` (`Plug.BasicAuth`), which stamps `admin_authenticated` into the session on success
+- admin live routes are wrapped in `live_session :admin` with `DonatexWeb.LiveAdminAuth` `on_mount`, because LiveView websocket mount/reconnect bypasses the plug pipeline
 
 ## Alternatives Considered
 

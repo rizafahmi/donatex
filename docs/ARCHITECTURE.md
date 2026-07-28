@@ -166,7 +166,10 @@ These modules define the primary application boundaries and are expected to rema
   - Avoids embedding business logic
 
 - `DonatexWeb.Plugs.AdminBasicAuth`
-  - Basic auth gate for admin routes
+  - Basic auth gate for admin routes; stamps `admin_authenticated` into the session on success
+
+- `DonatexWeb.LiveAdminAuth`
+  - LiveView `on_mount` gate for the `:admin` `live_session` (plug auth does not run on websocket remount); see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)
 
 ## Data Model
 
@@ -227,7 +230,7 @@ The current router in [lib/donatex_web/router.ex](file:///Users/riza/code/donate
 - Webhook route
   - `POST /webhooks/mayar/:token`
 
-Admin should sit behind a browser pipeline plus `Plug.BasicAuth` or a small custom plug.
+Admin sits behind the `:admin` pipeline (`AdminBasicAuth`) plus `live_session :admin` / `LiveAdminAuth` (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
 
 ## Internal Eventing
 

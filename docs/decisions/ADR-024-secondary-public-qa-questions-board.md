@@ -19,7 +19,7 @@ The existing feedback flow is free-text notes plus optional QRIS tips. A Q&A boa
 Add a secondary public Q&A surface as a separate bounded context rather than extending the donation/feedback domain:
 
 - Public route `GET /questions` (`DonatexWeb.QuestionLive`) for submission and voting.
-- Authenticated route `GET /admin/questions` (`DonatexWeb.AdminQuestionLive`) for streamer moderation, inside the existing `[:browser, :admin]` Basic Auth pipeline.
+- Authenticated route `GET /admin/questions` (`DonatexWeb.AdminQuestionLive`) for streamer moderation (admin auth: [ADR-020](ADR-020-admin-basic-auth-for-mvp.md)).
 - A new `Donatex.Questions` context with its own `questions` and `question_votes` SQLite tables, separate from `donations`.
 - Reuse the existing `DonatexWeb.Plugs.VisitorId` signed session for anonymous identity, but store only a SHA-256 hash (`visitor_hash`) on vote rows — never the raw visitor id.
 - Generalize the per-IP feedback rate limiter into `Donatex.SubmissionLimiter` with namespaced keys so feedback (`{:feedback, ip}`) and question submission (`{:question, visitor_id}`) cooldowns remain independent.
