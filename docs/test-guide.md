@@ -30,3 +30,4 @@ end
       assert_receive {:DOWN, ^ref, :process, ^pid, :normal}
 
    - Instead of sleeping to synchronize before the next call, **always** use `_ = :sys.get_state/1` to ensure the process has handled prior messages
+   - In PhoenixTest feature tests, sync a LiveView after PubSub (or other async) work with `unwrap(session, fn view -> render(view) end)` before asserting on the updated DOM
