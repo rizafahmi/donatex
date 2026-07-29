@@ -12,4 +12,8 @@ defmodule Donatex.RepoSqlitePragmasTest do
     %{rows: [[journal_mode]]} = SQL.query!(Repo, "PRAGMA journal_mode", [])
     assert journal_mode == "wal"
   end
+
+  test "Repo default transaction mode is immediate" do
+    assert Donatex.Repo.config()[:default_transaction_mode] == :immediate
+  end
 end

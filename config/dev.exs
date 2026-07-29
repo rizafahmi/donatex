@@ -6,6 +6,7 @@ config :donatex, Donatex.Repo,
   pool_size: 5,
   journal_mode: :wal,
   busy_timeout: 5_000,
+  default_transaction_mode: :immediate,
   stacktrace: true,
   show_sensitive_data_on_connection_error: true
 
