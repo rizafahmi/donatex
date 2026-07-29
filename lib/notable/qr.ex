@@ -34,8 +34,9 @@ defmodule Notable.Qr do
   # it so callers get just the code, then re-add our own margin when rendering.
   @matrix_padding 2
 
-  # Four modules is the margin the QR spec asks for. The canvas draws it, and
-  # the white card padding around the canvas adds more on top.
+  # Four modules is the margin the QR spec asks for. The canvas draws this
+  # quiet zone itself; the scannable card uses padding: 0 so the margin is not
+  # split between CSS and the renderer.
   @render_quiet_zone 4
 
   @svg_width 280

@@ -89,14 +89,27 @@ Hooks.PlaySound = {
 Hooks.QrCanvas = {
   mounted() {
     this._start()
+    // ResizeObserver covers window resizes and the expand/minimize cycle
+    // (`display: none` -> visible). A window listener alone misses re-expand,
+    // and would also see clientWidth 0 while minimized.
     this._onResize = () => this._resize()
-    window.addEventListener("resize", this._onResize)
+    if (typeof ResizeObserver !== "undefined") {
+      this._ro = new ResizeObserver(this._onResize)
+      this._ro.observe(this.el)
+    } else {
+      window.addEventListener("resize", this._onResize)
+    }
   },
 
   destroyed() {
     if (this._raf) cancelAnimationFrame(this._raf)
     this._raf = null
-    if (this._onResize) window.removeEventListener("resize", this._onResize)
+    if (this._ro) {
+      this._ro.disconnect()
+      this._ro = null
+    } else if (this._onResize) {
+      window.removeEventListener("resize", this._onResize)
+    }
   },
 
   _start() {
@@ -140,7 +153,11 @@ Hooks.QrCanvas = {
     // only ~8px wide and the bolt glyph degrades into speckle; supersampling
     // costs little and is what makes the bolts read as lightning.
     const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3)
-    const cssSize = this.el.clientWidth || 280
+    // While the card is minimized it is `display: none`, so clientWidth is 0.
+    // Keep the last good backing store rather than baking the 280 fallback into
+    // a 320/260 card the moment it reappears.
+    const cssSize = this.el.clientWidth
+    if (!cssSize) return
     if (cssSize === this._cssSize && dpr === this._dpr) return
 
     this._cssSize = cssSize
@@ -148,7 +165,9 @@ Hooks.QrCanvas = {
     this.el.width = Math.round(cssSize * dpr)
     this.el.height = Math.round(cssSize * dpr)
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    // Animated mode redraws on the next frame; reduced-motion has no raf loop.
     if (this.reducedMotion) this._draw(0)
+    else if (!this._raf) this._draw(performance.now())
   },
 
   // The bolt glyph as a reusable Path2D in a unit box, scaled about the module
@@ -240,6 +259,8 @@ Hooks.QrCanvas = {
   },
 
   _draw(t) {
+    if (!this.ctx || !this._cssSize) return
+
     const {ctx, size, quiet, palette} = this
     const w = this._cssSize
     const span = size + quiet * 2
@@ -331,6 +352,8 @@ function finderOrigins(size) {
 }
 
 // Blends two `#rrggbb` colours in sRGB, matching `Notable.Qr.blend/3`.
+// Returns `#rrggbb` (not `rgb(...)`) so callers can feed the result straight
+// back in - pathway pulses blend the wave colour into `palette.pulse`.
 function blendHex(from, to, amount) {
   const a = parseInt(from.slice(1), 16)
   const b = parseInt(to.slice(1), 16)
@@ -339,7 +362,8 @@ function blendHex(from, to, amount) {
     const y = (b >> shift) & 255
     return Math.round(x + (y - x) * amount)
   }
-  return `rgb(${mix(16)}, ${mix(8)}, ${mix(0)})`
+  const hex = (n) => n.toString(16).padStart(2, "0")
+  return `#${hex(mix(16))}${hex(mix(8))}${hex(mix(0))}`
 }
 
 // ===== QR Code Page Hook =====
