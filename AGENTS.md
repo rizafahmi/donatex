@@ -80,6 +80,7 @@ LiveView pages should follow Phoenix 1.8 layout conventions, including wrapping 
 - Do not add richer admin/reporting features beyond donation list + replay.
 - Do not add extra payment methods beyond QRIS.
 - Do not introduce a separate queue service or external broker unless the simple single-node LiveView + PubSub approach proves insufficient.
+- App base URL env is `NOTABLE_BASE_URL` (canonical); `DONATEX_BASE_URL` remains a temporary alias until the captain drops it — see [OPERATIONS.md](docs/OPERATIONS.md).
 
 ## Guidelines
 - LiveView websocket mount/reconnect bypasses the plug pipeline: a plug like `AdminBasicAuth` only guards the initial HTTP request. Any admin LiveView must re-check auth via an `on_mount` callback wrapped in `live_session` (see `NotableWeb.LiveAdminAuth` + the `:admin` `live_session` in the router).

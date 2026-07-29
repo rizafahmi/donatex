@@ -1,7 +1,7 @@
 # Project Progress
 
 ## Current State
-- Notable rename slice 2/4 ([#67](https://github.com/rizafahmi/donatex/issues/67)): public docs/UI brand copy is Notable; `CONTEXT.md` glossary Brand = Notable (host may stay Feedback-named). Slice 1 modules merged ([#66](https://github.com/rizafahmi/donatex/issues/66) / PR #70). Remaining: env ([#68](https://github.com/rizafahmi/donatex/issues/68)), GitHub rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); parent [#2](https://github.com/rizafahmi/donatex/issues/2).
+- Notable rename slice 3/4 ([#68](https://github.com/rizafahmi/donatex/issues/68)): `NOTABLE_BASE_URL` is canonical; `DONATEX_BASE_URL` remains a temporary alias in runtime/dev config, `.env.example`, and OPERATIONS. Slices 1–2 merged ([#66](https://github.com/rizafahmi/donatex/issues/66) / PR #70, [#67](https://github.com/rizafahmi/donatex/issues/67) / PR #71). Remaining: GitHub rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); parent [#2](https://github.com/rizafahmi/donatex/issues/2).
 - Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
 - Webhook ops hardening for [#31](https://github.com/rizafahmi/donatex/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
 - Overlay alert acknowledgement is now persistence-gated: the OBS overlay only clears the current tip alert and advances the queue after `mark_donation_alerted_by_id/1` succeeds; on failure the alert restarts its visible lifecycle, retries persistence, and remains recoverable, fixing [#28](https://github.com/rizafahmi/donatex/issues/28); see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md)
@@ -86,7 +86,7 @@
 - Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps
-1. Notable rename remaining slices: env vars `NOTABLE_*` with `DONATEX_*` aliases ([#68](https://github.com/rizafahmi/donatex/issues/68)), then GitHub repo rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); close parent [#2](https://github.com/rizafahmi/donatex/issues/2) after those land.
+1. Notable rename remaining slice: GitHub repo rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); close parent [#2](https://github.com/rizafahmi/donatex/issues/2) after that lands. Keep `DONATEX_*` env aliases until the captain says drop them.
 2. Merge open hardening PRs still awaiting review (#26 amount-fallback) as they land.
 3. Configure the production environment and deploy using the documented release process.
 4. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.

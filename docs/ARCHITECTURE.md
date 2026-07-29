@@ -384,7 +384,7 @@ That would add system complexity without solving an MVP problem the current desi
 Notable is expected to be deployed to the public internet, so browser-level protections are treated as part of the MVP baseline:
 
 - Apply a strict CSP and related security headers to all routes.
-- Require correct production LiveView origin configuration via env-driven `DONATEX_BASE_URL`.
+- Require correct production LiveView origin configuration via env-driven `NOTABLE_BASE_URL` (temporary alias: `DONATEX_BASE_URL`).
 
 Implementation details and rationale are captured in ADR-015.
 

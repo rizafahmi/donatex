@@ -78,7 +78,14 @@ if config_env() == :prod do
     username: fetch_env!.("ADMIN_USERNAME"),
     password: fetch_env!.("ADMIN_PASSWORD")
 
-  base_url = fetch_env!.("DONATEX_BASE_URL")
+  # Canonical: NOTABLE_*; temporary alias: DONATEX_* (keep until captain drops aliases).
+  base_url =
+    System.get_env("NOTABLE_BASE_URL") ||
+      System.get_env("DONATEX_BASE_URL") ||
+      raise """
+      environment variable NOTABLE_BASE_URL is missing.
+      Temporary alias DONATEX_BASE_URL is also accepted.
+      """
 
   origin =
     case URI.parse(base_url) do
@@ -91,7 +98,8 @@ if config_env() == :prod do
 
       _ ->
         raise """
-        environment variable DONATEX_BASE_URL is invalid.
+        environment variable NOTABLE_BASE_URL is invalid.
+        Temporary alias DONATEX_BASE_URL is also accepted.
         """
     end
 

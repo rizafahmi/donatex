@@ -98,7 +98,10 @@ config :notable, :admin,
   username: System.get_env("ADMIN_USERNAME", "admin"),
   password: System.get_env("ADMIN_PASSWORD", "admin")
 
-config :notable, :app, base_url: System.get_env("DONATEX_BASE_URL", "http://localhost:4000")
+config :notable, :app,
+  base_url:
+    System.get_env("NOTABLE_BASE_URL") ||
+      System.get_env("DONATEX_BASE_URL", "http://localhost:4000")
 
 config :notable, :show_mayar_error_reason, true
 
