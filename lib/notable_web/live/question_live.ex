@@ -27,7 +27,7 @@ defmodule NotableWeb.QuestionLive do
       |> assign(:max_body, Question.max_body())
       |> assign(:form_expanded, true)
       |> assign(:expanded_dates, %{})
-      |> assign(:page_title, "Tanya Jawab · Notable")
+      |> assign(:page_title, "Tanya Jawab")
       |> assign(
         :meta_description,
         "Ajukan pertanyaan untuk Riza dan beri upvote anonim. Pertanyaan langsung tampil di papan hari ini."

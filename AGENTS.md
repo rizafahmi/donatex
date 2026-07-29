@@ -93,6 +93,7 @@ mix ex_ast.diff lib/old.ex lib/new.ex
 
 ## Topic Docs
 
+- [Domain Glossary](CONTEXT.md) (product terms including Brand)
 - [Elixir Guideline](docs/elixir-guide.md)
 - [Mix Guideline](docs/mix-guide.md)
 - [Phoenix v1.8 Guidelines](docs/phoenix-guide.md)

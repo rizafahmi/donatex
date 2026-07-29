@@ -42,6 +42,16 @@ defmodule NotableWeb.QuestionLiveTest do
       assert html =~ "question-form"
     end
 
+    test "page title is Tanya Jawab without a duplicated Notable suffix", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/questions")
+
+      assert html =~ ~s(<title data-default="Notable" data-suffix=" · Notable">)
+      assert html =~ ~r/<title[^>]*>\s*Tanya Jawab\s*· Notable\s*<\/title>/
+      refute html =~ "Tanya Jawab · Notable · Notable"
+      assert html =~ ~s(property="og:title" content="Tanya Jawab")
+      assert html =~ ~s(font-display text-lg tracking-tight text-text">Notable</span>)
+    end
+
     test "question textarea is the primary form focus", %{conn: conn} do
       {:ok, _view, html} = live(conn, ~p"/questions")
 

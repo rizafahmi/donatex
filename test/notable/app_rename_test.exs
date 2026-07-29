@@ -27,4 +27,11 @@ defmodule Notable.AppRenameTest do
     assert example =~ "DONATEX_BASE_URL="
     refute example =~ "NOTABLE_BASE_URL="
   end
+
+  test "CONTEXT.md glossary defines Brand as Notable" do
+    context = File.read!("CONTEXT.md")
+
+    assert context =~ "## Brand\n**Notable**."
+    assert context =~ "host may remain Feedback-named"
+  end
 end
