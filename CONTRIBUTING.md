@@ -15,7 +15,7 @@ Prereqs:
 - SQLite 3
 
 Setup:
-- `mix setup`
+- `mix setup` (or `./init.sh` for setup + full verification)
 - `cp .env.example .env`
 - Set at least `MAYAR_API_KEY` in `.env`
 - `source .env`
@@ -28,13 +28,14 @@ Local surfaces:
 
 ## Running tests
 - `mix test`
-- Full verification: `mix precommit`
+- Full local quality gate (same as CI): `mix ci`
+- Lighter pre-push check: `mix precommit` (format, Credo, Dialyzer, compile, test)
 
 ## Submitting a PR
 1. Create a focused branch.
 2. Keep PRs small and scoped to one change.
 3. Add/adjust tests for behavior changes.
-4. Run `mix test` (or `mix precommit`).
+4. Run `mix ci` before opening the PR.
 5. In the PR description, include:
    - what changed
    - why

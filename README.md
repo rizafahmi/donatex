@@ -54,7 +54,7 @@ This is weaker than signed webhooks because it does not provide message integrit
 - Decisions: [DECISIONS.md](docs/DECISIONS.md) and [docs/decisions](docs/decisions)
 
 ## Contributing
-PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+PRs are welcome. New contributors: start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup, local verification (`mix ci`), and PR expectations.
 
 ## Security
 Please report security issues privately. See [SECURITY.md](SECURITY.md).
