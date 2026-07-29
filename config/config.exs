@@ -12,11 +12,13 @@ config :donatex,
   generators: [timestamp_type: :utc_datetime, binary_id: true],
   async_analytics: true
 
-# Shared SQLite concurrency defaults (WAL + busy wait). Env configs merge on top.
+# Shared SQLite concurrency defaults (WAL + busy wait + IMMEDIATE tx).
 # Exqlite applies :busy_timeout via NIF (not PRAGMA busy_timeout).
+# :immediate so write tx waits on busy_timeout instead of failing on lock upgrade.
 config :donatex, Donatex.Repo,
   journal_mode: :wal,
-  busy_timeout: 5_000
+  busy_timeout: 5_000,
+  default_transaction_mode: :immediate
 
 # Configure the endpoint
 config :donatex, DonatexWeb.Endpoint,
