@@ -1,7 +1,7 @@
 # Milestone 13 — Overlay Alert Persistence (#28)
 
 ## Issue
-[#28 — Overlay: advance queue only after alerted persist succeeds](https://github.com/rizafahmi/notable/issues/28)
+[#28 — Overlay: advance queue only after alerted persist succeeds](https://github.com/rizafahmi/donatex/issues/28)
 
 The OBS overlay cleared the current tip alert and advanced the queue
 unconditionally on `:dismiss_current`, even when

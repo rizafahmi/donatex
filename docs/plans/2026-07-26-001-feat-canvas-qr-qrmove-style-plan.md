@@ -1,7 +1,7 @@
 # Plan: Canvas QRMove-style `/qr` (#22)
 
 **Date:** 2026-07-26  
-**Issue:** https://github.com/rizafahmi/notable/issues/22  
+**Issue:** https://github.com/rizafahmi/donatex/issues/22  
 **Branch:** `feat/22-canvas-qr`
 
 ## Goal

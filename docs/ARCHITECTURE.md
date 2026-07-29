@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes the Notable architecture and constraints. It is written for LLM agents (and humans) that will implement and extend the system. For decision rationale and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/notable/docs/decisions) and the decision log in [DECISIONS.md](file:///Users/riza/code/notable/docs/DECISIONS.md).
+This document describes the Notable architecture and constraints. It is written for LLM agents (and humans) that will implement and extend the system. For decision rationale and alternatives, see the ADRs in [docs/decisions](file:///Users/riza/code/donatex/docs/decisions) and the decision log in [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md).
 
 ## System Goal
 
@@ -137,12 +137,6 @@ These modules define the primary application boundaries and are expected to rema
   - Encapsulates whatever authenticity mechanism is confirmed
   - Must remain isolated because the Mayar docs do not clearly document signature verification
 
-- `Notable.Mayar.WebhookHandler`
-  - Processes accepted webhook payloads
-  - Updates DB first
-  - Broadcasts PubSub event second
-  - Enforces idempotent handling
-
 ### Web Layer
 
 - `NotableWeb.DonateLive`
@@ -161,9 +155,9 @@ These modules define the primary application boundaries and are expected to rema
   - Lists donations and replay action
 
 - `NotableWeb.MayarWebhookController`
-  - Receives webhook requests
-  - Hands off to auth/parser/handler modules
-  - Avoids embedding business logic
+  - Receives webhook requests after token auth
+  - Parses via `Notable.Mayar.Webhook`, then persists and broadcasts through `Notable.Donations` (DB write before PubSub; dedupe by `mayar_transaction_id`)
+  - Keeps Mayar HTTP/auth concerns out of the donations context
 
 - `NotableWeb.Plugs.AdminBasicAuth`
   - Basic auth gate for admin routes; stamps `admin_authenticated` into the session on success
@@ -207,7 +201,7 @@ Implemented fields:
 
 ## Runtime Components
 
-The current supervisor from [lib/notable/application.ex](file:///Users/riza/code/notable/lib/notable/application.ex) is already a good base for the target app:
+The current supervisor from [lib/notable/application.ex](file:///Users/riza/code/donatex/lib/notable/application.ex) is already a good base for the target app:
 
 - `NotableWeb.Telemetry`
 - `Notable.Repo`
@@ -220,7 +214,7 @@ No extra OTP process is required for donation queueing in the MVP architecture.
 
 ## Routing Model
 
-The current router in [lib/notable_web/router.ex](file:///Users/riza/code/notable/lib/notable_web/router.ex) should evolve toward this shape:
+The current router in [lib/notable_web/router.ex](file:///Users/riza/code/donatex/lib/notable_web/router.ex) should evolve toward this shape:
 
 - Browser routes
   - `/donate`
@@ -300,7 +294,7 @@ The exact topic naming can be adjusted, but the event contract should stay simpl
 ╰──────┬─────────────────────╯
        ▼
 ╭────────────────────────────╮
-│ Donations/WebhookHandler   │
+│ Donations context          │
 │ confirm status + amount    │
 │ mark donation paid         │
 │ dedupe by tx id            │
@@ -518,27 +512,27 @@ Before merging meaningful changes into this architecture, agents should confirm:
 
 ## ADR Index
 
-Architecture decisions live under [docs/decisions](file:///Users/riza/code/notable/docs/decisions).
+Architecture decisions live under [docs/decisions](file:///Users/riza/code/donatex/docs/decisions).
 
-- [ADR-001: Use A Phoenix LiveView Monolith](file:///Users/riza/code/notable/docs/decisions/ADR-001-phoenix-liveview-monolith.md)
-- [ADR-002: Persist Donations At QR Creation Time](file:///Users/riza/code/notable/docs/decisions/ADR-002-persist-pending-donations.md)
-- [ADR-003: Keep Alert Queue In Overlay LiveView State](file:///Users/riza/code/notable/docs/decisions/ADR-003-overlay-queue-in-liveview.md)
-- [ADR-004: Env-Driven Runtime Config](file:///Users/riza/code/notable/docs/decisions/ADR-004-env-driven-runtime-config.md)
-- [ADR-005: Land Placeholder Routes Early](file:///Users/riza/code/notable/docs/decisions/ADR-005-placeholder-public-surfaces.md)
-- [ADR-006: Donations Table Schema](file:///Users/riza/code/notable/docs/decisions/ADR-006-donations-table-schema.md)
-- [ADR-007: Donation Lifecycle Invariants And Idempotent Transitions](file:///Users/riza/code/notable/docs/decisions/ADR-007-donation-lifecycle-invariants.md)
-- [ADR-008: Use A Tokenized Callback URL As The Mayar Webhook Authenticity Fallback](file:///Users/riza/code/notable/docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md)
-- [ADR-009: Add A Composite Index For Overlay Recovery Queries](file:///Users/riza/code/notable/docs/decisions/ADR-009-donation-recovery-index.md)
-- [ADR-010: Drop Redundant Donation Lookup Index](file:///Users/riza/code/notable/docs/decisions/ADR-010-drop-redundant-donation-index.md)
-- [ADR-011: Use Secure HttpOnly Session Cookies In Production](file:///Users/riza/code/notable/docs/decisions/ADR-011-secure-session-cookies-in-production.md)
-- [ADR-012: Add An Index For Donation Ordering Queries](file:///Users/riza/code/notable/docs/decisions/ADR-012-add-admin-donations-order-index.md)
-- [ADR-013: Validate Donor Form Input With Ecto Changesets In LiveView](file:///Users/riza/code/notable/docs/decisions/ADR-013-donor-form-validation.md)
-- [ADR-014: Use Erlang :queue For Overlay Alert FIFO](file:///Users/riza/code/notable/docs/decisions/ADR-014-overlay-queue-uses-erlang-queue.md)
-- [ADR-015: Add CSP Security Headers And Production Origin Checks](file:///Users/riza/code/notable/docs/decisions/ADR-015-security-headers-and-origin-checks.md)
-- [ADR-016: Require Paid Status And Amount Match For Webhook Processing](file:///Users/riza/code/notable/docs/decisions/ADR-016-webhook-acceptance-criteria.md)
-- [ADR-017: Validate Mayar QR Image URLs And Redact QR Data From Logs](file:///Users/riza/code/notable/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
-- [ADR-018: Fail Closed When QR Is Created But Donation Persistence Fails](file:///Users/riza/code/notable/docs/decisions/ADR-018-qr-created-but-donation-persist-fails.md)
-- [ADR-019: Deployment Strategy - GCP Free Tier Releases](file:///Users/riza/code/notable/docs/decisions/ADR-019-deployment-strategy-gcp-free-tier-releases.md)
-- [ADR-020: Use Basic Auth For Admin Access In MVP](file:///Users/riza/code/notable/docs/decisions/ADR-020-admin-basic-auth-for-mvp.md)
-- [ADR-021: Use A Non-Guessable Token Route For Overlay Access](file:///Users/riza/code/notable/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
-- [ADR-022: Remove Overlay Token Route](file:///Users/riza/code/notable/docs/decisions/ADR-022-remove-overlay-token-route.md)
+- [ADR-001: Use A Phoenix LiveView Monolith](file:///Users/riza/code/donatex/docs/decisions/ADR-001-phoenix-liveview-monolith.md)
+- [ADR-002: Persist Donations At QR Creation Time](file:///Users/riza/code/donatex/docs/decisions/ADR-002-persist-pending-donations.md)
+- [ADR-003: Keep Alert Queue In Overlay LiveView State](file:///Users/riza/code/donatex/docs/decisions/ADR-003-overlay-queue-in-liveview.md)
+- [ADR-004: Env-Driven Runtime Config](file:///Users/riza/code/donatex/docs/decisions/ADR-004-env-driven-runtime-config.md)
+- [ADR-005: Land Placeholder Routes Early](file:///Users/riza/code/donatex/docs/decisions/ADR-005-placeholder-public-surfaces.md)
+- [ADR-006: Donations Table Schema](file:///Users/riza/code/donatex/docs/decisions/ADR-006-donations-table-schema.md)
+- [ADR-007: Donation Lifecycle Invariants And Idempotent Transitions](file:///Users/riza/code/donatex/docs/decisions/ADR-007-donation-lifecycle-invariants.md)
+- [ADR-008: Use A Tokenized Callback URL As The Mayar Webhook Authenticity Fallback](file:///Users/riza/code/donatex/docs/decisions/ADR-008-mayar-webhook-authenticity-fallback.md)
+- [ADR-009: Add A Composite Index For Overlay Recovery Queries](file:///Users/riza/code/donatex/docs/decisions/ADR-009-donation-recovery-index.md)
+- [ADR-010: Drop Redundant Donation Lookup Index](file:///Users/riza/code/donatex/docs/decisions/ADR-010-drop-redundant-donation-index.md)
+- [ADR-011: Use Secure HttpOnly Session Cookies In Production](file:///Users/riza/code/donatex/docs/decisions/ADR-011-secure-session-cookies-in-production.md)
+- [ADR-012: Add An Index For Donation Ordering Queries](file:///Users/riza/code/donatex/docs/decisions/ADR-012-add-admin-donations-order-index.md)
+- [ADR-013: Validate Donor Form Input With Ecto Changesets In LiveView](file:///Users/riza/code/donatex/docs/decisions/ADR-013-donor-form-validation.md)
+- [ADR-014: Use Erlang :queue For Overlay Alert FIFO](file:///Users/riza/code/donatex/docs/decisions/ADR-014-overlay-queue-uses-erlang-queue.md)
+- [ADR-015: Add CSP Security Headers And Production Origin Checks](file:///Users/riza/code/donatex/docs/decisions/ADR-015-security-headers-and-origin-checks.md)
+- [ADR-016: Require Paid Status And Amount Match For Webhook Processing](file:///Users/riza/code/donatex/docs/decisions/ADR-016-webhook-acceptance-criteria.md)
+- [ADR-017: Validate Mayar QR Image URLs And Redact QR Data From Logs](file:///Users/riza/code/donatex/docs/decisions/ADR-017-mayar-qr-url-validation-and-log-redaction.md)
+- [ADR-018: Fail Closed When QR Is Created But Donation Persistence Fails](file:///Users/riza/code/donatex/docs/decisions/ADR-018-qr-created-but-donation-persist-fails.md)
+- [ADR-019: Deployment Strategy - GCP Free Tier Releases](file:///Users/riza/code/donatex/docs/decisions/ADR-019-deployment-strategy-gcp-free-tier-releases.md)
+- [ADR-020: Use Basic Auth For Admin Access In MVP](file:///Users/riza/code/donatex/docs/decisions/ADR-020-admin-basic-auth-for-mvp.md)
+- [ADR-021: Use A Non-Guessable Token Route For Overlay Access](file:///Users/riza/code/donatex/docs/decisions/ADR-021-non-guessable-overlay-token-route.md)
+- [ADR-022: Remove Overlay Token Route](file:///Users/riza/code/donatex/docs/decisions/ADR-022-remove-overlay-token-route.md)

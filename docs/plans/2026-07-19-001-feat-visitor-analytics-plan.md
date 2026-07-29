@@ -40,9 +40,9 @@ Currently, the database records successful feedback submissions and tips, but do
 ## Context & Research
 
 ### Relevant Code and Patterns
-- Schema creation pattern: [Donation Schema](file:///Users/riza/code/notable/lib/notable/donations/donation.ex) (uses `:binary_id` primary key, `timestamps(type: :utc_datetime)`).
-- Migration pattern: [Add Reaction Migration](file:///Users/riza/code/notable/priv/repo/migrations/20260715121433_add_reaction_to_donations.exs).
-- LiveView PubSub subscription and real-time updates: [AdminLive mount and handle_info](file:///Users/riza/code/notable/lib/notable_web/live/admin_live.ex).
+- Schema creation pattern: [Donation Schema](file:///Users/riza/code/donatex/lib/notable/donations/donation.ex) (uses `:binary_id` primary key, `timestamps(type: :utc_datetime)`).
+- Migration pattern: [Add Reaction Migration](file:///Users/riza/code/donatex/priv/repo/migrations/20260715121433_add_reaction_to_donations.exs).
+- LiveView PubSub subscription and real-time updates: [AdminLive mount and handle_info](file:///Users/riza/code/donatex/lib/notable_web/live/admin_live.ex).
 
 ## Key Technical Decisions
 - **Connected Socket Tracking**: Track page views in `DonateLive` only when `connected?(socket)` is true. This naturally filters out simple bot scrapers, search crawlers, or ping utilities that do not execute JavaScript or open WebSocket connections.
@@ -172,4 +172,4 @@ sequenceDiagram
 - No new environment variables or setup steps are required. Normal database migrations will create the table.
 
 ## Sources & References
-- **Origin document**: [docs/brainstorms/2026-07-19-visitor-analytics-requirements.md](file:///Users/riza/code/notable/docs/brainstorms/2026-07-19-visitor-analytics-requirements.md)
+- **Origin document**: [docs/brainstorms/2026-07-19-visitor-analytics-requirements.md](file:///Users/riza/code/donatex/docs/brainstorms/2026-07-19-visitor-analytics-requirements.md)

@@ -1,6 +1,6 @@
 # Milestone 11 — Amount-Fallback Payment Correlation Hardening
 
-**Issue:** [#26](https://github.com/rizafahmi/notable/issues/26) — Harden amount-fallback payment correlation
+**Issue:** [#26](https://github.com/rizafahmi/donatex/issues/26) — Harden amount-fallback payment correlation
 **Status:** Implementation complete; PR pending
 **Blocked by:** #25 (merged on main via PR #34)
 

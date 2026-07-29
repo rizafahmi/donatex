@@ -1,6 +1,6 @@
 # Milestone 14 — Tip Path Rate Limit & Orphan QRIS Fail-Closed
 
-**Issue**: [#27](https://github.com/rizafahmi/notable/issues/27)
+**Issue**: [#27](https://github.com/rizafahmi/donatex/issues/27)
 **Status**: Complete
 
 ## Goal

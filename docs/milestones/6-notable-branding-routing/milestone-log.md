@@ -10,18 +10,18 @@
 
 ## What was built
 ### Routes and Controllers
-- Route `get "/donate", PageController, :redirect_to_root` in [router.ex](file:///Users/riza/code/notable/lib/notable_web/router.ex#L32)
-- Action `redirect_to_root/2` in [page_controller.ex](file:///Users/riza/code/notable/lib/notable_web/controllers/page_controller.ex#L8-L10)
+- Route `get "/donate", PageController, :redirect_to_root` in [router.ex](file:///Users/riza/code/donatex/lib/notable_web/router.ex#L32)
+- Action `redirect_to_root/2` in [page_controller.ex](file:///Users/riza/code/donatex/lib/notable_web/controllers/page_controller.ex#L8-L10)
 
 ### UI Components and LiveViews
 - Page titles for `DonateLive` (`"Kirim Feedback & Tips"`), `OverlayLive` (`"OBS Overlay"`), and `AdminLive` (`"Admin Console"`)
-- Cleaned up em-dashes across [donate_live.ex](file:///Users/riza/code/notable/lib/notable_web/live/donate_live.ex), [overlay_live.ex](file:///Users/riza/code/notable/lib/notable_web/live/overlay_live.ex), and [admin_live.ex](file:///Users/riza/code/notable/lib/notable_web/live/admin_live.ex)
+- Cleaned up em-dashes across [donate_live.ex](file:///Users/riza/code/donatex/lib/notable_web/live/donate_live.ex), [overlay_live.ex](file:///Users/riza/code/donatex/lib/notable_web/live/overlay_live.ex), and [admin_live.ex](file:///Users/riza/code/donatex/lib/notable_web/live/admin_live.ex)
 - Dynamic `reaction_classes/1` visual state styling for the reaction radio selector cards in `DonateLive`
 - Refactored icon tags to use the standardized `<.icon>` component in `DonateLive`
 
 ### Verification and Tests
-- Page controller redirect integration test in [page_controller_test.exs](file:///Users/riza/code/notable/test/notable_web/controllers/page_controller_test.exs)
-- Test copy assertions in [donate_live_test.exs](file:///Users/riza/code/notable/test/notable_web/live/donate_live_test.exs), [donate_live_tip_hardening_test.exs](file:///Users/riza/code/notable/test/notable_web/live/donate_live_tip_hardening_test.exs), and [donor_qr_flow_test.exs](file:///Users/riza/code/notable/test/notable_web/features/donor_qr_flow_test.exs)
+- Page controller redirect integration test in [page_controller_test.exs](file:///Users/riza/code/donatex/test/notable_web/controllers/page_controller_test.exs)
+- Test copy assertions in [donate_live_test.exs](file:///Users/riza/code/donatex/test/notable_web/live/donate_live_test.exs), [donate_live_tip_hardening_test.exs](file:///Users/riza/code/donatex/test/notable_web/live/donate_live_tip_hardening_test.exs), and [donor_qr_flow_test.exs](file:///Users/riza/code/donatex/test/notable_web/features/donor_qr_flow_test.exs)
 
 ## Unspecified implementation decisions
 - Kept the default redirect code inline in the `PageController` module to reuse the existing structure.

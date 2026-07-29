@@ -161,7 +161,7 @@ for name in \
   "agent:waiting-input" "agent:pr-open" "agent:p0"
 do
   gh label create "$name" --force 2>/dev/null \
-    || gh api -X POST "/repos/rizafahmi/notable/labels" \
+    || gh api -X POST "/repos/rizafahmi/donatex/labels" \
          -f name="$name" -f color="ededed" >/dev/null 2>&1 \
     || true
   gh label list --json name --jq '.[].name' | grep -Fx "$name" \
@@ -312,7 +312,7 @@ milestone logs unless the selected issue explicitly requires it.
 
 ## Secrets and public-repo hygiene
 
-`rizafahmi/notable` is public. The prompt requires:
+`rizafahmi/donatex` is public. The prompt requires:
 
 - redacting secrets before pasting evidence
 - pasting tails, not full logs (transcripts stay private; no re-paste without

@@ -55,4 +55,7 @@ real_token_path_result = run.("/webhooks/mayar/#{Config.mayar_webhook_token()}",
 
 IO.puts("\nControl check: tokenized-like path => #{bogus_token_path_result.status}")
 IO.puts("Real token path => #{real_token_path_result.status}")
-IO.puts("Interpretation: the un-tokenized path is unreachable; only requests with the configured token reach the controller.")
+
+IO.puts(
+  "Interpretation: the un-tokenized path is unreachable; only requests with the configured token reach the controller."
+)

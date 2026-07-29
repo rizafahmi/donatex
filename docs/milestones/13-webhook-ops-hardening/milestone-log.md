@@ -1,6 +1,6 @@
 # Milestone 13 — Webhook Ops Hardening
 
-**Issue**: [#31](https://github.com/rizafahmi/notable/issues/31)
+**Issue**: [#31](https://github.com/rizafahmi/donatex/issues/31)
 **Status**: Complete
 
 ## Goal

@@ -33,6 +33,7 @@ These values are expected to be provided via environment variables. In developme
 - `DONATEX_BASE_URL`
   - Public base URL used to build links and derive LiveView origin checks.
   - Example: `https://donate.example.com`
+  - The `DONATEX_*` env name is intentional and unchanged for this release slice; the OTP app is `:notable`, but do not rename this variable to `NOTABLE_*` yet.
 - `PHX_HOST`
   - Public host used for Phoenix endpoint URL config.
   - Example: `donate.example.com`

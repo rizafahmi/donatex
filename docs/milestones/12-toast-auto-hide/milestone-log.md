@@ -1,7 +1,7 @@
 # Milestone 12 — Toast Auto-Hide (#39)
 
 ## Issue
-[#39 — Hide toast/notif after some time](https://github.com/rizafahmi/notable/issues/39)
+[#39 — Hide toast/notif after some time](https://github.com/rizafahmi/donatex/issues/39)
 
 After submitting the `/questions` form, the success/error toast persisted
 indefinitely instead of dismissing after a few seconds. Root cause: the shared

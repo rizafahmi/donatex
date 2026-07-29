@@ -29,7 +29,7 @@ That leaves the app with a real security gap if it accepts unsigned requests on 
 
 ## Evidence
 
-This risk is reproducible in-app with [task9_webhook_risk_proof.exs](file:///Users/riza/code/notable/scripts/task9_webhook_risk_proof.exs), which uses `Plug.Test.conn/3` and calls the Phoenix router directly.
+This risk is reproducible in-app with [task9_webhook_risk_proof.exs](file:///Users/riza/code/donatex/scripts/task9_webhook_risk_proof.exs), which uses `Plug.Test.conn/3` and calls the Phoenix router directly.
 
 Run:
 
