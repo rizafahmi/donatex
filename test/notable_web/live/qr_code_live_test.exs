@@ -5,74 +5,8 @@ defmodule NotableWeb.QrCodeLiveTest do
 
   alias Notable.Qr
 
-  describe "QR generation module" do
-    test "generates a square matrix for the public URL" do
-      qr = Qr.generate("https://feedback.rizafahmi.com")
-
-      assert qr.size > 0
-      assert length(qr.matrix) == qr.size
-      assert Enum.all?(qr.matrix, fn row -> length(row) == qr.size end)
-    end
-
-    test "classified cells include on-dots, off-dots, and frame classes" do
-      qr = Qr.generate("https://feedback.rizafahmi.com")
-
-      all_classes =
-        qr.cells
-        |> List.flatten()
-        |> Enum.flat_map(& &1.classes)
-
-      assert "qr-on-dot" in all_classes
-      assert "qr-off-dot" in all_classes
-      assert Enum.any?(all_classes, &String.starts_with?(&1, "qr-frame-"))
-      assert Enum.any?(all_classes, &String.starts_with?(&1, "qr-inner-frame-"))
-    end
-
-    test "data on-cells have element indices for animation" do
-      qr = Qr.generate("https://feedback.rizafahmi.com")
-
-      data_on_cells =
-        qr.cells
-        |> List.flatten()
-        |> Enum.filter(fn cell ->
-          cell.value == 1 and cell.element_index != nil
-        end)
-
-      assert not Enum.empty?(data_on_cells)
-      indices = Enum.map(data_on_cells, & &1.element_index)
-      assert indices == Enum.uniq(indices) |> Enum.sort()
-    end
-
-    test "finder pattern corners have frame-0, frame-1, frame-2 classes" do
-      qr = Qr.generate("https://feedback.rizafahmi.com")
-      size = qr.size
-
-      # Top-left corner
-      first_cell = hd(hd(qr.cells))
-      assert "qr-frame-0" in first_cell.classes
-
-      # Top-right corner
-      top_right = Enum.at(qr.cells, 0) |> Enum.at(size - 1)
-      assert "qr-frame-1" in top_right.classes
-
-      # Bottom-left corner
-      bottom_left = Enum.at(qr.cells, size - 1) |> Enum.at(0)
-      assert "qr-frame-2" in bottom_left.classes
-    end
-
-    test "inner empty frame cells have value 0" do
-      qr = Qr.generate("https://feedback.rizafahmi.com")
-
-      inner_empty_cells =
-        qr.cells
-        |> List.flatten()
-        |> Enum.filter(fn cell ->
-          Enum.any?(cell.classes, &String.starts_with?(&1, "qr-inner-empty-frame-"))
-        end)
-
-      assert Enum.all?(inner_empty_cells, &(&1.value == 0))
-    end
-  end
+  # Matrix generation, palette limits and scannability live in
+  # `Notable.QrTest`, which checks them against a real decoder.
 
   describe "GET /qr" do
     test "renders the QR page with correct elements", %{conn: conn} do
@@ -101,13 +35,33 @@ defmodule NotableWeb.QrCodeLiveTest do
       refute has_element?(view, "#server-error")
     end
 
-    test "renders the animated SVG QR overlay with hidden SVG for download", %{conn: conn} do
+    test "renders the animated canvas alongside a hidden SVG for download", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/qr")
 
       assert has_element?(view, "#qr-code.qr-scannable-card")
-      assert has_element?(view, ".qr-svg-base svg")
-      assert has_element?(view, ".qr-animation-overlay")
+      assert has_element?(view, "canvas#qr-canvas[phx-hook='QrCanvas']")
       assert has_element?(view, "#qr-svg-hidden svg")
+    end
+
+    test "hands the canvas the matrix and the palette the tests constrain", %{conn: conn} do
+      {:ok, _view, html} = live(conn, ~p"/qr")
+
+      qr = Qr.generate(Qr.public_url())
+
+      # The canvas must not carry its own colours: the scannability budget is
+      # enforced against this palette, so both renderers have to read the same
+      # one. Shipping a copy in JS would silently escape those tests.
+      assert html =~ Phoenix.HTML.html_escape(JSON.encode!(Qr.client_palette())) |> safe_string()
+      assert html =~ ~s(data-size="#{qr.size}")
+      assert html =~ ~s(data-quiet="#{Qr.quiet_zone()}")
+    end
+
+    test "the canvas is not re-rendered by LiveView diffs", %{conn: conn} do
+      # A patch that replaced the canvas element would wipe the animation and
+      # restart it from a blank frame.
+      {:ok, view, _html} = live(conn, ~p"/qr")
+
+      assert has_element?(view, "canvas#qr-canvas[phx-update='ignore']")
     end
 
     test "download button is present and triggers push event", %{conn: conn} do
@@ -129,4 +83,6 @@ defmodule NotableWeb.QrCodeLiveTest do
              |> render() =~ "Share"
     end
   end
+
+  defp safe_string({:safe, iodata}), do: IO.iodata_to_binary(iodata)
 end

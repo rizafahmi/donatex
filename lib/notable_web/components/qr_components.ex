@@ -5,6 +5,8 @@ defmodule NotableWeb.QrComponents do
 
   use NotableWeb, :html
 
+  alias Notable.Qr
+
   @doc """
   The minimized pill shown when the QR card is collapsed.
   """
@@ -34,99 +36,45 @@ defmodule NotableWeb.QrComponents do
   end
 
   @doc """
-  The scannable QR panel: SVG base layer, animated overlay, and a hidden
-  SVG copy used for PNG download.
+  The scannable QR panel: the animated canvas, plus a hidden unanimated SVG
+  copy that the PNG download rasterises.
+
+  The canvas carries its own `QrCanvas` hook rather than relying on a hook
+  further up the page, so the QR animates on every page that embeds this
+  component - `/qr` and `/qr-overlay` alike.
   """
   attr :qr, :map, required: true
 
   def qr_scannable_card(assigns) do
+    assigns =
+      assign(assigns,
+        matrix: JSON.encode!(assigns.qr.matrix),
+        palette: JSON.encode!(Qr.client_palette()),
+        quiet_zone: Qr.quiet_zone()
+      )
+
     ~H"""
     <div class="qr-isolated-panel">
       <div class="qr-scannable-card" id="qr-code">
-        <.qr_svg_base qr={@qr} />
-        <.qr_animation_overlay qr={@qr} />
+        <canvas
+          id="qr-canvas"
+          class="qr-canvas"
+          role="img"
+          aria-label="QR code linking to the livestream feedback page"
+          phx-hook="QrCanvas"
+          phx-update="ignore"
+          data-matrix={@matrix}
+          data-size={@qr.size}
+          data-quiet={@quiet_zone}
+          data-palette={@palette}
+        ></canvas>
       </div>
-      <div class="qr-svg-hidden" id="qr-svg-hidden" phx-no-format>
+      <div class="qr-svg-hidden" id="qr-svg-hidden" aria-hidden="true" phx-no-format>
         {Phoenix.HTML.raw(@qr.svg)}
       </div>
     </div>
     """
   end
-
-  attr :qr, :map, required: true
-
-  defp qr_svg_base(assigns) do
-    ~H"""
-    <div class="qr-svg-base" phx-no-format>
-      {Phoenix.HTML.raw(@qr.svg)}
-    </div>
-    """
-  end
-
-  attr :qr, :map, required: true
-
-  defp qr_animation_overlay(assigns) do
-    ~H"""
-    <div class="qr-animation-overlay" style={"--qr-size: #{@qr.size}"}>
-      <.overlay_cell :for={cell <- List.flatten(@qr.cells)} cell={cell} />
-    </div>
-    """
-  end
-
-  attr :cell, :map, required: true
-
-  defp overlay_cell(assigns) do
-    ~H"""
-    <div class={["qr-ov-dot"] ++ overlay_classes(@cell)} style={overlay_style(@cell)}>
-      {overlay_bolt(@cell)}
-    </div>
-    """
-  end
-
-  defp overlay_classes(%{value: 1, classes: classes}) do
-    is_finder = Enum.any?(classes, &String.starts_with?(&1, "qr-frame"))
-    is_inner = Enum.any?(classes, &String.starts_with?(&1, "qr-inner-frame"))
-
-    cond do
-      is_finder -> ["qr-ov-finder"]
-      is_inner -> ["qr-ov-inner"]
-      true -> ["qr-ov-on"]
-    end
-  end
-
-  defp overlay_classes(_), do: ["qr-ov-off"]
-
-  defp overlay_style(%{value: 0}) do
-    ""
-  end
-
-  defp overlay_style(%{classes: classes}) do
-    is_finder = Enum.any?(classes, &String.starts_with?(&1, "qr-frame"))
-    is_inner = Enum.any?(classes, &String.starts_with?(&1, "qr-inner-frame"))
-
-    if is_finder or is_inner do
-      ""
-    else
-      "animation-delay: #{Float.round(:rand.uniform() * 2, 2)}s;"
-    end
-  end
-
-  defp overlay_bolt(%{value: 1, classes: classes}) do
-    is_finder = Enum.any?(classes, &String.starts_with?(&1, "qr-frame"))
-    is_inner = Enum.any?(classes, &String.starts_with?(&1, "qr-inner-frame"))
-
-    if is_finder or is_inner do
-      Phoenix.HTML.raw("")
-    else
-      Phoenix.HTML.raw("""
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="qr-ov-bolt">
-        <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z" clip-rule="evenodd" />
-      </svg>
-      """)
-    end
-  end
-
-  defp overlay_bolt(_), do: Phoenix.HTML.raw("")
 
   attr :public_url, :string, required: true
 

@@ -27,6 +27,17 @@ jobs:
           elixir-version: "1.18.x"
           otp-version: "27"
 
+      # The QR scannability tests decode rendered codes with OpenCV. They are
+      # the only check that the animated /qr page still reads on a real phone,
+      # so they must run in CI rather than being skipped when cv2 is missing.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install OpenCV for QR decode tests
+        run: python3 -m pip install --disable-pip-version-check opencv-python-headless numpy
+
       - name: Cache deps and build artifacts
         uses: actions/cache@v6
         with:

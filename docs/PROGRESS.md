@@ -1,11 +1,11 @@
 # Project Progress
 
 ## Current State
+- `/qr` and `/qr-overlay` now render an animated canvas QR (lightning-bolt data modules, colour-coded finders, data-flow wave, pathway pulses, multiply scanner sweep) for [#6](https://github.com/rizafahmi/notable/issues/6). This also fixed three live defects on `main`: both pages rendered a blank QR, and the PNG download was broken by CSP plus a 150px rasterisation. Scannability is enforced by a per-pixel luminance budget in `Notable.Qr` and verified with OpenCV; see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md)
 - Notable rename slice 3/4 ([#68](https://github.com/rizafahmi/donatex/issues/68)): `NOTABLE_BASE_URL` is canonical; `DONATEX_BASE_URL` remains a temporary alias in runtime/dev config, `.env.example`, and OPERATIONS. Slices 1–2 merged ([#66](https://github.com/rizafahmi/donatex/issues/66) / PR #70, [#67](https://github.com/rizafahmi/donatex/issues/67) / PR #71). Remaining: GitHub rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); parent [#2](https://github.com/rizafahmi/donatex/issues/2).
 - Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
 - Webhook ops hardening for [#31](https://github.com/rizafahmi/donatex/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
 - Overlay alert acknowledgement is now persistence-gated: the OBS overlay only clears the current tip alert and advances the queue after `mark_donation_alerted_by_id/1` succeeds; on failure the alert restarts its visible lifecycle, retries persistence, and remains recoverable, fixing [#28](https://github.com/rizafahmi/donatex/issues/28); see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md)
-- The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
 - Toast/flash notifications now auto-dismiss after 5 s via a `FlashAutoHide` JS hook on the shared `flash/1` component (fixes [#39](https://github.com/rizafahmi/donatex/issues/39)); per-kind generations reset identical repeated flashes while connection-error toasts stay manual; see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md)
 - Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
 - Concurrent public-board upvotes no longer crash `QuestionLive`: a lost unique-index race reloads the board while preserving one vote per visitor and normal toggle behavior (fixes [#29](https://github.com/rizafahmi/donatex/issues/29)); see [Milestone 10 log](milestones/10-audience-questions-board/milestone-log.md)
@@ -18,6 +18,7 @@
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
+- [x] [#6](https://github.com/rizafahmi/notable/issues/6) Artistic animated `/qr` page with a decoder-verified scannability budget — see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md).
 - [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
 - [x] [#31](https://github.com/rizafahmi/donatex/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
 - [x] Replace the decorative `/qr` lightning-dot grid with a scannable EQRCode SVG and SVG-based PNG download
@@ -110,4 +111,5 @@
 - Milestone 13 log: [docs/milestones/13-overlay-alert-persistence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-overlay-alert-persistence/milestone-log.md)
 - Milestone 14 log: [docs/milestones/14-tip-rate-limit/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/14-tip-rate-limit/milestone-log.md)
 - Milestone 13 log: [docs/milestones/13-webhook-ops-hardening/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-webhook-ops-hardening/milestone-log.md)
+- Milestone 15 log: [docs/milestones/15-animated-qr-page/milestone-log.md](milestones/15-animated-qr-page/milestone-log.md)
 - ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)

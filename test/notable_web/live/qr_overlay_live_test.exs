@@ -12,9 +12,15 @@ defmodule NotableWeb.QrOverlayLiveTest do
       assert html =~ "qr-overlay-page"
       assert has_element?(view, "#qr-overlay-page")
       assert has_element?(view, "#qr-code.qr-scannable-card")
-      assert has_element?(view, ".qr-svg-base svg")
-      assert has_element?(view, ".qr-animation-overlay")
       assert has_element?(view, ".qr-overlay-floats")
+    end
+
+    test "the QR canvas carries its own hook so it animates on this page too", %{conn: conn} do
+      # This page has no page-level hook, so the canvas has to bring its own.
+      {:ok, view, _html} = live(conn, ~p"/qr-overlay")
+
+      assert has_element?(view, "canvas#qr-canvas[phx-hook='QrCanvas']")
+      assert has_element?(view, "#qr-svg-hidden svg")
     end
 
     test "renders SEO metadata with noindex robots and self-referential canonical", %{conn: conn} do

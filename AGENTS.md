@@ -84,6 +84,7 @@ LiveView pages should follow Phoenix 1.8 layout conventions, including wrapping 
 
 ## Guidelines
 - LiveView websocket mount/reconnect bypasses the plug pipeline: a plug like `AdminBasicAuth` only guards the initial HTTP request. Any admin LiveView must re-check auth via an `on_mount` callback wrapped in `live_session` (see `NotableWeb.LiveAdminAuth` + the `:admin` `live_session` in the router).
+- The `/qr` and `/qr-overlay` QR is decorated but must stay machine-readable. `Notable.Qr` holds the colour/geometry contract and the measured per-pixel luminance budget; the canvas renderer in `assets/js/app.js` reads that palette from a data attribute rather than defining colours of its own. Changing any QR visual means re-running `test/notable/qr_test.exs`, which decodes rendered output with OpenCV (`test/support/qr_decode.py`) - see [Milestone 15 log](docs/milestones/15-animated-qr-page/milestone-log.md) for why the budget is per-pixel rather than per-module-average.
 - Use ExAST when code structure matters; prefer it over regex for Elixir code transformations. Example:
 
 ```shell
