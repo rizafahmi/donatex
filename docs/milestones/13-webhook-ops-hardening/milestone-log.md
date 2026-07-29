@@ -9,7 +9,7 @@ Harden the Mayar webhook controller for production reliability: return retryable
 
 ## What changed
 
-### `lib/donatex_web/controllers/mayar_webhook_controller.ex`
+### `lib/notable_web/controllers/mayar_webhook_controller.ex`
 
 1. **Retryable failure on persist errors (AC1)**: `mark_donation_paid/2` and `update_transaction_id_and_mark_paid/2` now return `{:error, reason}` instead of `:ok` on DB failures. `create/2` threads the error and returns HTTP 500 with `%{"ok" => false}` so Mayar can retry.
 
@@ -19,7 +19,7 @@ Harden the Mayar webhook controller for production reliability: return retryable
 
 4. **Non-retryable inputs unchanged (AC4)**: malformed payloads and orphan payments remain acknowledged with HTTP 200 rather than requesting a retry.
 
-### `test/donatex_web/controllers/mayar_webhook_controller_test.exs`
+### `test/notable_web/controllers/mayar_webhook_controller_test.exs`
 
 6 new test cases cover all four acceptance criteria.
 

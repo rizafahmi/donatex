@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for Donatex
+about: Suggest an idea for Notable
 labels: enhancement
 ---
 
@@ -11,4 +11,4 @@ labels: enhancement
 ## Alternatives considered
 
 ## Scope check
-Donatex is intentionally a single-streamer app with a small MVP scope (no accounts, no analytics dashboard, no extra payment methods beyond QRIS). If your request expands scope, explain why it’s needed.
+Notable is intentionally a single-streamer app with a small MVP scope (no accounts, no analytics dashboard, no extra payment methods beyond QRIS). If your request expands scope, explain why it’s needed.

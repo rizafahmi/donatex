@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex frequently needs to load donations in a stable chronological order for operator-facing views, including the admin donation list:
+Notable frequently needs to load donations in a stable chronological order for operator-facing views, including the admin donation list:
 
 - `inserted_at ASC, id ASC`
 

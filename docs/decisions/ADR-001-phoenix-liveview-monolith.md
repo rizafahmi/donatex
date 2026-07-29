@@ -6,11 +6,11 @@ Accepted
 
 ## Context
 
-Donatex is a single-streamer donation tool with a very small product surface: one donor page, one overlay page, one admin page, one payment provider, and one local database. The system needs real-time updates, durable persistence, and simple operations.
+Notable is a single-streamer donation tool with a very small product surface: one donor page, one overlay page, one admin page, one payment provider, and one local database. The system needs real-time updates, durable persistence, and simple operations.
 
 ## Decision
 
-Implement Donatex as a single Phoenix LiveView application backed by SQLite and Phoenix PubSub.
+Implement Notable as a single Phoenix LiveView application backed by SQLite and Phoenix PubSub.
 
 ## Alternatives Considered
 

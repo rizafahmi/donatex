@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex is a web app that is expected to be internet-exposed in production.
+Notable is a web app that is expected to be internet-exposed in production.
 
 The MVP has three public surfaces:
 
@@ -48,7 +48,7 @@ The donor and overlay pages also load external images (Mayar QR image URLs), and
 
 - Pros: very flexible, allows inline scripts without hashes
 - Cons: requires nonce injection into the root layout; more moving parts than needed for a small app
-- Rejected because Donatex currently only needs one stable inline bootstrap script
+- Rejected because Notable currently only needs one stable inline bootstrap script
 
 ### Disable origin checking in production
 

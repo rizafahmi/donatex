@@ -1,20 +1,20 @@
 @import "tailwindcss" source(none);
 @source "../css";
 @source "../js";
-@source "../../lib/donatex_web";
+@source "../../lib/notable_web";
 
 @plugin "../vendor/heroicons";
 
 @font-face {
-  font-family: "Donatex Display";
-  src: url("/fonts/donatex-display.woff2") format("woff2");
+  font-family: "Notable Display";
+  src: url("/fonts/notable-display.woff2") format("woff2");
   font-weight: 200 900;
   font-style: normal;
   font-display: swap;
 }
 
 @theme {
-  --font-display: "Donatex Display";
+  --font-display: "Notable Display";
   --font-sans:
     ui-sans-serif,
     system-ui,
@@ -89,7 +89,7 @@
   }
 }
 
-/* Custom Overlay Animations Blended with Donatex Theme */
+/* Custom Overlay Animations Blended with Notable Theme */
 .obs-overlay-container {
   margin: 0;
   padding: 0;

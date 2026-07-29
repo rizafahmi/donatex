@@ -1,4 +1,4 @@
-defmodule Donatex.DataCase do
+defmodule Notable.DataCase do
   @moduledoc """
   This module defines the setup for tests requiring
   access to the application's data layer.
@@ -10,28 +10,28 @@ defmodule Donatex.DataCase do
   we enable the SQL sandbox, so changes done to the database
   are reverted at the end of every test. If you are using
   PostgreSQL, you can even run database tests asynchronously
-  by setting `use Donatex.DataCase, async: true`, although
+  by setting `use Notable.DataCase, async: true`, although
   this option is not recommended for other databases.
   """
 
   use ExUnit.CaseTemplate
 
-  alias Donatex.Repo
   alias Ecto.Adapters.SQL.Sandbox
+  alias Notable.Repo
 
   using do
     quote do
-      alias Donatex.Repo
+      alias Notable.Repo
 
       import Ecto
       import Ecto.Changeset
       import Ecto.Query
-      import Donatex.DataCase
+      import Notable.DataCase
     end
   end
 
   setup tags do
-    Donatex.DataCase.setup_sandbox(tags)
+    Notable.DataCase.setup_sandbox(tags)
     :ok
   end
 

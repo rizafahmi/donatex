@@ -2,13 +2,13 @@
 
 ## Overview
 
-Donatex is a single-streamer Phoenix LiveView app with three surfaces:
+Notable is a single-streamer Phoenix LiveView app with three surfaces:
 
 - Donor page: `/donate`
 - OBS overlay: `/overlay`
 - Admin page: `/admin`
 
-Payments are created as Mayar dynamic QRIS transactions. Donatex creates a local `pending` donation row when the QR is generated, then upgrades it to `paid` when Mayar sends a webhook. The overlay shows paid donations as sequential alerts and recovers missed alerts after restarts by querying `paid AND alerted = false` from SQLite.
+Payments are created as Mayar dynamic QRIS transactions. Notable creates a local `pending` donation row when the QR is generated, then upgrades it to `paid` when Mayar sends a webhook. The overlay shows paid donations as sequential alerts and recovers missed alerts after restarts by querying `paid AND alerted = false` from SQLite.
 
 ## Local Development Setup
 
@@ -33,6 +33,7 @@ These values are expected to be provided via environment variables. In developme
 - `DONATEX_BASE_URL`
   - Public base URL used to build links and derive LiveView origin checks.
   - Example: `https://donate.example.com`
+  - The `DONATEX_*` env name is intentional and unchanged for this release slice; the OTP app is `:notable`, but do not rename this variable to `NOTABLE_*` yet.
 - `PHX_HOST`
   - Public host used for Phoenix endpoint URL config.
   - Example: `donate.example.com`
@@ -41,7 +42,7 @@ These values are expected to be provided via environment variables. In developme
 
 - `DATABASE_PATH`
   - Absolute SQLite path used in production.
-  - Example: `/var/lib/donatex/donatex.db`
+  - Example: `/var/lib/notable/notable.db`
 - `POOL_SIZE` (optional)
   - Defaults to `5`.
 
@@ -74,7 +75,7 @@ These values are expected to be provided via environment variables. In developme
 
 ## Example Production Env File
 
-If you deploy with `systemd`, a file such as `/etc/donatex/donatex.env` can hold the release environment:
+If you deploy with `systemd`, a file such as `/etc/notable/notable.env` can hold the release environment:
 
 ```bash
 PHX_SERVER=true
@@ -83,7 +84,7 @@ PHX_HOST=donate.example.com
 DONATEX_BASE_URL=https://donate.example.com
 
 SECRET_KEY_BASE=replace_me_with_mix_phx_gen_secret
-DATABASE_PATH=/var/lib/donatex/donatex.db
+DATABASE_PATH=/var/lib/notable/notable.db
 POOL_SIZE=5
 
 MAYAR_API_BASE_URL=https://api.mayar.id/hl/v1
@@ -116,15 +117,15 @@ Mayar webhook authenticity is currently treated as a URL-secret model (token in 
 4. If Mayar’s webhook UI provides a “test webhook” feature, use it against the same callback URL.
 5. Verify the public app URL is reachable over HTTPS before enabling live payments.
 
-If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Donatex performs a follow-up `GET /transactions/unpaid` lookup and only shows the QR when it can resolve a single fresh same-amount transaction. This avoids displaying a QR that later cannot be matched to the webhook transaction id.
+If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Notable performs a follow-up `GET /transactions/unpaid` lookup and only shows the QR when it can resolve a single fresh same-amount transaction. This avoids displaying a QR that later cannot be matched to the webhook transaction id.
 
 ## Recovery & Retry Semantics
 
 ### Webhook retries and duplicates
 
 - Webhook delivery is expected to be at-least-once; duplicates are handled idempotently by `mayar_transaction_id`.
-- Donatex updates the DB before broadcasting `donations:paid`. A duplicate webhook delivery should not rebroadcast.
-- If a webhook arrives for a `mayar_transaction_id` that does not exist locally, Donatex logs a warning and does not create a donation row.
+- Notable updates the DB before broadcasting `donations:paid`. A duplicate webhook delivery should not rebroadcast.
+- If a webhook arrives for a `mayar_transaction_id` that does not exist locally, Notable logs a warning and does not create a donation row.
 - Requests with an invalid webhook token are rejected with `404` before controller logic runs.
 - Requests that pass the token check return `200 {"ok":true}` when the payload is processed or intentionally ignored as malformed, duplicate, orphaned, non-paid, or amount-mismatched.
 - A failure while marking a donation paid or updating its Mayar transaction ID returns `500 {"ok":false}` so Mayar can retry. Check application logs as well as HTTP status codes when validating webhook wiring.
@@ -154,7 +155,7 @@ This project can be deployed following the “single server, no Docker” approa
 
 - `https://damonvjanis.medium.com/optimizing-for-free-hosting-elixir-deployments-6bfc119a1f44`
 
-Donatex differs from the article’s example in one major way: Donatex uses SQLite (a local file) instead of Postgres. On GCP, use a persistent disk (the default boot disk is already persistent) and set `DATABASE_PATH` to an absolute path on that disk.
+Notable differs from the article’s example in one major way: Notable uses SQLite (a local file) instead of Postgres. On GCP, use a persistent disk (the default boot disk is already persistent) and set `DATABASE_PATH` to an absolute path on that disk.
 
 ### High-level Checklist
 
@@ -173,24 +174,24 @@ From the app directory on the VM:
 
 - Build assets: `MIX_ENV=prod mix assets.deploy`
 - Build release: `MIX_ENV=prod mix release`
-- Run migrations: `_build/prod/rel/donatex/bin/migrate`
-- Start server: `_build/prod/rel/donatex/bin/server`
+- Run migrations: `_build/prod/rel/notable/bin/migrate`
+- Start server: `_build/prod/rel/notable/bin/server`
 
 ### systemd (Example)
 
-If you follow the article’s “release directory + current symlink” layout (e.g. `/opt/donatex/current`), a minimal systemd unit can run the release `server` script:
+If you follow the article’s “release directory + current symlink” layout (e.g. `/opt/notable/current`), a minimal systemd unit can run the release `server` script:
 
 ```
 [Unit]
-Description=donatex
+Description=notable
 After=network.target
 
 [Service]
 Type=simple
-User=donatex
-WorkingDirectory=/opt/donatex/current
-EnvironmentFile=/etc/donatex/donatex.env
-ExecStart=/opt/donatex/current/bin/server
+User=notable
+WorkingDirectory=/opt/notable/current
+EnvironmentFile=/etc/notable/notable.env
+ExecStart=/opt/notable/current/bin/server
 Restart=always
 RestartSec=5
 
@@ -201,7 +202,7 @@ WantedBy=multi-user.target
 ### SQLite Notes
 
 - Keep the database file outside the release directory so deploys don’t overwrite it.
-- Use an absolute path like `/var/lib/donatex/donatex.db` and ensure the directory exists and is writable by the app user.
-- `Donatex.Repo` runs with SQLite WAL, a 5s busy timeout, and IMMEDIATE write transactions (`journal_mode: :wal`, `busy_timeout: 5_000`, `default_transaction_mode: :immediate` in `config/config.exs`, reasserted in `config/dev.exs` and production `config/runtime.exs`) so writers wait on `busy_timeout` under WAL instead of failing on deferred lock upgrade.
-- Optional concurrent A/B bench (not in `mix ci`): `mix donatex.sqlite_bench` compares production-intent knobs vs a worse baseline on throwaway DBs; CLI flags and examples live in `mix help donatex.sqlite_bench`.
+- Use an absolute path like `/var/lib/notable/notable.db` and ensure the directory exists and is writable by the app user.
+- `Notable.Repo` runs with SQLite WAL, a 5s busy timeout, and IMMEDIATE write transactions (`journal_mode: :wal`, `busy_timeout: 5_000`, `default_transaction_mode: :immediate` in `config/config.exs`, reasserted in `config/dev.exs` and production `config/runtime.exs`) so writers wait on `busy_timeout` under WAL instead of failing on deferred lock upgrade.
+- Optional concurrent A/B bench (not in `mix ci`): `mix notable.sqlite_bench` compares production-intent knobs vs a worse baseline on throwaway DBs; CLI flags and examples live in `mix help notable.sqlite_bench`.
 - WAL creates companion files next to `DATABASE_PATH` (`*.db-wal`, `*.db-shm`). For a consistent backup of a live database, stop the app briefly, use SQLite’s online backup API / `.backup`, or copy the main file together with any present `-wal`/`-shm` companions from a quiescent moment—do not copy only the main `.db` while writers are active.

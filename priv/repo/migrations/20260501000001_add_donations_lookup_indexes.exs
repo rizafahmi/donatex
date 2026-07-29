@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.AddDonationsLookupIndexes do
+defmodule Notable.Repo.Migrations.AddDonationsLookupIndexes do
   use Ecto.Migration
 
   def change do

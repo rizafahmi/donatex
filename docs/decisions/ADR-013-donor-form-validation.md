@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex has a public donor flow where untrusted input is collected via LiveView:
+Notable has a public donor flow where untrusted input is collected via LiveView:
 
 - Donor name (required)
 - Donation amount option (preset or custom)
@@ -22,7 +22,7 @@ We need consistent server-side validation that integrates with Phoenix 1.8 form 
 
 ## Decision
 
-Implement donor form validation using `Ecto.Changeset` in `DonatexWeb.DonateLive`, backed by a dynamic schema (`{%{}, types}`) and `cast/3`:
+Implement donor form validation using `Ecto.Changeset` in `NotableWeb.DonateLive`, backed by a dynamic schema (`{%{}, types}`) and `cast/3`:
 
 - Validate required fields on submit (and on change for LiveView validation UX).
 - Enforce server-side length bounds for text fields:

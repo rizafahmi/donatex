@@ -12,7 +12,7 @@
 
 ### Reaction pools
 
-- `Donatex.Reactions` with pools:
+- `Notable.Reactions` with pools:
   - bad: 😅 🫠 💤 🙈
   - ok: 😐 🤔 😶 🫤
   - good: 😊 👍 🙌 💪
@@ -36,8 +36,8 @@
 
 ### Key tests
 
-- `test/donatex/reactions_test.exs` — pool membership and pick behavior
-- `test/donatex_web/live/overlay_live_test.exs` — emoji-only float, pending ignored, multi-float, dismiss, no tip celebration, no mount recovery
+- `test/notable/reactions_test.exs` — pool membership and pick behavior
+- `test/notable_web/live/overlay_live_test.exs` — emoji-only float, pending ignored, multi-float, dismiss, no tip celebration, no mount recovery
 
 ## Unspecified implementation decisions
 

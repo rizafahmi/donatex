@@ -1,5 +1,5 @@
 ---
-name: Donatex
+name: Notable
 description: Self-hosted livestream donation app for a single streamer
 colors:
   primary: "oklch(76% 0.14 205)" # Cyan/Teal terminal prompt accent
@@ -15,7 +15,7 @@ colors:
   danger: "oklch(62% 0.18 25)" # Danger/error red-orange
 typography:
   display:
-    fontFamily: "Donatex Display, system-ui, sans-serif"
+    fontFamily: "Notable Display, system-ui, sans-serif"
     fontWeight: 600
     lineHeight: "100px"
   body:
@@ -40,13 +40,13 @@ components:
     padding: "24px 32px"
 ---
 
-# Design System: Donatex
+# Design System: Notable
 
 ## 1. Overview
 
 **Creative North Star: "The Developer Console & Livestream Overlay"**
 
-Donatex is styled with a tech-forward, terminal-inspired dark theme that aligns with the developer streamer's overlay aesthetic. The interface is optimized to feel integrated, clean, and highly legible. By combining deep cool-slate backdrops with vibrant cyan/sky-blue prompts and rich chat purple accents, the design feels like a natural extension of the stream's command-line setup.
+Notable is styled with a tech-forward, terminal-inspired dark theme that aligns with the developer streamer's overlay aesthetic. The interface is optimized to feel integrated, clean, and highly legible. By combining deep cool-slate backdrops with vibrant cyan/sky-blue prompts and rich chat purple accents, the design feels like a natural extension of the stream's command-line setup.
 
 The layout prioritizes visual density and high contrast for stream legibility. Subtle glassmorphism and terminal title bar controls are used to build structure, making alerts feel like console notification outputs.
 
@@ -83,7 +83,7 @@ The color palette is built around deep, slate-tinted neutrals paired with glowin
 
 The type system pairs a stylized custom display font with system-ui sans-serif fallbacks for optimal readability on mobile screens and stream overlays.
 
-**Display Font:** "Donatex Display" (with sans-serif fallback)
+**Display Font:** "Notable Display" (with sans-serif fallback)
 **Body Font:** System-ui stack (ui-sans-serif, system-ui, -apple-system)
 
 **Character:** Bold, modern, and tech-forward. Headers have tight tracking and high-contrast weights, while body prose stays clean and highly readable.
@@ -100,7 +100,7 @@ The type system pairs a stylized custom display font with system-ui sans-serif f
 
 ## 4. Elevation
 
-Donatex relies on tonal layering and ambient glow effects rather than physical drop shadows. Depth is created by placing lighter surfaces on top of darker backgrounds, augmented by color-mixed borders.
+Notable relies on tonal layering and ambient glow effects rather than physical drop shadows. Depth is created by placing lighter surfaces on top of darker backgrounds, augmented by color-mixed borders.
 
 ### Shadow Vocabulary
 - **Neon Ambient Glow** (`0 0 40px rgba(0, 0, 0, 0.6)`): Ambient shadow behind container blocks to isolate them from backgrounds.

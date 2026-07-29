@@ -14,24 +14,24 @@
 ### Persistence / domain
 
 - Migration `20260725120000_create_questions.exs`: `questions` (binary UUID, nullable name, required body ≤500, status default `open`, `hidden_at`, UTC timestamps) and `question_votes` (binary UUID, question FK cascade delete, `visitor_hash`, UTC timestamps). Unique `(question_id, visitor_hash)`, question date/order index, and a vote aggregation index.
-- Schemas `Donatex.Questions.Question` and `Donatex.Questions.QuestionVote`. Public creation only casts `name`/`body`; blank name becomes `nil`; body trimmed/required/max 500; name max 64; `status` and `hidden_at` protected. Separate status/hide/restore changesets.
-- Context `Donatex.Questions`: create/get, `create_question!/1` test helper, SHA-256 `hash_visitor_id/1` (public for LiveView use), transactional vote toggle, voting rejects missing/answered/hidden questions, `mark_answered`/`reopen`/`hide`/`restore`, WIB helpers using fixed UTC+7 (Asia/Jakarta has no DST) with SQLite `date(inserted_at, '+7 hours')`, ranked date queries, and PubSub on `questions`.
+- Schemas `Notable.Questions.Question` and `Notable.Questions.QuestionVote`. Public creation only casts `name`/`body`; blank name becomes `nil`; body trimmed/required/max 500; name max 64; `status` and `hidden_at` protected. Separate status/hide/restore changesets.
+- Context `Notable.Questions`: create/get, `create_question!/1` test helper, SHA-256 `hash_visitor_id/1` (public for LiveView use), transactional vote toggle, voting rejects missing/answered/hidden questions, `mark_answered`/`reopen`/`hide`/`restore`, WIB helpers using fixed UTC+7 (Asia/Jakarta has no DST) with SQLite `date(inserted_at, '+7 hours')`, ranked date queries, and PubSub on `questions`.
 - A concurrent vote insert that loses the unique-index race returns `{:error, :already_voted}`; `QuestionLive` treats that result as a board reload so the UI converges on the single persisted vote instead of crashing.
 - `list_date_summaries/1` accepts `include_hidden: true` for admin; `list_questions_for_date/2` supports `visitor_hash` and `include_hidden`.
 
 ### Limiter / public board
 
-- Generalized the specialized feedback rate limiter into `Donatex.SubmissionLimiter` (supervised in `Donatex.Application`) with namespaced keys: `{:feedback, ip}` and `{:question, visitor_id}`. Old `FeedbackRateLimiter` source and test removed; feedback behavior and cooldown tests updated.
-- `DonatexWeb.QuestionLive` at `/questions`: form discloses that a supplied name is public; signed visitor session drives submit/vote; immediate publication; 10-second submission cooldown; failed/rate-limited submissions preserve fields and release the reservation; today ranked open→answered, votes desc, oldest first; previous WIB dates collapsed and loaded on expand; vote toggle state; answered voting disabled; PubSub refresh; WIB midnight rollover; deterministic `handle_info({:set_current_now, %DateTime{}}, socket)` test seam.
+- Generalized the specialized feedback rate limiter into `Notable.SubmissionLimiter` (supervised in `Notable.Application`) with namespaced keys: `{:feedback, ip}` and `{:question, visitor_id}`. Old `FeedbackRateLimiter` source and test removed; feedback behavior and cooldown tests updated.
+- `NotableWeb.QuestionLive` at `/questions`: form discloses that a supplied name is public; signed visitor session drives submit/vote; immediate publication; 10-second submission cooldown; failed/rate-limited submissions preserve fields and release the reservation; today ranked open→answered, votes desc, oldest first; previous WIB dates collapsed and loaded on expand; vote toggle state; answered voting disabled; PubSub refresh; WIB midnight rollover; deterministic `handle_info({:set_current_now, %DateTime{}}, socket)` test seam.
 - Navigation link and `noindex, follow` SEO metadata added.
 
 ### Admin moderation
 
-- `DonatexWeb.AdminQuestionLive` at `/admin/questions` inside the existing `[:browser, :admin]` pipeline. Date-grouped board including hidden questions; answer/reopen/hide/restore controls; hidden state orthogonal to answered/open; PubSub refresh; canonical and `noindex, nofollow` metadata; link from `/admin`.
+- `NotableWeb.AdminQuestionLive` at `/admin/questions` inside the existing `[:browser, :admin]` pipeline. Date-grouped board including hidden questions; answer/reopen/hide/restore controls; hidden state orthogonal to answered/open; PubSub refresh; canonical and `noindex, nofollow` metadata; link from `/admin`.
 
 ## Verification
 
-- Migration test, schema tests, context tests, limiter tests, public LiveView tests, admin LiveView tests, and a focused end-to-end journey test (`test/donatex_web/features/questions_journey_test.exs`) covering submit → cross-browser upvote → rank change → admin answer → public vote disabled → reopen → vote enabled → hide → public removal → restore.
+- Migration test, schema tests, context tests, limiter tests, public LiveView tests, admin LiveView tests, and a focused end-to-end journey test (`test/notable_web/features/questions_journey_test.exs`) covering submit → cross-browser upvote → rank change → admin answer → public vote disabled → reopen → vote enabled → hide → public removal → restore.
 - Identity isolation: two tabs sharing one visitor session cannot create duplicate vote rows (toggle semantics); two distinct sessions vote independently.
 - No raw visitor id leakage: persistence asserts every `visitor_hash` is a 64-char SHA-256 distinct from the raw id; a log-capture test refutes the raw id appears during submit/vote.
 - Issue #29 regression coverage injects the `:already_voted` result, verifies the LiveView survives, and confirms the board still shows exactly one persisted vote. Documentation/lint housekeeping passed changed-file formatting, warnings-as-errors compilation, strict Credo, Dialyzer, zero-clone ExDNA, and Reach architecture/smell checks; tests were intentionally left to the pipeline test phase.

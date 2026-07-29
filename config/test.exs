@@ -5,20 +5,20 @@ import Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :donatex, Donatex.Repo,
-  database: Path.expand("../donatex_test.db", __DIR__),
+config :notable, Notable.Repo,
+  database: Path.expand("../notable_test.db", __DIR__),
   pool_size: 5,
   pool: Ecto.Adapters.SQL.Sandbox
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :donatex, DonatexWeb.Endpoint,
+config :notable, NotableWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "7AHRBr39m1gbmoGBoXchHYHPqyS5VI+xhRW3QdFufid7poDnHWXeOmiRKhu1q/ZK",
   server: false
 
 # In test we don't send emails
-config :donatex, Donatex.Mailer, adapter: Swoosh.Adapters.Test
+config :notable, Notable.Mailer, adapter: Swoosh.Adapters.Test
 
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
@@ -37,17 +37,17 @@ config :phoenix_live_view,
 config :phoenix,
   sort_verified_routes_query_params: true
 
-config :phoenix_test, endpoint: DonatexWeb.Endpoint
+config :phoenix_test, endpoint: NotableWeb.Endpoint
 
-config :donatex, :mayar,
+config :notable, :mayar,
   base_url: "https://api.example.test",
   api_key: "mayar_test_key",
   webhook_token: "mayar_webhook_test_token"
 
-config :donatex, :admin,
+config :notable, :admin,
   username: "admin_test",
   password: "pass_test"
 
-config :donatex, :app, base_url: "http://localhost:4000"
+config :notable, :app, base_url: "http://localhost:4000"
 
-config :donatex, async_analytics: false
+config :notable, async_analytics: false

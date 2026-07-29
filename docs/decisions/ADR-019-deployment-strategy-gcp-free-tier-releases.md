@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex is a single-streamer Phoenix LiveView application with a SQLite database file. It must remain simple to operate and cheap to host.
+Notable is a single-streamer Phoenix LiveView application with a SQLite database file. It must remain simple to operate and cheap to host.
 
 For the MVP, we want:
 
@@ -26,7 +26,7 @@ The chosen approach is guided by:
 
 ## Decision
 
-Deploy Donatex to a single VM (for example, a GCP free-tier instance) using:
+Deploy Notable to a single VM (for example, a GCP free-tier instance) using:
 
 - `mix release` for build artifacts
 - `systemd` to supervise the release and restart it after reboots

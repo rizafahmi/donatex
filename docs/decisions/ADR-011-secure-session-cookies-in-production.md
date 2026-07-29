@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex uses cookie-backed sessions for Phoenix features such as LiveView connect info and flash messages.
+Notable uses cookie-backed sessions for Phoenix features such as LiveView connect info and flash messages.
 
 For production deployments, session cookies must be protected against:
 
@@ -24,12 +24,12 @@ Local development typically runs over HTTP, so production-hardening must not bre
 - Always set session cookies as HttpOnly.
 - Set the session cookie `Secure` flag in production builds only, using a compile-time app config flag.
 
-Implemented in `DonatexWeb.Endpoint` via:
+Implemented in `NotableWeb.Endpoint` via:
 
 - `http_only: true`
-- `secure: Application.compile_env(:donatex, :secure_cookies, false)`
+- `secure: Application.compile_env(:notable, :secure_cookies, false)`
 
-and enabled in production via `config :donatex, :secure_cookies, true`.
+and enabled in production via `config :notable, :secure_cookies, true`.
 
 ## Alternatives Considered
 

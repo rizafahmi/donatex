@@ -38,7 +38,7 @@
 - [x] Fix live Mayar correlation failure where the QR image UUID differed from the webhook `transactionId` by resolving the real transaction id from `/transactions/unpaid` and failing closed when it cannot be uniquely determined
 - [x] Remove the stale QR asset UUID fallback in code so omitted `transactionId`/`id` responses always resolve correlation via `/transactions/unpaid` instead of trusting the QR filename
 - [x] Apply custom HTML/CSS alert design from user requirements
-- [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
+- [x] Blend custom overlay design with Notable aesthetic (glassmorphism, accent colors, typography)
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
@@ -71,7 +71,7 @@
 - [x] Milestone 10 — Audience Questions Board: secondary public `/questions` Q&A surface with anonymous upvotes, WIB-grouped ranked board, and authenticated `/admin/questions` moderation (answer/reopen/hide/restore); generalized `SubmissionLimiter`; raw visitor ids hashed and never persisted/logged.
 - [x] [#39](https://github.com/rizafahmi/donatex/issues/39) Toast auto-hide — see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md).
 - [x] [#28](https://github.com/rizafahmi/donatex/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
-- [x] [#30](https://github.com/rizafahmi/donatex/issues/30) Admin LiveView re-auth — `AdminBasicAuth` stamps `admin_authenticated` into the session; `live_session :admin` + `DonatexWeb.LiveAdminAuth` `on_mount` rejects mounts without the flag (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
+- [x] [#30](https://github.com/rizafahmi/donatex/issues/30) Admin LiveView re-auth — `AdminBasicAuth` stamps `admin_authenticated` into the session; `live_session :admin` + `NotableWeb.LiveAdminAuth` `on_mount` rejects mounts without the flag (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
 - [x] [#32](https://github.com/rizafahmi/donatex/issues/32) Flaky admin/donor ExUnit suite — replace `Process.sleep/1` in admin analytics/filters feature tests with `unwrap` + `render` LiveView sync; set Repo-touching `donate_live_test.exs` to `async: false`.
 
 ## In Progress
@@ -81,7 +81,7 @@
 ## Known Issues
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
-- If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
+- If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Notable now fails closed and does not show the QR rather than risk an uncorrelatable payment
 - Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps

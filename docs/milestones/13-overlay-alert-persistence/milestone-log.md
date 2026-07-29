@@ -24,12 +24,12 @@ after remount recovery and could repeat that failure on every remount.
   restart.
 
 ## Files
-- `lib/donatex/donations.ex` — normalizes SQLite and connection failures during
+- `lib/notable/donations.ex` — normalizes SQLite and connection failures during
   acknowledgement to `{:error, :persistence_failed}`.
-- `lib/donatex_web/live/overlay_live.ex` — `require Logger`, pattern-match on
+- `lib/notable_web/live/overlay_live.ex` — `require Logger`, pattern-match on
   `mark_donation_alerted_by_id/1` result, and visibly replay/retry the alert on
   error without advancing the queue.
-- `test/donatex_web/live/overlay_live_test.exs` — regression test that uses a
+- `test/notable_web/live/overlay_live_test.exs` — regression test that uses a
   temporary SQLite trigger to reject the alerted update without deleting or
   changing the donation, asserts the current alert gets a fresh DOM lifecycle,
   the queued alert does not start, no `:donation_alerted` broadcast fires, and

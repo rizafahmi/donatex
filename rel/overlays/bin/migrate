@@ -1,4 +1,4 @@
 #!/bin/sh
 set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-"$SCRIPT_DIR/donatex" eval "Donatex.Release.migrate"
+"$SCRIPT_DIR/notable" eval "Notable.Release.migrate"

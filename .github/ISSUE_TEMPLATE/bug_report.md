@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a problem to help improve Donatex
+about: Report a problem to help improve Notable
 labels: bug
 ---
 
@@ -20,4 +20,4 @@ Please redact secrets (for example: `MAYAR_API_KEY` and webhook URLs containing 
 ## Environment
 - OS:
 - Elixir/OTP:
-- Donatex commit / version:
+- Notable commit / version:

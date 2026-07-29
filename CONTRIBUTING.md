@@ -1,6 +1,6 @@
 ## Contributing
 
-Thanks for considering a contribution to Donatex.
+Thanks for considering a contribution to Notable.
 
 ## Ground rules
 - This is intentionally a single-streamer, single-instance app (not multi-tenant).

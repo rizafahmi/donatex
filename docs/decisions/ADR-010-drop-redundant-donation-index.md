@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex uses a SQLite-backed `donations` table. The overlay recovery query filters and orders by:
+Notable uses a SQLite-backed `donations` table. The overlay recovery query filters and orders by:
 
 - `status = "paid"`
 - `alerted = false`

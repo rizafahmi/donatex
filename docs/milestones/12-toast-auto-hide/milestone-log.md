@@ -21,9 +21,9 @@ indefinitely instead of dismissing after a few seconds. Root cause: the shared
 
 ## Files
 - `assets/js/app.js` — `FlashAutoHide` hook
-- `lib/donatex_web/components/core_components.ex` — `auto_hide` attr + hook wiring
-- `lib/donatex_web/components/layouts.ex` — `auto_hide={false}` on connection toasts
-- `test/donatex_web/live/question_live_test.exs` — hook presence + opt-out tests
+- `lib/notable_web/components/core_components.ex` — `auto_hide` attr + hook wiring
+- `lib/notable_web/components/layouts.ex` — `auto_hide={false}` on connection toasts
+- `test/notable_web/live/question_live_test.exs` — hook presence + opt-out tests
 
 ## Verification
 - 274 tests, 0 failures

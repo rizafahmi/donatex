@@ -1,7 +1,7 @@
 Mix.Task.run("app.start")
 
-alias Donatex.Config
-alias DonatexWeb.Router
+alias Notable.Config
+alias NotableWeb.Router
 
 build_json_conn = fn path, body ->
   Plug.Test.conn("POST", path, Jason.encode!(body))
@@ -55,4 +55,7 @@ real_token_path_result = run.("/webhooks/mayar/#{Config.mayar_webhook_token()}",
 
 IO.puts("\nControl check: tokenized-like path => #{bogus_token_path_result.status}")
 IO.puts("Real token path => #{real_token_path_result.status}")
-IO.puts("Interpretation: the un-tokenized path is unreachable; only requests with the configured token reach the controller.")
+
+IO.puts(
+  "Interpretation: the un-tokenized path is unreachable; only requests with the configured token reach the controller."
+)
