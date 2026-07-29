@@ -74,4 +74,37 @@ defmodule Notable.AppRenameTest do
     assert context =~ "## Brand\n**Notable**."
     assert context =~ "host may remain Feedback-named"
   end
+
+  test "contributor docs point outsiders at mix ci after Notable rename" do
+    contributing = File.read!("CONTRIBUTING.md")
+    readme = File.read!("README.md")
+    workflow = File.read!(".github/workflows/ci.yml")
+
+    assert contributing =~ "Thanks for considering a contribution to Notable."
+    refute contributing =~ ~r/Donatex/i
+    assert contributing =~ "Full local quality gate (same as CI): `mix ci`"
+    assert contributing =~ "Lighter pre-push check: `mix precommit`"
+    assert contributing =~ "Run `mix ci` before opening the PR."
+
+    assert readme =~ ~r/^## Contributing\n/m
+
+    assert readme =~
+             "New contributors: start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup, local verification (`mix ci`), and PR expectations."
+
+    # Branding in the Contributing section is Notable; DONATEX_* may still appear
+    # elsewhere as the temporary env alias documented in OPERATIONS.md.
+    contributing_section =
+      readme
+      |> String.split(~r/^## /m, trim: true)
+      |> Enum.find(&String.starts_with?(&1, "Contributing\n"))
+
+    assert contributing_section
+    refute contributing_section =~ ~r/Donatex/i
+
+    assert workflow =~ "run: mix ci"
+
+    aliases = Mix.Project.config()[:aliases]
+    assert is_list(aliases[:ci])
+    assert is_list(aliases[:precommit])
+  end
 end

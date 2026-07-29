@@ -485,7 +485,7 @@ The testing strategy should protect behavior at the highest valuable layer witho
 
 Before merging meaningful changes into this architecture, agents should confirm:
 
-- `mix precommit` passes
+- `mix ci` passes (see [CONTRIBUTING.md](../CONTRIBUTING.md) for the local quality gate vs `mix precommit`)
 - No architecture change violates hard constraints from the PRD
 - New code keeps business logic out of controllers and LiveView templates
 - No separate queue service was introduced without explicit justification

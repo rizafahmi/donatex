@@ -29,7 +29,7 @@ Local surfaces:
 ## Running tests
 - `mix test`
 - Full local quality gate (same as CI): `mix ci`
-- Lighter pre-push check: `mix precommit` (format, Credo, Dialyzer, compile, test)
+- Lighter pre-push check: `mix precommit` (see `mix.exs` aliases)
 
 ## Submitting a PR
 1. Create a focused branch.

@@ -772,7 +772,7 @@
 - [ ] Admin replay works.
 
 **Verification:**
-- [ ] Run `mix precommit`
+- [ ] Run `mix ci`
 - [ ] Run full manual smoke test with sandbox or mocked Mayar flow
 
 **Dependencies:** Task 33
