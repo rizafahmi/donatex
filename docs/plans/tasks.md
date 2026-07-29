@@ -226,11 +226,11 @@
 - [x] Unknown or undocumented response fields are explicitly marked as to-be-confirmed.
 
 **Client contract (internal):**
-- `Donatex.Mayar.Client.create_qr(amount_idr)` where `amount_idr` is a positive integer.
-- Returns `{:ok, %Donatex.Mayar.Client.DynamicQr{...}}` or `{:error, reason}`.
+- `Notable.Mayar.Client.create_qr(amount_idr)` where `amount_idr` is a positive integer.
+- Returns `{:ok, %Notable.Mayar.Client.DynamicQr{...}}` or `{:error, reason}`.
 
 **Normalized success payload:**
-- `%Donatex.Mayar.Client.DynamicQr{`
+- `%Notable.Mayar.Client.DynamicQr{`
   - `mayar_transaction_id :: String.t()` (used for webhook dedupe + donation correlation)
   - `amount :: pos_integer()` (IDR)
   - `qr_image_url :: String.t()` (HTTP(S) URL or `data:` URL usable by the donor page)

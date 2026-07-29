@@ -7,28 +7,28 @@
 # General application configuration
 import Config
 
-config :donatex,
-  ecto_repos: [Donatex.Repo],
+config :notable,
+  ecto_repos: [Notable.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true],
   async_analytics: true
 
 # Shared SQLite concurrency defaults (WAL + busy wait + IMMEDIATE tx).
 # Exqlite applies :busy_timeout via NIF (not PRAGMA busy_timeout).
 # :immediate so write tx waits on busy_timeout instead of failing on lock upgrade.
-config :donatex, Donatex.Repo,
+config :notable, Notable.Repo,
   journal_mode: :wal,
   busy_timeout: 5_000,
   default_transaction_mode: :immediate
 
 # Configure the endpoint
-config :donatex, DonatexWeb.Endpoint,
+config :notable, NotableWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [html: DonatexWeb.ErrorHTML, json: DonatexWeb.ErrorJSON],
+    formats: [html: NotableWeb.ErrorHTML, json: NotableWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Donatex.PubSub,
+  pubsub_server: Notable.PubSub,
   live_view: [signing_salt: "sWDWTT7e"]
 
 # Configure the mailer
@@ -38,12 +38,12 @@ config :donatex, DonatexWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :donatex, Donatex.Mailer, adapter: Swoosh.Adapters.Local
+config :notable, Notable.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",
-  donatex: [
+  notable: [
     args:
       ~w(js/app.js --bundle --target=es2022 --outdir=../priv/static/assets/js --external:/fonts/* --external:/images/* --alias:@=.),
     cd: Path.expand("../assets", __DIR__),
@@ -53,7 +53,7 @@ config :esbuild,
 # Configure tailwind (the version is required)
 config :tailwind,
   version: "4.1.12",
-  donatex: [
+  notable: [
     args: ~w(
       --input=assets/css/app.css
       --output=priv/static/assets/css/app.css

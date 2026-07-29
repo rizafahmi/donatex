@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex persists donations in SQLite and relies on them for:
+Notable persists donations in SQLite and relies on them for:
 
 - Donor UX: a `pending` donation exists immediately after QR creation
 - Webhook processing: duplicate deliveries are expected and must not break state

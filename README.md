@@ -1,4 +1,4 @@
-# Donatex
+# Notable
 
 Self-hosted livestream donation app for a single streamer:
 
@@ -23,7 +23,7 @@ Local URLs (default):
 - Webhook callback: `http://localhost:4000/webhooks/mayar/<MAYAR_WEBHOOK_TOKEN>`
 
 ## Configuration
-Donatex is configured via environment variables. For the full list (including production-only variables and examples), see [OPERATIONS.md](docs/OPERATIONS.md).
+Notable is configured via environment variables. For the full list (including production-only variables and examples), see [OPERATIONS.md](docs/OPERATIONS.md).
 
 Common variables:
 - `MAYAR_API_BASE_URL` (sandbox/prod)
@@ -33,10 +33,10 @@ Common variables:
 - `DONATEX_BASE_URL` (important in production for LiveView origin checks)
 
 ## Mayar webhook authenticity (MVP)
-Mayar’s public webhook docs reviewed for this project do not document a signature/HMAC verification mechanism. For MVP, Donatex uses a URL-secret model:
+Mayar’s public webhook docs reviewed for this project do not document a signature/HMAC verification mechanism. For MVP, Notable uses a URL-secret model:
 
 - You register a webhook callback URL that includes a long random `MAYAR_WEBHOOK_TOKEN`
-- Donatex rejects requests whose token does not match before any DB writes or broadcasts
+- Notable rejects requests whose token does not match before any DB writes or broadcasts
 
 This is weaker than signed webhooks because it does not provide message integrity. If Mayar adds request signing docs later, this project should switch to that mechanism.
 
@@ -65,7 +65,7 @@ MIT. See [LICENSE](LICENSE).
 ---
 
 ## Bahasa Indonesia (ringkas)
-Donatex adalah aplikasi donasi livestream yang bisa di-host sendiri untuk 1 streamer:
+Notable adalah aplikasi donasi livestream yang bisa di-host sendiri untuk 1 streamer:
 
 - Halaman donatur (`/donate`) membuat QRIS dinamis via Mayar untuk setiap donasi
 - Overlay OBS (`/overlay`) menampilkan alert setelah pembayaran terkonfirmasi (via webhook)

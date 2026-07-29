@@ -12,15 +12,15 @@ import Config
 # If you use `mix release`, you need to explicitly enable the server
 # by passing the PHX_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/donatex start
+#     PHX_SERVER=true bin/notable start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 if System.get_env("PHX_SERVER") do
-  config :donatex, DonatexWeb.Endpoint, server: true
+  config :notable, NotableWeb.Endpoint, server: true
 end
 
-config :donatex, DonatexWeb.Endpoint,
+config :notable, NotableWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do
@@ -35,10 +35,10 @@ if config_env() == :prod do
     System.get_env("DATABASE_PATH") ||
       raise """
       environment variable DATABASE_PATH is missing.
-      For example: /etc/donatex/donatex.db
+      For example: /etc/notable/notable.db
       """
 
-  config :donatex, Donatex.Repo,
+  config :notable, Notable.Repo,
     database: database_path,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5"),
     journal_mode: :wal,
@@ -59,7 +59,7 @@ if config_env() == :prod do
 
   host = System.get_env("PHX_HOST") || "feedback.rizafahmi.com"
 
-  config :donatex, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :notable, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   mayar_webhook_token = fetch_env!.("MAYAR_WEBHOOK_TOKEN")
 
@@ -69,12 +69,12 @@ if config_env() == :prod do
     """
   end
 
-  config :donatex, :mayar,
+  config :notable, :mayar,
     base_url: fetch_env!.("MAYAR_API_BASE_URL"),
     api_key: fetch_env!.("MAYAR_API_KEY"),
     webhook_token: mayar_webhook_token
 
-  config :donatex, :admin,
+  config :notable, :admin,
     username: fetch_env!.("ADMIN_USERNAME"),
     password: fetch_env!.("ADMIN_PASSWORD")
 
@@ -95,9 +95,9 @@ if config_env() == :prod do
         """
     end
 
-  config :donatex, :app, base_url: base_url
+  config :notable, :app, base_url: base_url
 
-  config :donatex, DonatexWeb.Endpoint,
+  config :notable, NotableWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     check_origin: [origin, "https://feedback.rizafahmi.com"],
     http: [
@@ -114,7 +114,7 @@ if config_env() == :prod do
   # To get SSL working, you will need to add the `https` key
   # to your endpoint configuration:
   #
-  #     config :donatex, DonatexWeb.Endpoint,
+  #     config :notable, NotableWeb.Endpoint,
   #       https: [
   #         ...,
   #         port: 443,
@@ -136,7 +136,7 @@ if config_env() == :prod do
   # We also recommend setting `force_ssl` in your config/prod.exs,
   # ensuring no data is ever sent via http, always redirecting to https:
   #
-  #     config :donatex, DonatexWeb.Endpoint,
+  #     config :notable, NotableWeb.Endpoint,
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
@@ -146,7 +146,7 @@ if config_env() == :prod do
   # In production you need to configure the mailer to use a different adapter.
   # Here is an example configuration for Mailgun:
   #
-  #     config :donatex, Donatex.Mailer,
+  #     config :notable, Notable.Mailer,
   #       adapter: Swoosh.Adapters.Mailgun,
   #       api_key: System.get_env("MAILGUN_API_KEY"),
   #       domain: System.get_env("MAILGUN_DOMAIN")

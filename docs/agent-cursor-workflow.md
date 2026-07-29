@@ -1,7 +1,7 @@
 # Autonomous Agent Engineering Workflow (Cursor + Compound Engineering)
 
 This document defines a reusable prompt for scheduled or looped autonomous
-engineering runs on the Donatex repository **in Cursor**, using
+engineering runs on the Notable repository **in Cursor**, using
 [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin)
 skills for delivery.
 
@@ -124,7 +124,7 @@ merge / never force-push" is not a substitute.
 cold dialyzer/setup can consume an entire delivery budget. Provision:
 
 ```bash
-export AGENT_CACHE="$HOME/.cache/donatex-agent"
+export AGENT_CACHE="$HOME/.cache/notable-agent"
 mkdir -p "$AGENT_CACHE"
 MIX_DEPS_PATH="$AGENT_CACHE/deps" MIX_BUILD_ROOT="$AGENT_CACHE/_build" mix ci
 ```
@@ -161,7 +161,7 @@ for name in \
   "agent:waiting-input" "agent:pr-open" "agent:p0"
 do
   gh label create "$name" --force 2>/dev/null \
-    || gh api -X POST "/repos/rizafahmi/donatex/labels" \
+    || gh api -X POST "/repos/rizafahmi/notable/labels" \
          -f name="$name" -f color="ededed" >/dev/null 2>&1 \
     || true
   gh label list --json name --jq '.[].name' | grep -Fx "$name" \
@@ -312,7 +312,7 @@ milestone logs unless the selected issue explicitly requires it.
 
 ## Secrets and public-repo hygiene
 
-`rizafahmi/donatex` is public. The prompt requires:
+`rizafahmi/notable` is public. The prompt requires:
 
 - redacting secrets before pasting evidence
 - pasting tails, not full logs (transcripts stay private; no re-paste without
@@ -359,7 +359,7 @@ outside sensitive paths may skip review; any touch to payments, donations
 persistence, webhooks, auth, overlay alerts, or related runtime config must
 be reviewed even if tiny.
 
-**Early value bet:** nearly all product work in Donatex touches those sensitive
+**Early value bet:** nearly all product work in Notable touches those sensitive
 paths. Treat unattended success for the first weeks as reliable delivery of
 **non-sensitive** issues (docs, tests, tooling, refactors outside the sensitive
 list). Sensitive-path PRs are still allowed but expect owner deep-review —

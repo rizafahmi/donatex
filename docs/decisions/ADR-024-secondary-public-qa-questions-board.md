@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex is a single-user livestream donation system with two primary public surfaces (donor page and OBS overlay) plus a simple admin page. The streamer wanted a way for the audience to submit questions during a stream and upvote questions from others, surfaced as a separate secondary public route.
+Notable is a single-user livestream donation system with two primary public surfaces (donor page and OBS overlay) plus a simple admin page. The streamer wanted a way for the audience to submit questions during a stream and upvote questions from others, surfaced as a separate secondary public route.
 
 The existing feedback flow is free-text notes plus optional QRIS tips. A Q&A board is a distinct audience interaction: short questions, anonymous upvotes, and streamer moderation (answer/reopen/hide/restore), none of which fit the donation/feedback model.
 
@@ -18,11 +18,11 @@ The existing feedback flow is free-text notes plus optional QRIS tips. A Q&A boa
 
 Add a secondary public Q&A surface as a separate bounded context rather than extending the donation/feedback domain:
 
-- Public route `GET /questions` (`DonatexWeb.QuestionLive`) for submission and voting.
-- Authenticated route `GET /admin/questions` (`DonatexWeb.AdminQuestionLive`) for streamer moderation (admin auth: [ADR-020](ADR-020-admin-basic-auth-for-mvp.md)).
-- A new `Donatex.Questions` context with its own `questions` and `question_votes` SQLite tables, separate from `donations`.
-- Reuse the existing `DonatexWeb.Plugs.VisitorId` signed session for anonymous identity, but store only a SHA-256 hash (`visitor_hash`) on vote rows — never the raw visitor id.
-- Generalize the per-IP feedback rate limiter into `Donatex.SubmissionLimiter` with namespaced keys so feedback (`{:feedback, ip}`) and question submission (`{:question, visitor_id}`) cooldowns remain independent.
+- Public route `GET /questions` (`NotableWeb.QuestionLive`) for submission and voting.
+- Authenticated route `GET /admin/questions` (`NotableWeb.AdminQuestionLive`) for streamer moderation (admin auth: [ADR-020](ADR-020-admin-basic-auth-for-mvp.md)).
+- A new `Notable.Questions` context with its own `questions` and `question_votes` SQLite tables, separate from `donations`.
+- Reuse the existing `NotableWeb.Plugs.VisitorId` signed session for anonymous identity, but store only a SHA-256 hash (`visitor_hash`) on vote rows — never the raw visitor id.
+- Generalize the per-IP feedback rate limiter into `Notable.SubmissionLimiter` with namespaced keys so feedback (`{:feedback, ip}`) and question submission (`{:question, visitor_id}`) cooldowns remain independent.
 
 Locked product rules: immediate public publication, blank name rendered `Anonim`, max 500 visible characters, one question per visitor per 10 seconds, toggle vote (one upvote per visitor per question), voting closes/reopens with answered status, no pinning, status-only answer (no written answer text), and hidden state orthogonal to answered/open status. When `create_question` fails with an `Ecto.Changeset`, re-assign that changeset to the LiveView form (`action: :insert`) so shared `<.input>`s render field errors alongside the flash.
 

@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.AllowFeedbackWithoutPaymentDetails do
+defmodule Notable.Repo.Migrations.AllowFeedbackWithoutPaymentDetails do
   use Ecto.Migration
 
   def up do

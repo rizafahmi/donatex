@@ -10,8 +10,8 @@
 ## What was built
 
 ### Confirmed-only tip lifecycle
-- Removed the pending-tip `Mark Paid` action and event from `DonatexWeb.AdminLive`.
-- Removed the now-unused `Donatex.Donations.mark_paid_by_id/1` API.
+- Removed the pending-tip `Mark Paid` action and event from `NotableWeb.AdminLive`.
+- Removed the now-unused `Notable.Donations.mark_paid_by_id/1` API.
 - Kept paid-tip replay unchanged: replay broadcasts an already-confirmed tip without changing its persisted `alerted` state.
 - Added regression coverage proving pending admin cards do not expose manual payment confirmation.
 

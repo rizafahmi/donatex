@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.CreatePageViews do
+defmodule Notable.Repo.Migrations.CreatePageViews do
   use Ecto.Migration
 
   def change do

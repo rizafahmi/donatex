@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-`DonatexWeb.OverlayLive` keeps a runtime FIFO queue of donation alert payloads.
+`NotableWeb.OverlayLive` keeps a runtime FIFO queue of donation alert payloads.
 
 The simplest representation is a list:
 
@@ -20,7 +20,7 @@ The simplest representation is a list:
 
 This is correct but not efficient under bursts, because appending to a list with `++` is `O(n)` and copies the whole queue each time.
 
-Even though Donatex is a single-streamer MVP, the overlay should remain stable under short spikes (multiple donations arriving close together) without introducing a separate OTP queue process or an external broker.
+Even though Notable is a single-streamer MVP, the overlay should remain stable under short spikes (multiple donations arriving close together) without introducing a separate OTP queue process or an external broker.
 
 ## Decision
 

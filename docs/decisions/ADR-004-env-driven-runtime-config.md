@@ -6,7 +6,7 @@ Accepted
 
 ## Context
 
-Donatex needs runtime configuration for:
+Notable needs runtime configuration for:
 
 - Mayar API base URL and API key
 - Basic auth credentials for the admin page
@@ -19,7 +19,7 @@ These values are secrets or deployment-specific, so they must not be committed t
 - Store all secrets and deployment-specific configuration in environment variables.
 - In production, fail fast on boot if any required env var is missing.
 - In development, document a `source .env` workflow and provide a committed `.env.example` template.
-- Provide a small `Donatex.Config` module as the single internal access point for these values.
+- Provide a small `Notable.Config` module as the single internal access point for these values.
 
 ## Alternatives Considered
 
@@ -39,4 +39,4 @@ These values are secrets or deployment-specific, so they must not be committed t
 
 - Production misconfiguration fails early and clearly, rather than failing later during donation handling.
 - Local development requires one explicit step (`source .env`) but avoids committing secrets.
-- A single config module (`Donatex.Config`) makes future refactors (e.g., moving to releases, secret managers) localized and testable.
+- A single config module (`Notable.Config`) makes future refactors (e.g., moving to releases, secret managers) localized and testable.

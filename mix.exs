@@ -1,9 +1,9 @@
-defmodule Donatex.MixProject do
+defmodule Notable.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :donatex,
+      app: :notable,
       version: "0.1.0",
       elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -22,7 +22,7 @@ defmodule Donatex.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Donatex.Application, []},
+      mod: {Notable.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -95,10 +95,10 @@ defmodule Donatex.MixProject do
       "ecto.reset": ["ecto.drop", "ecto.setup"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind donatex", "esbuild donatex"],
+      "assets.build": ["compile", "tailwind notable", "esbuild notable"],
       "assets.deploy": [
-        "tailwind donatex --minify",
-        "esbuild donatex --minify",
+        "tailwind notable --minify",
+        "esbuild notable --minify",
         "phx.digest"
       ],
       precommit: [

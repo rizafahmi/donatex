@@ -1,8 +1,8 @@
 import Config
 
 # Configure your database
-config :donatex, Donatex.Repo,
-  database: Path.expand("../donatex_dev.db", __DIR__),
+config :notable, Notable.Repo,
+  database: Path.expand("../notable_dev.db", __DIR__),
   pool_size: 5,
   journal_mode: :wal,
   busy_timeout: 5_000,
@@ -16,7 +16,7 @@ config :donatex, Donatex.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :donatex, DonatexWeb.Endpoint,
+config :notable, NotableWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}],
@@ -25,8 +25,8 @@ config :donatex, DonatexWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "lKSRfwWMx2l9MZyBv50yQaWyss9HwFi9oDcwhuuc7KhabSTIl3udCHeUkGk5s4MM",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:donatex, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:donatex, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:notable, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:notable, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -53,20 +53,20 @@ config :donatex, DonatexWeb.Endpoint,
 # different ports.
 
 # Reload browser tabs when matching files change.
-config :donatex, DonatexWeb.Endpoint,
+config :notable, NotableWeb.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
       # Static assets, except user uploads
       ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$",
       # Router, Controllers, LiveViews and LiveComponents
-      ~r"lib/donatex_web/router\.ex$",
-      ~r"lib/donatex_web/(controllers|live|components)/.*\.(ex|heex)$"
+      ~r"lib/notable_web/router\.ex$",
+      ~r"lib/notable_web/(controllers|live|components)/.*\.(ex|heex)$"
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :donatex, dev_routes: true
+config :notable, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
@@ -89,17 +89,17 @@ config :phoenix_live_view,
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
 
-config :donatex, :mayar,
+config :notable, :mayar,
   base_url: System.get_env("MAYAR_API_BASE_URL", "https://api.mayar.club/hl/v1"),
   api_key: System.get_env("MAYAR_API_KEY"),
   webhook_token: System.get_env("MAYAR_WEBHOOK_TOKEN", "dev-mayar-webhook-token")
 
-config :donatex, :admin,
+config :notable, :admin,
   username: System.get_env("ADMIN_USERNAME", "admin"),
   password: System.get_env("ADMIN_PASSWORD", "admin")
 
-config :donatex, :app, base_url: System.get_env("DONATEX_BASE_URL", "http://localhost:4000")
+config :notable, :app, base_url: System.get_env("DONATEX_BASE_URL", "http://localhost:4000")
 
-config :donatex, :show_mayar_error_reason, true
+config :notable, :show_mayar_error_reason, true
 
-config :donatex, :allow_insecure_qr_image_url, true
+config :notable, :allow_insecure_qr_image_url, true

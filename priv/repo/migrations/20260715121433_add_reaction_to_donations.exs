@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.AddReactionToDonations do
+defmodule Notable.Repo.Migrations.AddReactionToDonations do
   use Ecto.Migration
 
   def change do

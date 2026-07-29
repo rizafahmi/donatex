@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex needs a durable `donations` table in SQLite that supports:
+Notable needs a durable `donations` table in SQLite that supports:
 
 - Creating a local donation row at QR generation time (`pending` state)
 - Upgrading that same row to `paid` after webhook confirmation

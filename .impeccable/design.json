@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-06-18T03:14:00Z",
-  "title": "Design System: Donatex",
+  "title": "Design System: Notable",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -137,7 +137,7 @@
   ],
   "narrative": {
     "northStar": "The Neon Arcade Console",
-    "overview": "Donatex is styled with a high-energy, gamer-centric visual theme inspired by the retro-futurism of arcade cabinets and dark mode creator consoles. The interface is optimized to feel alive, responsive, and tactile. By combining deep slate backdrops with vibrant neon accents and responsive fluid typography, the design creates a feeling of presence and immediate feedback.",
+    "overview": "Notable is styled with a high-energy, gamer-centric visual theme inspired by the retro-futurism of arcade cabinets and dark mode creator consoles. The interface is optimized to feel alive, responsive, and tactile. By combining deep slate backdrops with vibrant neon accents and responsive fluid typography, the design creates a feeling of presence and immediate feedback.",
     "keyCharacteristics": [
       "Dark, high-contrast console theme",
       "Vivid neon-oklch accents (green/teal and orange/amber)",

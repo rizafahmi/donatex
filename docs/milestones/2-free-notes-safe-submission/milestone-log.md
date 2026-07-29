@@ -19,7 +19,7 @@
 
 ### Rate limiting
 
-- `Donatex.FeedbackRateLimiter` — supervised GenServer owning an ETS table
+- `Notable.FeedbackRateLimiter` — supervised GenServer owning an ETS table
 - 10-second per-IP cooldown for accepted free Notes only; tips are exempt
 - IP source: LiveView `peer_data` via Endpoint `connect_info` (no `x-forwarded-for`)
 
@@ -38,12 +38,12 @@
 
 ### Key tests
 
-- `test/donatex/donations_test.exs` — `create_feedback/1`
-- `test/donatex/feedback_rate_limiter_test.exs`
-- `test/donatex_web/live/donate_live_test.exs` — free submit + broadcast
-- `test/donatex_web/live/donate_live_feedback_cooldown_test.exs`
-- `test/donatex_web/features/admin_filters_test.exs` — default all + free Notes
-- `test/donatex_web/features/admin_replay_test.exs` — no replay for free Notes
+- `test/notable/donations_test.exs` — `create_feedback/1`
+- `test/notable/feedback_rate_limiter_test.exs`
+- `test/notable_web/live/donate_live_test.exs` — free submit + broadcast
+- `test/notable_web/live/donate_live_feedback_cooldown_test.exs`
+- `test/notable_web/features/admin_filters_test.exs` — default all + free Notes
+- `test/notable_web/features/admin_replay_test.exs` — no replay for free Notes
 
 ## Unspecified implementation decisions
 

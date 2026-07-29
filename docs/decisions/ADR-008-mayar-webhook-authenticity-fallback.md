@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex needs to accept payment confirmation webhooks from Mayar, and the PRD requires that only valid Mayar webhook requests can trigger donation updates and overlay alerts.
+Notable needs to accept payment confirmation webhooks from Mayar, and the PRD requires that only valid Mayar webhook requests can trigger donation updates and overlay alerts.
 
 The official Mayar pages reviewed for this task document:
 
@@ -29,7 +29,7 @@ That leaves the app with a real security gap if it accepts unsigned requests on 
 
 ## Evidence
 
-This risk is reproducible in-app with [task9_webhook_risk_proof.exs](file:///Users/riza/code/donatex/scripts/task9_webhook_risk_proof.exs), which uses `Plug.Test.conn/3` and calls the Phoenix router directly.
+This risk is reproducible in-app with [task9_webhook_risk_proof.exs](file:///Users/riza/code/notable/scripts/task9_webhook_risk_proof.exs), which uses `Plug.Test.conn/3` and calls the Phoenix router directly.
 
 Run:
 
@@ -53,11 +53,11 @@ Control check: tokenized-like path => 404
 
 ## Decision
 
-For the MVP, Donatex will use a tokenized HTTPS callback URL as its webhook authenticity fallback.
+For the MVP, Notable will use a tokenized HTTPS callback URL as its webhook authenticity fallback.
 
 - Add `MAYAR_WEBHOOK_TOKEN` to the runtime config contract.
 - Register a webhook URL that embeds this token in a non-guessable path segment.
-- Centralize the token check in `Donatex.Mayar.WebhookAuth`.
+- Centralize the token check in `Notable.Mayar.WebhookAuth`.
 - Reject mismatched requests before any database writes or PubSub broadcast.
 - Continue validating payload shape and correlating the event to an existing donation row.
 
@@ -93,6 +93,6 @@ This is an explicit fallback, not a claim that the webhook is cryptographically 
 
 ## Follow-Up
 
-- Implement the actual token enforcement in `Donatex.Mayar.WebhookAuth` and the webhook controller.
+- Implement the actual token enforcement in `Notable.Mayar.WebhookAuth` and the webhook controller.
 - Re-check Mayar docs and dashboard behavior before production launch in case official signing support appears.
 - Replace the token fallback with documented request signing if Mayar exposes it later.

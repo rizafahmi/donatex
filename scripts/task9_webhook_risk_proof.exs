@@ -1,7 +1,7 @@
 Mix.Task.run("app.start")
 
-alias Donatex.Config
-alias DonatexWeb.Router
+alias Notable.Config
+alias NotableWeb.Router
 
 build_json_conn = fn path, body ->
   Plug.Test.conn("POST", path, Jason.encode!(body))

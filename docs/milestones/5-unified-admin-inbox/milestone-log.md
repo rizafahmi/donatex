@@ -10,12 +10,12 @@
 
 ## What was built
 
-### Context (`Donatex.Donations`)
+### Context (`Notable.Donations`)
 - `list_donations(:tips|"tips")` — rows with non-nil `amount`
 - `list_donations(:feedback|"feedback")` — rows with `status == "sent"`
 - Existing `:all` / `:paid` / `:pending` clauses retained for other callers/tests
 
-### Admin LiveView (`DonatexWeb.AdminLive`)
+### Admin LiveView (`NotableWeb.AdminLive`)
 - Filter bar: `@filters ~w(all tips feedback)`
 - Live `donations:created` matching for tips (pending) and feedback (sent)
 - Live `donations:paid` / `donations:alerted` refresh on `all` and `tips`
@@ -24,13 +24,13 @@
 - Mark Paid kept for pending tips
 - Notes-oriented empty state
 
-### Presenter (`DonatexWeb.DonationPresenter`)
+### Presenter (`NotableWeb.DonationPresenter`)
 - `reaction_label/1`, `note_type/1`, `format_timestamp/1`
 
 ### Tests
-- `test/donatex/donations_test.exs` — tips/feedback list filters
-- `test/donatex_web/features/admin_filters_test.exs` — filters, cards, live updates, empty state
-- `test/donatex_web/features/admin_replay_test.exs` — forced replay reject for free notes
+- `test/notable/donations_test.exs` — tips/feedback list filters
+- `test/notable_web/features/admin_filters_test.exs` — filters, cards, live updates, empty state
+- `test/notable_web/features/admin_replay_test.exs` — forced replay reject for free notes
 
 ## Unspecified implementation decisions
 

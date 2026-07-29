@@ -14,7 +14,7 @@ Content creators who showcase real-time alerts on stream to build community enga
 
 ## Product Purpose
 
-Donatex is a self-hosted, single-user livestream donation system for the Indonesian payment ecosystem. It handles dynamic QRIS generation (via Mayar API) and displays real-time sequential OBS alerts on confirmed payments.
+Notable is a self-hosted, single-user livestream donation system for the Indonesian payment ecosystem. It handles dynamic QRIS generation (via Mayar API) and displays real-time sequential OBS alerts on confirmed payments.
 
 ## Brand Personality
 

@@ -1,7 +1,7 @@
 # Plan: Canvas QRMove-style `/qr` (#22)
 
 **Date:** 2026-07-26  
-**Issue:** https://github.com/rizafahmi/donatex/issues/22  
+**Issue:** https://github.com/rizafahmi/notable/issues/22  
 **Branch:** `feat/22-canvas-qr`
 
 ## Goal
@@ -27,13 +27,13 @@ Option **(2)** — canvas approach like QRMove (simpler). Not `@bitjson/qr-code`
 
 ## Files
 
-- `lib/donatex_web/live/qr_code_live.ex`
+- `lib/notable_web/live/qr_code_live.ex`
 - `assets/js/app.js`
 - `assets/css/app.css`
-- `test/donatex_web/live/qr_code_live_test.exs`
+- `test/notable_web/live/qr_code_live_test.exs`
 
 ## Verification
 
-- `mix test test/donatex_web/live/qr_code_live_test.exs`
+- `mix test test/notable_web/live/qr_code_live_test.exs`
 - `mix ci`
 - Manual: open `/qr`, confirm animation + phone scan of encoded `Config.base_url()`

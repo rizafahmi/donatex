@@ -10,7 +10,7 @@ The overlay must show one alert at a time, auto-dismiss after 5 seconds, and rec
 
 ## Decision
 
-Keep the runtime alert queue inside `DonatexWeb.OverlayLive` state and reconstruct missed alerts from the database on mount.
+Keep the runtime alert queue inside `NotableWeb.OverlayLive` state and reconstruct missed alerts from the database on mount.
 
 ## Alternatives Considered
 

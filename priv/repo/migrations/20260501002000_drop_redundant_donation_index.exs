@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.DropRedundantDonationIndex do
+defmodule Notable.Repo.Migrations.DropRedundantDonationIndex do
   use Ecto.Migration
 
   def change do

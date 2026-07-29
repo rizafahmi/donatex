@@ -1,4 +1,4 @@
-defmodule Donatex.Repo.Migrations.AddPageViewsQueryIndexes do
+defmodule Notable.Repo.Migrations.AddPageViewsQueryIndexes do
   use Ecto.Migration
 
   def change do

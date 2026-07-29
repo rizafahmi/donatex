@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex uses Mayar webhooks to transition persisted donations from `pending` to `paid`, then broadcasts `donations:paid` for the donor page and overlay.
+Notable uses Mayar webhooks to transition persisted donations from `pending` to `paid`, then broadcasts `donations:paid` for the donor page and overlay.
 
 Mayar webhook authenticity for the MVP is based on a tokenized callback URL (ADR-008). This protects the endpoint from casual guessing but does not prove payload integrity.
 
@@ -32,7 +32,7 @@ If any condition fails, the webhook request is safely ignored (no state change, 
 ### Accept any `payment.received` event and mark paid without further validation
 
 - Pros: simplest implementation
-- Cons: increases chance of marking the wrong donation as paid if payloads are malformed or abused; does not leverage the fact that Donatex already has an expected amount stored at QR creation time
+- Cons: increases chance of marking the wrong donation as paid if payloads are malformed or abused; does not leverage the fact that Notable already has an expected amount stored at QR creation time
 - Rejected to keep the webhook path resilient under untrusted input
 
 ### Validate only `transactionStatus == paid`
@@ -44,5 +44,5 @@ If any condition fails, the webhook request is safely ignored (no state change, 
 ## Consequences
 
 - Webhook processing becomes stricter and reduces false-positive transitions.
-- If Mayar changes the meaning or format of `amount`, Donatex may ignore legitimate paid deliveries until the mapping is confirmed and updated.
+- If Mayar changes the meaning or format of `amount`, Notable may ignore legitimate paid deliveries until the mapping is confirmed and updated.
 - This complements (but does not replace) the need for an official Mayar signing mechanism when available (ADR-008).

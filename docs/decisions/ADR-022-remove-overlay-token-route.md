@@ -10,7 +10,7 @@ Accepted
 
 ## Context
 
-Donatex is a single-user livestream donation system. The OBS overlay is loaded by the streamer inside OBS as a browser source.
+Notable is a single-user livestream donation system. The OBS overlay is loaded by the streamer inside OBS as a browser source.
 
 The project previously used a non-guessable token embedded in the overlay route to keep the overlay private without introducing an accounts system (ADR-021).
 

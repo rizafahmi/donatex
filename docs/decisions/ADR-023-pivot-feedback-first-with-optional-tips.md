@@ -41,7 +41,7 @@ Pivot the product narrative from a donation platform to a feedback and appreciat
 
 **Branding:**
 - User-facing name becomes "Notable"
-- Codebase stays `Donatex` internally
+- Codebase stays `Notable` internally
 
 **Admin:**
 - Unified table showing both feedback and tips

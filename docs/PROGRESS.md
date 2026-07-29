@@ -1,24 +1,24 @@
 # Project Progress
 
 ## Current State
-- Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
-- Webhook ops hardening for [#31](https://github.com/rizafahmi/donatex/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
-- Overlay alert acknowledgement is now persistence-gated: the OBS overlay only clears the current tip alert and advances the queue after `mark_donation_alerted_by_id/1` succeeds; on failure the alert restarts its visible lifecycle, retries persistence, and remains recoverable, fixing [#28](https://github.com/rizafahmi/donatex/issues/28); see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md)
+- Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/notable/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
+- Webhook ops hardening for [#31](https://github.com/rizafahmi/notable/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
+- Overlay alert acknowledgement is now persistence-gated: the OBS overlay only clears the current tip alert and advances the queue after `mark_donation_alerted_by_id/1` succeeds; on failure the alert restarts its visible lifecycle, retries persistence, and remains recoverable, fixing [#28](https://github.com/rizafahmi/notable/issues/28); see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md)
 - The `/qr` page now renders EQRCode's standards-compliant SVG in a white scannable card; PNG download serializes that SVG at 4× resolution while the existing info panel and expand/minimize cycle remain intact
-- Toast/flash notifications now auto-dismiss after 5 s via a `FlashAutoHide` JS hook on the shared `flash/1` component (fixes [#39](https://github.com/rizafahmi/donatex/issues/39)); per-kind generations reset identical repeated flashes while connection-error toasts stay manual; see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md)
-- Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
-- Concurrent public-board upvotes no longer crash `QuestionLive`: a lost unique-index race reloads the board while preserving one vote per visitor and normal toggle behavior (fixes [#29](https://github.com/rizafahmi/donatex/issues/29)); see [Milestone 10 log](milestones/10-audience-questions-board/milestone-log.md)
-- Milestone 10 (Audience Questions Board): complete — a secondary public Q&A surface at `/questions` lets the audience submit questions (optional name, else `Anonim`) and toggle one anonymous upvote per question; Today is ranked open→answered, votes desc, oldest first; prior WIB dates collapse and load on demand; an authenticated `/admin/questions` page lets the streamer answer/reopen/hide/restore; public and admin views converge in real time via PubSub; raw visitor ids are hashed (never persisted/logged); see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md) and [ADR-024](file:///Users/riza/code/donatex/docs/decisions/ADR-024-secondary-public-qa-questions-board.md)
-- Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
-- Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
-- Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
+- Toast/flash notifications now auto-dismiss after 5 s via a `FlashAutoHide` JS hook on the shared `flash/1` component (fixes [#39](https://github.com/rizafahmi/notable/issues/39)); per-kind generations reset identical repeated flashes while connection-error toasts stay manual; see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md)
+- Donor appreciation opt-in is now a prominent purple selectable CTA titled “Tambah tip untuk mendukung,” with the accurate “Mulai Rp5.000” entry price and a clear selected state; see [Milestone 4 log](file:///Users/riza/code/notable/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
+- Concurrent public-board upvotes no longer crash `QuestionLive`: a lost unique-index race reloads the board while preserving one vote per visitor and normal toggle behavior (fixes [#29](https://github.com/rizafahmi/notable/issues/29)); see [Milestone 10 log](milestones/10-audience-questions-board/milestone-log.md)
+- Milestone 10 (Audience Questions Board): complete — a secondary public Q&A surface at `/questions` lets the audience submit questions (optional name, else `Anonim`) and toggle one anonymous upvote per question; Today is ranked open→answered, votes desc, oldest first; prior WIB dates collapse and load on demand; an authenticated `/admin/questions` page lets the streamer answer/reopen/hide/restore; public and admin views converge in real time via PubSub; raw visitor ids are hashed (never persisted/logged); see [milestone-log](file:///Users/riza/code/notable/docs/milestones/10-audience-questions-board/milestone-log.md) and [ADR-024](file:///Users/riza/code/notable/docs/decisions/ADR-024-secondary-public-qa-questions-board.md)
+- Milestone 9 (Donor Visitor Presence): complete — anonymous signed-session Presence counts unique browsers, deduplicates tabs, and shows real-time social proof only at 3+ visitors; review follow-up closed durable fail-hidden track/list failures and lifecycle test sync; see [milestone-log](file:///Users/riza/code/notable/docs/milestones/9-donor-visitor-presence/milestone-log.md)
+- Milestone 8 (SEO Optimization): complete — see [milestone-log](file:///Users/riza/code/notable/docs/milestones/8-seo-optimization/milestone-log.md)
+- Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/notable/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Test status for the latest donor CTA change: 31 focused tests, 0 failures; format check and compile warnings-as-errors passed; mobile browser verification passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
-- [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
-- [x] [#31](https://github.com/rizafahmi/donatex/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
+- [x] [#27](https://github.com/rizafahmi/notable/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
+- [x] [#31](https://github.com/rizafahmi/notable/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
 - [x] Replace the decorative `/qr` lightning-dot grid with a scannable EQRCode SVG and SVG-based PNG download
 - [x] Donor form → Mayar dynamic QR → local `pending` donation row
 - [x] Mayar webhook → DB transition to `paid` (deduped) → PubSub broadcast
@@ -38,7 +38,7 @@
 - [x] Fix live Mayar correlation failure where the QR image UUID differed from the webhook `transactionId` by resolving the real transaction id from `/transactions/unpaid` and failing closed when it cannot be uniquely determined
 - [x] Remove the stale QR asset UUID fallback in code so omitted `transactionId`/`id` responses always resolve correlation via `/transactions/unpaid` instead of trusting the QR filename
 - [x] Apply custom HTML/CSS alert design from user requirements
-- [x] Blend custom overlay design with Donatex aesthetic (glassmorphism, accent colors, typography)
+- [x] Blend custom overlay design with Notable aesthetic (glassmorphism, accent colors, typography)
 - [x] Add high-performance canvas confetti burst synced with the audio to maximize celebratory feel
 - [x] Add sound effect playback (`smb_stage_clear.wav`) when overlay alerts appear
 - [x] Tune overlay alert timing (~8.5 seconds end-to-end) so the audio cue and exit animation can finish cleanly
@@ -69,19 +69,19 @@
 - [x] Visitor Analytics & Conversion Funnel: Track raw page views on `/` dynamically via connected socket, broadcast page views via PubSub, and render real-time conversion rates (Feedback & Tip Conversion) on `/admin` with a premium glassmorphic visual card.
 - [x] Milestone 9 — Donor Visitor Presence: Track ephemeral signed browser sessions with Phoenix Presence, deduplicate multiple tabs, and show an exact real-time count only at three or more visitors.
 - [x] Milestone 10 — Audience Questions Board: secondary public `/questions` Q&A surface with anonymous upvotes, WIB-grouped ranked board, and authenticated `/admin/questions` moderation (answer/reopen/hide/restore); generalized `SubmissionLimiter`; raw visitor ids hashed and never persisted/logged.
-- [x] [#39](https://github.com/rizafahmi/donatex/issues/39) Toast auto-hide — see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md).
-- [x] [#28](https://github.com/rizafahmi/donatex/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
-- [x] [#30](https://github.com/rizafahmi/donatex/issues/30) Admin LiveView re-auth — `AdminBasicAuth` stamps `admin_authenticated` into the session; `live_session :admin` + `DonatexWeb.LiveAdminAuth` `on_mount` rejects mounts without the flag (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
-- [x] [#32](https://github.com/rizafahmi/donatex/issues/32) Flaky admin/donor ExUnit suite — replace `Process.sleep/1` in admin analytics/filters feature tests with `unwrap` + `render` LiveView sync; set Repo-touching `donate_live_test.exs` to `async: false`.
+- [x] [#39](https://github.com/rizafahmi/notable/issues/39) Toast auto-hide — see [Milestone 12 log](milestones/12-toast-auto-hide/milestone-log.md).
+- [x] [#28](https://github.com/rizafahmi/notable/issues/28) Overlay alert persistence — advance queue only after `mark_donation_alerted_by_id/1` succeeds; see [Milestone 13 log](milestones/13-overlay-alert-persistence/milestone-log.md).
+- [x] [#30](https://github.com/rizafahmi/notable/issues/30) Admin LiveView re-auth — `AdminBasicAuth` stamps `admin_authenticated` into the session; `live_session :admin` + `NotableWeb.LiveAdminAuth` `on_mount` rejects mounts without the flag (see [ADR-020](decisions/ADR-020-admin-basic-auth-for-mvp.md)).
+- [x] [#32](https://github.com/rizafahmi/notable/issues/32) Flaky admin/donor ExUnit suite — replace `Process.sleep/1` in admin analytics/filters feature tests with `unwrap` + `render` LiveView sync; set Repo-touching `donate_live_test.exs` to `async: false`.
 
 ## In Progress
-- [#26](https://github.com/rizafahmi/donatex/issues/26) Harden amount-fallback payment correlation — atomic `claim_pending_by_amount/3` (tx id remap + paid in one transaction); fail-closed on ambiguous multi-pending same-amount; 9 new edge-case tests; see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/11-amount-fallback-hardening/milestone-log.md). PR pending.
-- [#24](https://github.com/rizafahmi/donatex/issues/24) Questions WIB/today empty listing — fixed on the same PR by making questions tests calendar-relative to `today_wib()` (hardcoded `2026-07-25` drifted).
+- [#26](https://github.com/rizafahmi/notable/issues/26) Harden amount-fallback payment correlation — atomic `claim_pending_by_amount/3` (tx id remap + paid in one transaction); fail-closed on ambiguous multi-pending same-amount; 9 new edge-case tests; see [milestone-log](file:///Users/riza/code/notable/docs/milestones/11-amount-fallback-hardening/milestone-log.md). PR pending.
+- [#24](https://github.com/rizafahmi/notable/issues/24) Questions WIB/today empty listing — fixed on the same PR by making questions tests calendar-relative to `today_wib()` (hardcoded `2026-07-25` drifted).
 
 ## Known Issues
 - Mayar’s public webhook docs still do not publish a signature/HMAC verification scheme; MVP relies on an HTTPS callback URL with a non-guessable token until Mayar exposes an official signing mechanism
 - Webhook parsing accepts `transactionId` with `id` as a fallback, and accepts `transactionStatus` with `status` as a fallback, until sandbox traffic confirms the final Mayar payload shape
-- If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Donatex now fails closed and does not show the QR rather than risk an uncorrelatable payment
+- If Mayar omits `transactionId`/`id` and `/transactions/unpaid` does not return a single fresh same-amount match, Notable now fails closed and does not show the QR rather than risk an uncorrelatable payment
 - Cross-node visitor totals depend on healthy production DNS clustering and PubSub; only single-node Presence behavior has been verified locally
 
 ## Next Steps
@@ -91,21 +91,21 @@
 4. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
 
 ## References
-- [DECISIONS.md](file:///Users/riza/code/donatex/docs/DECISIONS.md)
-- [PLAN.md](file:///Users/riza/code/donatex/docs/PLAN.md)
-- [ARCHITECTURE.md](file:///Users/riza/code/donatex/docs/ARCHITECTURE.md)
-- [PRD.md](file:///Users/riza/code/donatex/docs/PRD.md)
-- Milestone 2 log: [docs/milestones/2-free-notes-safe-submission/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
-- Milestone 3 log: [docs/milestones/3-floating-overlay-reactions/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
-- Milestone 4 log: [docs/milestones/4-optional-appreciation-experience/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
-- Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/5-unified-admin-inbox/milestone-log.md)
-- Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/6-notable-branding-routing/milestone-log.md)
-- Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
-- Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/8-seo-optimization/milestone-log.md)
-- Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
-- Milestone 10 log: [docs/milestones/10-audience-questions-board/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md)
-- Milestone 12 log: [docs/milestones/12-toast-auto-hide/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/12-toast-auto-hide/milestone-log.md)
-- Milestone 13 log: [docs/milestones/13-overlay-alert-persistence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-overlay-alert-persistence/milestone-log.md)
-- Milestone 14 log: [docs/milestones/14-tip-rate-limit/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/14-tip-rate-limit/milestone-log.md)
-- Milestone 13 log: [docs/milestones/13-webhook-ops-hardening/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-webhook-ops-hardening/milestone-log.md)
-- ADRs: [docs/decisions](file:///Users/riza/code/donatex/docs/decisions)
+- [DECISIONS.md](file:///Users/riza/code/notable/docs/DECISIONS.md)
+- [PLAN.md](file:///Users/riza/code/notable/docs/PLAN.md)
+- [ARCHITECTURE.md](file:///Users/riza/code/notable/docs/ARCHITECTURE.md)
+- [PRD.md](file:///Users/riza/code/notable/docs/PRD.md)
+- Milestone 2 log: [docs/milestones/2-free-notes-safe-submission/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/2-free-notes-safe-submission/milestone-log.md)
+- Milestone 3 log: [docs/milestones/3-floating-overlay-reactions/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/3-floating-overlay-reactions/milestone-log.md)
+- Milestone 4 log: [docs/milestones/4-optional-appreciation-experience/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/4-optional-appreciation-experience/milestone-log.md)
+- Milestone 5 log: [docs/milestones/5-unified-admin-inbox/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/5-unified-admin-inbox/milestone-log.md)
+- Milestone 6 log: [docs/milestones/6-notable-branding-routing/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/6-notable-branding-routing/milestone-log.md)
+- Milestone 7 log: [docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
+- Milestone 8 log: [docs/milestones/8-seo-optimization/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/8-seo-optimization/milestone-log.md)
+- Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/9-donor-visitor-presence/milestone-log.md)
+- Milestone 10 log: [docs/milestones/10-audience-questions-board/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/10-audience-questions-board/milestone-log.md)
+- Milestone 12 log: [docs/milestones/12-toast-auto-hide/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/12-toast-auto-hide/milestone-log.md)
+- Milestone 13 log: [docs/milestones/13-overlay-alert-persistence/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/13-overlay-alert-persistence/milestone-log.md)
+- Milestone 14 log: [docs/milestones/14-tip-rate-limit/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/14-tip-rate-limit/milestone-log.md)
+- Milestone 13 log: [docs/milestones/13-webhook-ops-hardening/milestone-log.md](file:///Users/riza/code/notable/docs/milestones/13-webhook-ops-hardening/milestone-log.md)
+- ADRs: [docs/decisions](file:///Users/riza/code/notable/docs/decisions)
