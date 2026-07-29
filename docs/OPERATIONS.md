@@ -30,10 +30,10 @@ These values are expected to be provided via environment variables. In developme
 
 ### Application URLs
 
-- `DONATEX_BASE_URL`
+- `NOTABLE_BASE_URL` (canonical)
   - Public base URL used to build links and derive LiveView origin checks.
   - Example: `https://donate.example.com`
-  - The `DONATEX_*` env name is intentional and unchanged for this release slice; the OTP app is `:notable`, but do not rename this variable to `NOTABLE_*` yet.
+  - Temporary alias: `DONATEX_BASE_URL` — still accepted if `NOTABLE_BASE_URL` is unset. Prefer `NOTABLE_*`; do not remove the alias until the captain says so.
 - `PHX_HOST`
   - Public host used for Phoenix endpoint URL config.
   - Example: `donate.example.com`
@@ -81,7 +81,8 @@ If you deploy with `systemd`, a file such as `/etc/notable/notable.env` can hold
 PHX_SERVER=true
 PORT=4000
 PHX_HOST=donate.example.com
-DONATEX_BASE_URL=https://donate.example.com
+NOTABLE_BASE_URL=https://donate.example.com
+# Temporary alias still accepted: DONATEX_BASE_URL
 
 SECRET_KEY_BASE=replace_me_with_mix_phx_gen_secret
 DATABASE_PATH=/var/lib/notable/notable.db
@@ -99,7 +100,7 @@ Keep this file readable only by root (or the app user if your process manager re
 
 ## Public URLs (What To Copy Into OBS / Mayar)
 
-Assuming `DONATEX_BASE_URL=https://donate.example.com`:
+Assuming `NOTABLE_BASE_URL=https://donate.example.com`:
 
 - Donor page: `https://donate.example.com/donate`
 - Overlay (OBS Browser Source): `https://donate.example.com/overlay`
@@ -147,7 +148,7 @@ If Mayar `POST /qrcode/create` omits `transactionId`/`id`, Notable performs a fo
 
 - Terminate TLS in front of the app (Mayar webhooks should use HTTPS).
 - Keep `/webhooks/mayar/:token` URLs private; treat the token as a secret.
-- If you change `DONATEX_BASE_URL`, ensure it matches the URL users actually load in browsers (LiveView origin checks use it).
+- If you change `NOTABLE_BASE_URL` (or its temporary `DONATEX_BASE_URL` alias), ensure it matches the URL users actually load in browsers (LiveView origin checks use it).
 
 ## GCP Free Tier Deployment (Single VM)
 

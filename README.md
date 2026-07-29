@@ -30,7 +30,7 @@ Common variables:
 - `MAYAR_API_KEY`
 - `MAYAR_WEBHOOK_TOKEN`
 - `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-- `DONATEX_BASE_URL` (important in production for LiveView origin checks)
+- `NOTABLE_BASE_URL` (important in production for LiveView origin checks; temporary alias: `DONATEX_BASE_URL`)
 
 ## Mayar webhook authenticity (MVP)
 Mayar’s public webhook docs reviewed for this project do not document a signature/HMAC verification mechanism. For MVP, Notable uses a URL-secret model:
