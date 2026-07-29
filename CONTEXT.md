@@ -1,5 +1,8 @@
 # Domain Glossary
 
+## Brand
+**Notable**. User-facing product name for the app (titles, README, UI chrome, docs). Production host may remain Feedback-named (for example `feedback.rizafahmi.com`); that hostname is not the brand.
+
 ## Note
 A message sent by a viewer to a streamer. Always has a sender name and message body. May optionally include a monetary tip. In the database this is stored as a `Donation` record — the schema name is a legacy of the donation-first design and does not reflect the current product framing.
 
