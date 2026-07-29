@@ -230,21 +230,20 @@ defmodule Notable.QrTest do
   # Rasterises the download SVG by reading back its `<rect>` elements. The SVG
   # is a grid of axis-aligned unit rects, so this is an exact rendering of the
   # artefact the browser turns into the downloaded PNG - no rasteriser needed.
+  #
+  # Attribute order is intentionally not assumed: EQRCode builds each rect from
+  # a map, and map key enumeration order differs across OTP versions (OTP 27
+  # on CI vs OTP 28 locally), so a fixed-order regex silently matched nothing
+  # on Linux CI.
   defp rasterize_svg(qr) do
     scale = @module_px
 
-    rects =
-      Regex.scan(
-        ~r/<rect x="(\d+)" y="(\d+)" width="1" height="1" style="fill: (#[0-9a-fA-F]{6});"/,
-        qr.svg
-      )
-
-    assert rects != []
-
     grid =
-      for [_, x, y, fill] <- rects, into: %{} do
-        {{String.to_integer(x), String.to_integer(y)}, fill}
-      end
+      Regex.scan(~r/<rect\b([^>]*?)\/>/, qr.svg, capture: :all_but_first)
+      |> Enum.map(fn [attrs] -> parse_svg_rect(attrs) end)
+      |> Map.new()
+
+    assert map_size(grid) > 0
 
     # The SVG carries EQRCode's own quiet zone, so derive the grid extent from
     # the rects themselves rather than assuming our render margin.
@@ -259,6 +258,28 @@ defmodule Notable.QrTest do
       end
 
     %{width: side * scale, height: side * scale, data: data}
+  end
+
+  defp parse_svg_rect(attrs) do
+    x = svg_attr!(attrs, "x") |> String.to_integer()
+    y = svg_attr!(attrs, "y") |> String.to_integer()
+    width = svg_attr!(attrs, "width")
+    height = svg_attr!(attrs, "height")
+    style = svg_attr!(attrs, "style")
+
+    assert width == "1"
+    assert height == "1"
+
+    [fill] = Regex.run(~r/fill:\s*(#[0-9a-fA-F]{6})\b/, style, capture: :all_but_first)
+
+    {{x, y}, fill}
+  end
+
+  defp svg_attr!(attrs, name) do
+    case Regex.run(~r/\b#{name}="([^"]*)"/, attrs, capture: :all_but_first) do
+      [value] -> value
+      nil -> flunk("SVG <rect> missing attribute #{name}: #{attrs}")
+    end
   end
 
   defp rgb_bytes("#" <> hex) do
