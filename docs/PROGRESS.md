@@ -1,6 +1,7 @@
 # Project Progress
 
 ## Current State
+- `/qr` and `/qr-overlay` now render an animated canvas QR (lightning-bolt data modules, colour-coded finders, data-flow wave, pathway pulses, multiply scanner sweep) for [#6](https://github.com/rizafahmi/notable/issues/6). This also fixed three live defects on `main`: both pages rendered a blank QR, and the PNG download was broken by CSP plus a 150px rasterisation. Scannability is enforced by a per-pixel luminance budget in `Notable.Qr` and verified with OpenCV; see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md)
 - Notable rename slice 3/4 ([#68](https://github.com/rizafahmi/donatex/issues/68)): `NOTABLE_BASE_URL` is canonical; `DONATEX_BASE_URL` remains a temporary alias in runtime/dev config, `.env.example`, and OPERATIONS. Slices 1–2 merged ([#66](https://github.com/rizafahmi/donatex/issues/66) / PR #70, [#67](https://github.com/rizafahmi/donatex/issues/67) / PR #71). Remaining: GitHub rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); parent [#2](https://github.com/rizafahmi/donatex/issues/2).
 - Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
 - Webhook ops hardening for [#31](https://github.com/rizafahmi/donatex/issues/31) is complete; see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md)
@@ -18,6 +19,7 @@
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
+- [x] [#6](https://github.com/rizafahmi/notable/issues/6) Artistic animated `/qr` page with a decoder-verified scannability budget — see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md).
 - [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
 - [x] [#31](https://github.com/rizafahmi/donatex/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
 - [x] Replace the decorative `/qr` lightning-dot grid with a scannable EQRCode SVG and SVG-based PNG download

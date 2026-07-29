@@ -340,10 +340,15 @@
 }
 
 /* Scannable QR container */
+/* The canvas fills the card edge to edge and draws its own quiet zone in
+   white, rather than the card contributing a padding gutter. That keeps the
+   whole margin under test in `Notable.Qr`, gives the code ~14% more area, and
+   leaves the scanner sweep no seam to stop at. */
 .qr-scannable-card {
   background: #ffffff;
   border-radius: 20px;
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(156, 207, 216, 0.15);
   display: flex;
   align-items: center;
@@ -364,37 +369,22 @@
   pointer-events: none;
 }
 
-/* Canvas QR — QRMove-inspired animated matrix */
+/* Canvas QR — animated matrix drawn by the QrCanvas hook.
+   Sized in CSS pixels; the hook sets the backing-store resolution from the
+   device pixel ratio. The square aspect ratio keeps the matrix from skewing
+   if the card ever changes size. */
 .qr-canvas {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1;
   display: block;
   position: relative;
   z-index: 1;
-  border-radius: 4px;
+  border-radius: inherit;
 }
 
-/* Scanner sweep effect overlay */
-.qr-scannable-card::after {
-  content: '';
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  height: 3px;
-  background: linear-gradient(90deg, transparent, rgba(156, 207, 216, 0.6), transparent);
-  box-shadow: 0 0 10px 3px rgba(156, 207, 216, 0.2);
-  animation: qr-scan-sweep 4s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 10;
-}
-
-@keyframes qr-scan-sweep {
-  0% { top: 20px; opacity: 0.7; }
-  50% { top: calc(100% - 23px); opacity: 0.3; }
-  50.1% { top: 20px; opacity: 0; }
-  100% { top: 20px; opacity: 0.7; }
-}
+/* The scanner sweep lives inside the canvas, where it is composited with
+   `multiply` so it can only ever darken. A translucent CSS overlay would sit
+   on top of the modules and lift them toward the binarisation threshold. */
 
 /* Overlay wrapper */
 .cta-overlay-wrapper { position: relative; z-index: 99; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -434,6 +424,10 @@
 @keyframes qr-cta-badge-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 @keyframes qr-cta-dot-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } }
 @keyframes qr-arrow-bounce-left { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
+/* Stacked layout puts the QR above the arrow, so it has to point up instead.
+   The rotation lives in the keyframes because the animation would otherwise
+   overwrite a static transform. */
+@keyframes qr-arrow-bounce-up { 0%, 100% { transform: rotate(90deg) translateX(0); } 50% { transform: rotate(90deg) translateX(-5px); } }
 
 /* Action buttons */
 .qr-actions { display: flex; gap: 12px; margin-top: 4px; }
@@ -451,13 +445,15 @@
   .cta-header { align-items: center; }
   .qr-scannable-card { width: 260px; height: 260px; }
   .cta-title { font-size: 22px; }
+  .cta-arrow-icon-wrapper { animation-name: qr-arrow-bounce-up; }
 }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
+  /* The canvas checks `prefers-reduced-motion` itself and draws a single
+     static frame, so only the surrounding chrome needs stopping here. */
   .cta-overlay-wrapper, .cta-minimized-pill, .cta-card-expanded, .cta-badge,
-  .cta-live-dot, .cta-arrow-icon-wrapper, .cta-url-badge, .qr-btn,
-  .qr-scannable-card::after {
+  .cta-live-dot, .cta-arrow-icon-wrapper, .cta-url-badge, .qr-btn {
     animation: none !important;
     transition: none !important;
   }
