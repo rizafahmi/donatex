@@ -238,16 +238,7 @@ defmodule Donatex.SqliteBench do
   defp run_write(repo, key, tally) do
     value = "v-#{key}-#{System.unique_integer([:positive])}"
 
-    case repo.transaction(fn ->
-           case Ecto.Adapters.SQL.query(
-                  repo,
-                  "INSERT INTO bench_items (id, value) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET value = excluded.value",
-                  [key, value]
-                ) do
-             {:ok, _} -> :ok
-             {:error, error} -> repo.rollback(error)
-           end
-         end) do
+    case upsert_bench_item(repo, key, value) do
       {:ok, :ok} ->
         %{tally | writes: tally.writes + 1}
 
@@ -257,6 +248,19 @@ defmodule Donatex.SqliteBench do
   rescue
     error ->
       bump_error(tally, :write, error)
+  end
+
+  defp upsert_bench_item(repo, key, value) do
+    repo.transaction(fn ->
+      case Ecto.Adapters.SQL.query(
+             repo,
+             "INSERT INTO bench_items (id, value) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET value = excluded.value",
+             [key, value]
+           ) do
+        {:ok, _} -> :ok
+        {:error, error} -> repo.rollback(error)
+      end
+    end)
   end
 
   defp bump_error(tally, kind, error) do
@@ -320,38 +324,76 @@ defmodule Donatex.SqliteBench do
   end
 
   defp setup_schema!(repo) do
-    {:ok, _} =
-      Ecto.Adapters.SQL.query(
-        repo,
-        """
-        CREATE TABLE IF NOT EXISTS bench_items (
-          id INTEGER PRIMARY KEY NOT NULL,
-          value TEXT NOT NULL
-        )
-        """,
-        []
-      )
-
-    :ok
+    # Baseline uses busy_timeout: 0 with a multi-connection pool; PRAGMA/open
+    # races can return SQLITE_BUSY during one-shot DDL — retry instead of MatchError.
+    retry_on_busy!(fn ->
+      case Ecto.Adapters.SQL.query(
+             repo,
+             """
+             CREATE TABLE IF NOT EXISTS bench_items (
+               id INTEGER PRIMARY KEY NOT NULL,
+               value TEXT NOT NULL
+             )
+             """,
+             []
+           ) do
+        {:ok, _} -> :ok
+        {:error, error} -> raise_query_error!(error)
+      end
+    end)
   end
 
   defp seed_rows!(repo, keys) do
-    repo.transaction(fn ->
-      for id <- 1..keys do
-        {:ok, _} =
-          Ecto.Adapters.SQL.query(
-            repo,
-            "INSERT OR IGNORE INTO bench_items (id, value) VALUES (?, ?)",
-            [id, "seed-#{id}"]
-          )
-      end
+    retry_on_busy!(fn -> finish_seed!(repo, keys) end)
+  end
 
-      :ok
-    end)
-    |> case do
+  defp finish_seed!(repo, keys) do
+    case seed_all_rows(repo, keys) do
       {:ok, :ok} -> :ok
+      {:error, error} -> raise_query_error!(error)
       other -> raise "failed to seed bench rows: #{inspect(other)}"
     end
+  end
+
+  defp seed_all_rows(repo, keys) do
+    repo.transaction(fn ->
+      Enum.each(1..keys, &seed_one_row!(repo, &1))
+      :ok
+    end)
+  end
+
+  defp seed_one_row!(repo, id) do
+    case Ecto.Adapters.SQL.query(
+           repo,
+           "INSERT OR IGNORE INTO bench_items (id, value) VALUES (?, ?)",
+           [id, "seed-#{id}"]
+         ) do
+      {:ok, _} -> :ok
+      {:error, error} -> repo.rollback(error)
+    end
+  end
+
+  defp retry_on_busy!(fun, attempts \\ 25) when is_function(fun, 0) and attempts >= 1 do
+    fun.()
+  rescue
+    error ->
+      if attempts > 1 and lock_error?(error) do
+        Process.sleep(5)
+        retry_on_busy!(fun, attempts - 1)
+      else
+        reraise error, __STACKTRACE__
+      end
+  end
+
+  defp raise_query_error!(error) do
+    message =
+      cond do
+        is_exception(error) -> Exception.message(error)
+        is_map(error) and Map.has_key?(error, :message) -> to_string(error.message)
+        true -> inspect(error)
+      end
+
+    raise RuntimeError, message: message
   end
 
   defp cleanup_db_files(path) do

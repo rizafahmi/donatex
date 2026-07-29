@@ -9,7 +9,7 @@ defmodule Donatex.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      dialyzer: [plt_add_apps: [:ex_unit]],
+      dialyzer: [plt_add_apps: [:ex_unit, :mix]],
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
       usage_rules: usage_rules(),

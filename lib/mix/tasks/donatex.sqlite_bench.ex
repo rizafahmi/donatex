@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Donatex.SqliteBench do
 
   Optional / manual only — not invoked by `mix ci`.
 
-  Closes the measurement gap for GitHub #64 / parent #38.
+  See also `docs/OPERATIONS.md` (SQLite Notes) for when this fits ops workflows.
   """
 
   use Mix.Task

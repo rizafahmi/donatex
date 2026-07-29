@@ -42,6 +42,38 @@ defmodule Donatex.SqliteBenchTest do
     assert report =~ "success_rate"
   end
 
+  test "run_ab! completes optimized vs baseline and reports both variants" do
+    dir =
+      Path.join(
+        System.tmp_dir!(),
+        "donatex-sqlite-bench-test-#{System.unique_integer([:positive])}"
+      )
+
+    on_exit(fn -> File.rm_rf(dir) end)
+
+    %{optimized: optimized, baseline: baseline, opts: opts} =
+      SqliteBench.run_ab!(dir, %{
+        workers: 4,
+        ops_per_worker: 25,
+        write_pct: 10,
+        keys: 32,
+        seed: 64
+      })
+
+    assert opts.workers == 4
+    assert optimized.variant == :optimized
+    assert baseline.variant == :baseline
+    assert optimized.attempts == 100
+    assert baseline.attempts == 100
+    assert optimized.success_rate >= baseline.success_rate
+
+    report = SqliteBench.format_report(%{optimized: optimized, baseline: baseline, opts: opts})
+    assert report =~ "Donatex SQLite concurrent A/B bench"
+    assert report =~ SqliteBench.optimized_label()
+    assert report =~ SqliteBench.baseline_label()
+    assert report =~ "comparison:"
+  end
+
   defp sample_result(variant, label, ops_per_sec, lock_errors) do
     reads = trunc(ops_per_sec * 0.95)
     writes = trunc(ops_per_sec * 0.05)
