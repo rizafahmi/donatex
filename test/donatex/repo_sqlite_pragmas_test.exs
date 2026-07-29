@@ -14,6 +14,11 @@ defmodule Donatex.RepoSqlitePragmasTest do
   end
 
   test "Repo default transaction mode is immediate" do
+    # Shared config (config.exs) plus env overlays must keep IMMEDIATE so write
+    # txs wait on busy_timeout under WAL instead of failing on lock upgrade.
     assert Donatex.Repo.config()[:default_transaction_mode] == :immediate
+
+    assert Application.get_env(:donatex, Donatex.Repo)[:default_transaction_mode] ==
+             :immediate
   end
 end
