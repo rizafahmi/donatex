@@ -75,7 +75,9 @@ The alternative — the deploy script sourcing `DEPLOY_ENV_FILE` — would pull 
 
 Instead the script passes `--property=EnvironmentFile=$DEPLOY_ENV_FILE` to `systemd-run` and lets systemd apply it, exactly as it does for the service.
 The secrets never enter the script's process.
-The only thing read out of that file is the single non-secret `DATABASE_PATH` line, used to cross-check the pruning guard; a disagreement with `DEPLOY_DATABASE_PATH` aborts before anything mutates.
+When the deploy user can read that file, the script also looks up the non-secret `DATABASE_PATH` line and aborts on disagreement with `DEPLOY_DATABASE_PATH`.
+Under the recommended permissions that read usually fails, so the cross-check is opportunistic rather than a guarantee.
+The guaranteed database guards need no env read: preflight refuses a database inside `DEPLOY_ROOT`, and the pruner refuses any candidate that contains or is contained by the database or its companions.
 
 The honest cost, written into `docs/OPERATIONS.md` rather than glossed: granting `systemd-run` via sudoers is root-equivalent, so the deploy key is a root credential on that box however the sudoers line is phrased.
 

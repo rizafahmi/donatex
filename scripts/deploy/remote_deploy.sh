@@ -18,15 +18,19 @@
 #
 #   * The SQLite database at DEPLOY_DATABASE_PATH is never read, copied, moved,
 #     truncated, or deleted here, and neither are its -wal/-shm companions.
-#     Two independent guards enforce this: preflight refuses to mutate anything
-#     when the database resolves to somewhere inside DEPLOY_ROOT, and the
-#     pruner separately refuses any candidate whose path contains, or is
-#     contained by, the database or its companions.
+#     Two independent guards enforce this as guarantees (neither needs the env
+#     file): preflight refuses to mutate anything when the database resolves to
+#     somewhere inside DEPLOY_ROOT, and the pruner separately refuses any
+#     candidate whose path contains, or is contained by, the database or its
+#     companions, re-checked immediately before the single rm -rf.
 #   * The runtime environment file at DEPLOY_ENV_FILE belongs to the operator.
-#     This script hands its *path* to systemd and performs exactly one
-#     read-only lookup of the non-secret DATABASE_PATH key to cross-check the
-#     pruning guard. It never writes, templates, or replaces that file, and it
-#     never loads the secrets into its own process environment.
+#     This script hands its *path* to systemd. When the deploy user can read
+#     that file, it also does one read-only lookup of the non-secret
+#     DATABASE_PATH key and aborts on disagreement with DEPLOY_DATABASE_PATH.
+#     Under the recommended permissions that read usually fails, so the
+#     cross-check is opportunistic rather than a guarantee. The script never
+#     writes, templates, or replaces that file, and never loads the secrets
+#     into its own process environment.
 #   * Migrations run from the *new* release's own bin/migrate, before `current`
 #     moves. A failed migration therefore leaves the running release exactly
 #     where it was.
@@ -92,16 +96,35 @@ require_env() {
 # Resolves a path to its physical location without requiring it to exist.
 # `realpath -m` and `readlink -f` are not portable across GNU and BSD
 # userlands, and the deploy has to behave identically on both.
+# When the final component exists and is a symlink, follow it with a bounded
+# readlink loop so a DEPLOY_DATABASE_PATH symlink into a release directory
+# cannot defeat the database guards.
 abs_path() {
-  local path=$1 dir base
+  local path=$1 dir base depth=0 target
+  local max_depth=32
+
   dir=$(dirname -- "$path")
   base=$(basename -- "$path")
 
   if [ -d "$dir" ]; then
-    printf '%s/%s\n' "$(cd -- "$dir" && pwd -P)" "$base"
-  else
-    printf '%s\n' "$path"
+    path="$(cd -- "$dir" && pwd -P)/$base"
   fi
+
+  while [ -L "$path" ] && [ "$depth" -lt "$max_depth" ]; do
+    target=$(readlink "$path") || break
+    case "$target" in
+      /*) path=$target ;;
+      *) path="$(dirname -- "$path")/$target" ;;
+    esac
+    dir=$(dirname -- "$path")
+    base=$(basename -- "$path")
+    if [ -d "$dir" ]; then
+      path="$(cd -- "$dir" && pwd -P)/$base"
+    fi
+    depth=$((depth + 1))
+  done
+
+  printf '%s\n' "$path"
 }
 
 # True when $2 is $1 itself or lives underneath it.
@@ -406,6 +429,10 @@ cmd_activate() {
   [ ! -e "$release_dir" ] || die "release directory already exists: $release_dir"
   [ -f "$archive" ] || die "release archive not found: $archive"
 
+  ACTIVATE_CREATED_RELEASE=
+  # shellcheck disable=SC2064 # expand ids now; cleanup must see this attempt's values
+  trap "activate_failure_cleanup $(printf '%q' "$release_id") $(printf '%q' "$archive")" EXIT
+
   local staging="$RELEASES_DIR/.staging-$release_id.$$"
   mkdir "$staging"
   note "unpacking $release_id"
@@ -421,6 +448,7 @@ cmd_activate() {
   fi
 
   mv "$staging" "$release_dir"
+  ACTIVATE_CREATED_RELEASE=$release_id
 
   if [ -n "$RELEASE_USER" ]; then
     run_privileged chown -R "$RELEASE_USER" "$release_dir"
@@ -439,7 +467,20 @@ cmd_activate() {
 
   note "$release_id is live"
   prune_releases
+  trap - EXIT
   discard_upload "$archive"
+}
+
+# On a failed activate, clear the staged upload and any never-activated release
+# directory so repeated failures cannot fill a small disk. Success clears the
+# trap above and discards the upload itself.
+activate_failure_cleanup() {
+  local release_id=$1 archive=$2
+  trap - EXIT
+  discard_upload "$archive"
+  if [ "${ACTIVATE_CREATED_RELEASE:-}" = "$release_id" ]; then
+    discard_never_activated_release "$release_id"
+  fi
 }
 
 # Clears the uploaded tarball, but only when it is genuinely an upload sitting
@@ -459,6 +500,34 @@ discard_upload() {
   ! touches_database "$archive_abs" || die "refusing to remove $archive: it is the database"
 
   rm -f "$archive_abs"
+}
+
+# Removes a release directory created by this activate attempt that never became
+# (or no longer is) current. Uses the same pre-rm checks as the pruner.
+discard_never_activated_release() {
+  local release_id=$1
+  local path=$RELEASES_DIR/$release_id
+  local current
+
+  [ -n "$release_id" ] || return 0
+  [ -e "$path" ] || return 0
+
+  [ "$(dirname "$path")" = "$RELEASES_DIR" ] ||
+    die "refusing to remove $path: outside $RELEASES_DIR"
+  [ ! -L "$path" ] || die "refusing to remove $path: symlink"
+  [ -d "$path" ] || die "refusing to remove $path: not a directory"
+
+  current=$(current_release_id 2>/dev/null || true)
+  if [ "$release_id" = "$current" ]; then
+    note "leaving $path in place: it is the current release"
+    return 0
+  fi
+
+  ! touches_database "$(abs_path "$path")" ||
+    die "refusing to remove $path: it contains the database"
+
+  note "removing never-activated release $release_id"
+  rm -rf "$path"
 }
 
 # Migrations run through systemd rather than through this script so that the

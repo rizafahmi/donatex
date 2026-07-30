@@ -118,7 +118,9 @@ upload() {
 
 # Builds the `KEY=value ...` prefix the remote script runs with. Optional
 # settings are omitted rather than passed empty, so the remote script's own
-# defaults still apply.
+# defaults still apply. DEPLOY_PRIVILEGED_CMD is the exception: an explicitly
+# empty value is the documented root mode and must be forwarded so the remote
+# side does not fall back to `sudo -n`.
 remote_env_prefix() {
   local prefix="" name value
   local names=(
@@ -136,6 +138,12 @@ remote_env_prefix() {
   )
 
   for name in "${names[@]}"; do
+    if [ "$name" = DEPLOY_PRIVILEGED_CMD ]; then
+      if [ -n "${DEPLOY_PRIVILEGED_CMD+x}" ]; then
+        prefix="$prefix$name=$(shquote "${DEPLOY_PRIVILEGED_CMD}") "
+      fi
+      continue
+    fi
     value=${!name:-}
     [ -n "$value" ] || continue
     prefix="$prefix$name=$(shquote "$value") "

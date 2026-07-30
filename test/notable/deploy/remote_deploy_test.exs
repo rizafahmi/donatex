@@ -92,6 +92,7 @@ defmodule Notable.Deploy.RemoteDeployTest do
     test "leaves the running release alone when migrations fail" do
       sandbox = DeploySandbox.new()
       assert {_output, 0} = DeploySandbox.activate(sandbox, @r1)
+      fingerprint = DeploySandbox.database_fingerprint(sandbox)
       File.write!(sandbox.log, "")
       DeploySandbox.break_migrations(sandbox)
 
@@ -100,6 +101,9 @@ defmodule Notable.Deploy.RemoteDeployTest do
       assert output =~ "migration"
 
       assert DeploySandbox.current_release(sandbox) == @r1
+      assert DeploySandbox.releases(sandbox) == [@r1]
+      refute File.exists?(Path.join(sandbox.incoming_dir, "#{@r2}.tar.gz"))
+      assert DeploySandbox.database_fingerprint(sandbox) == fingerprint
       refute Enum.any?(DeploySandbox.log(sandbox), &(&1 =~ "systemctl restart"))
     end
 
@@ -203,6 +207,27 @@ defmodule Notable.Deploy.RemoteDeployTest do
       assert DeploySandbox.releases(sandbox) == []
     end
 
+    test "refuses to deploy when DATABASE_PATH is a symlink into a release directory" do
+      sandbox = DeploySandbox.new()
+      DeploySandbox.seed_releases(sandbox, [@r1], @r1)
+
+      target = Path.join([sandbox.releases_dir, @r1, "notable.db"])
+      File.write!(target, "precious")
+
+      link = Path.join(sandbox.root, "var/lib/notable/via-symlink.db")
+      File.rm_rf!(link)
+      File.ln_s!(target, link)
+      DeploySandbox.put_env_database_path(sandbox, link)
+
+      assert {output, status} =
+               DeploySandbox.activate(sandbox, @r2, DEPLOY_DATABASE_PATH: link)
+
+      assert status != 0
+      assert output =~ "inside DEPLOY_ROOT"
+      assert File.read!(target) == "precious"
+      assert DeploySandbox.releases(sandbox) == [@r1]
+    end
+
     test "refuses to deploy when the env file disagrees about where the database is" do
       sandbox = DeploySandbox.new()
       elsewhere = Path.join(sandbox.root, "var/lib/notable/other.db")
@@ -231,6 +256,29 @@ defmodule Notable.Deploy.RemoteDeployTest do
 
       assert "protect #{Path.join(sandbox.releases_dir, @r1)} contains-database" in plan
       refute Enum.any?(plan, &(&1 == "remove #{Path.join(sandbox.releases_dir, @r1)}"))
+    end
+
+    test "pruning protects a release reached only through a DATABASE_PATH symlink" do
+      sandbox = DeploySandbox.new()
+      DeploySandbox.seed_releases(sandbox, [@r1, @r2, @r3, @r4], @r4)
+
+      target = Path.join([sandbox.releases_dir, @r1, "notable.db"])
+      File.write!(target, "precious")
+
+      link = Path.join(sandbox.root, "var/lib/notable/via-symlink.db")
+      File.rm_rf!(link)
+      File.ln_s!(target, link)
+      DeploySandbox.put_env_database_path(sandbox, link)
+
+      plan =
+        DeploySandbox.prune_plan(sandbox,
+          DEPLOY_DATABASE_PATH: link,
+          DEPLOY_KEEP_RELEASES: "2"
+        )
+
+      assert "protect #{Path.join(sandbox.releases_dir, @r1)} contains-database" in plan
+      refute Enum.any?(plan, &(&1 == "remove #{Path.join(sandbox.releases_dir, @r1)}"))
+      assert File.read!(target) == "precious"
     end
 
     test "pruning never selects a directory holding only the WAL companions" do

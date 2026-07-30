@@ -63,6 +63,14 @@ defmodule Notable.Deploy.SshDeployTest do
                "DEPLOY_RELEASE_ARCHIVE='#{sandbox.deploy_root}/incoming/#{@release_id}.tar.gz'"
 
       assert invoke =~ "activate"
+      refute invoke =~ "DEPLOY_PRIVILEGED_CMD="
+    end
+
+    test "forwards an explicitly empty DEPLOY_PRIVILEGED_CMD for root mode",
+         %{sandbox: sandbox, artifact: artifact} do
+      assert {_output, 0} = activate(sandbox, artifact, DEPLOY_PRIVILEGED_CMD: "")
+
+      assert remote_invocation(sandbox) =~ "DEPLOY_PRIVILEGED_CMD=''"
     end
 
     test "verifies the host key instead of trusting whatever answers",

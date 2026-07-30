@@ -184,7 +184,7 @@ defmodule Notable.DeploySandbox do
       |> Keyword.merge(extra_env)
       |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
 
-    System.cmd(@script, args, env: env, stderr_to_stdout: true)
+    cmd_with_env(@script, args, env)
   end
 
   @doc """
@@ -203,7 +203,32 @@ defmodule Notable.DeploySandbox do
       |> Keyword.merge(extra_env)
       |> Enum.map(fn {key, value} -> {to_string(key), to_string(value)} end)
 
-    System.cmd(@ssh_script, args, env: env, stderr_to_stdout: true)
+    cmd_with_env(@ssh_script, args, env)
+  end
+
+  # `System.cmd`'s `:env` option treats `""` as "unset this variable", but
+  # deploy scripts need set-but-empty values (notably `DEPLOY_PRIVILEGED_CMD=`
+  # for root mode). Export those through bash so the child sees them as set.
+  defp cmd_with_env(script, args, env) do
+    {empty, rest} = Enum.split_with(env, fn {_key, value} -> value == "" end)
+
+    case empty do
+      [] ->
+        System.cmd(script, args, env: rest, stderr_to_stdout: true)
+
+      _ ->
+        exports =
+          empty
+          |> Enum.map(fn {key, _} -> "#{key}=" end)
+          |> Enum.join(" ")
+
+        System.cmd(
+          "bash",
+          ["-c", "#{exports} exec \"$1\" \"${@:2}\"", "bash", script | args],
+          env: rest,
+          stderr_to_stdout: true
+        )
+    end
   end
 
   @doc "A local stand-in for the release tarball CI hands to `ssh_deploy.sh`."

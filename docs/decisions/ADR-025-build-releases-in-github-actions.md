@@ -47,7 +47,10 @@ The deploy logic lives in `scripts/deploy/remote_deploy.sh` and `scripts/deploy/
 Migrations run through `systemd-run` with `--property=EnvironmentFile=$DEPLOY_ENV_FILE`.
 
 - systemd applies the environment file exactly as it does for the service, so migrations see the same configuration the app will.
-- The secrets in that file never enter the deploy script's process. The only thing read out of it is the single non-secret `DATABASE_PATH` line, used to cross-check the pruning guard.
+- The secrets in that file never enter the deploy script's process.
+- When the deploy user can read that file, the script also looks up the non-secret `DATABASE_PATH` line and aborts on disagreement with `DEPLOY_DATABASE_PATH`.
+- Under the recommended permissions that read usually fails, so the cross-check is opportunistic.
+- The guaranteed database guards need no env read: preflight refuses a database inside `DEPLOY_ROOT`, and the pruner refuses any candidate that contains or is contained by the database or its companions.
 
 ## Alternatives Considered
 

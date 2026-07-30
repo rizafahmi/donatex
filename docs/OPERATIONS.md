@@ -215,7 +215,7 @@ Variables (visible in logs, and none of them are secret):
 | --- | --- | --- |
 | `DEPLOY_ROOT` | `/opt/notable` | Release root on the VM. Holds `releases/`, `incoming/`, `bin/`, and the `current` symlink. |
 | `DEPLOY_SYSTEMD_UNIT` | `notable.service` | The unit the deploy restarts. |
-| `DEPLOY_DATABASE_PATH` | `/var/lib/notable/notable.db` | Where SQLite lives. Must be outside `DEPLOY_ROOT`, and must match `DATABASE_PATH` in the env file. |
+| `DEPLOY_DATABASE_PATH` | `/var/lib/notable/notable.db` | Where SQLite lives. Must be outside `DEPLOY_ROOT`. |
 | `DEPLOY_ENV_FILE` | `/etc/notable/notable.env` | The runtime environment file. Owned by you; the deploy only ever passes its path to systemd. |
 | `DEPLOY_RELEASE_USER` | `notable` | Optional. User the unpacked release is chowned to, and that migrations run as. |
 | `DEPLOY_KEEP_RELEASES` | `5` | Optional, default `5`, minimum `2`. How many release directories to retain. |
@@ -261,7 +261,9 @@ The deploy key is therefore a root credential on that box no matter how the sudo
 If you would rather not pretend otherwise, set `DEPLOY_SSH_USER` to `root` and `DEPLOY_PRIVILEGED_CMD` to an empty string; the deploy behaves identically and the privilege is at least explicit.
 
 `systemd-run` is used for migrations specifically so that the secrets in `DEPLOY_ENV_FILE` are applied by systemd and never enter the deploy script's own process.
-The only thing the deploy reads out of that file is the single non-secret `DATABASE_PATH` line, which it uses to cross-check the pruning guard, and it refuses to act if that line disagrees with `DEPLOY_DATABASE_PATH`.
+When the deploy user can read that file, the deploy also looks up the non-secret `DATABASE_PATH` line and aborts if it disagrees with `DEPLOY_DATABASE_PATH`.
+Under the recommended permissions that file is usually unreadable to the deploy user, so this cross-check is opportunistic rather than a guarantee.
+The database location guards that do not need the env file are the ones that are guarantees: see [The Database Is Never Touched](#the-database-is-never-touched).
 
 ### Rolling Back
 
