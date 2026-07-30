@@ -66,7 +66,7 @@ defmodule Notable.Deploy.SshDeployTest do
       refute invoke =~ "DEPLOY_PRIVILEGED_CMD="
     end
 
-    test "forwards an explicitly empty DEPLOY_PRIVILEGED_CMD for root mode",
+    test "forwards an explicitly empty DEPLOY_PRIVILEGED_CMD as a manual knob",
          %{sandbox: sandbox, artifact: artifact} do
       assert {_output, 0} = activate(sandbox, artifact, DEPLOY_PRIVILEGED_CMD: "")
 

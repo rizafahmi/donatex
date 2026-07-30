@@ -53,6 +53,8 @@ Migrations run through `systemd-run` with `--property=EnvironmentFile=$DEPLOY_EN
 - When the deploy user can read that file, the script also looks up the non-secret `DATABASE_PATH` line and aborts on disagreement with `DEPLOY_DATABASE_PATH`.
 - Under the recommended permissions that read usually fails, so the cross-check is opportunistic.
 - The guaranteed database guards need no env read: preflight refuses a database inside `DEPLOY_ROOT`, and the pruner refuses any candidate that contains or is contained by the database or its companions.
+- Pruning classifies each immediate child of `releases/`: release ids by the retention policy (`remove` / `keep`), `.staging-*` crash leftovers as `reclaim` unless they are this invocation's active staging directory or would touch the database, and everything else as `skip`.
+  `prune-plan` prints that same classification without deleting.
 
 ## Alternatives Considered
 

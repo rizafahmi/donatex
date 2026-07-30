@@ -23,6 +23,11 @@
 #     somewhere inside DEPLOY_ROOT, and the pruner separately refuses any
 #     candidate whose path contains, or is contained by, the database or its
 #     companions, re-checked immediately before every rm -rf.
+#   * Pruning classifies each immediate child of releases/: release ids by the
+#     retention policy (remove/keep), .staging-* crash leftovers as reclaim
+#     unless they are this invocation's active staging directory or would touch
+#     the database, and everything else as skip. protect never becomes remove
+#     or reclaim. prune-plan prints that same classification without deleting.
 #   * The runtime environment file at DEPLOY_ENV_FILE belongs to the operator.
 #     This script hands its *path* to systemd. When the deploy user can read
 #     that file, it also does one read-only lookup of the non-secret

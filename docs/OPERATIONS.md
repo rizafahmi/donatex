@@ -295,7 +295,9 @@ You do not need to race it.
 ### Retention And Pruning
 
 After a successful deploy, the VM keeps the newest `DEPLOY_KEEP_RELEASES` release directories, plus the release currently live, plus the release it would roll back to.
-Everything else under `$DEPLOY_ROOT/releases` is removed.
+Release-id directories outside that retention set are removed.
+Crash leftovers named `.staging-*` are reclaimed unless they are this invocation's active staging directory or would touch the database.
+Anything else under `$DEPLOY_ROOT/releases` (operator scratch files, stray symlinks, and so on) is skipped and left alone.
 `DEPLOY_KEEP_RELEASES` has a floor of 2, because retaining one release would delete the only thing rollback could ever point at.
 
 To see what pruning would do without deleting anything, run the same classification the deploy uses:
@@ -306,7 +308,7 @@ ssh deployer@<host> "DEPLOY_ROOT=/opt/notable \
   bash /opt/notable/bin/remote_deploy.sh prune-plan"
 ```
 
-It prints one verdict per entry: `remove`, `keep`, `protect` (the entry contains the database), or `skip` (a symlink, or something that is not a release directory).
+It prints one verdict per entry: `remove` (an expired release id), `reclaim` (a `.staging-*` crash leftover), `keep`, `protect` (the entry contains or sits inside the database), or `skip` (a symlink, this invocation's active staging directory, or any other non-release entry).
 
 ### The Database Is Never Touched
 
@@ -315,10 +317,13 @@ The SQLite file lives at `DATABASE_PATH` outside the release directory, and noth
 Three independent things enforce that:
 
 - Preflight refuses to deploy or roll back at all if `DEPLOY_DATABASE_PATH`, or either WAL companion, resolves to somewhere inside `DEPLOY_ROOT`.
-- The pruner classifies any directory that contains, or is contained by, the database or a companion as `protect` and never selects it.
+- The pruner classifies any directory that contains, or is contained by, the database or a companion as `protect` and never selects it for `remove` or `reclaim`.
 - Every `rm -rf` in the deploy re-checks every one of those guards immediately before running, so a future change to the classifier cannot silently widen what gets deleted.
 
-Pruning also refuses to follow symlinks and only ever considers immediate children of `$DEPLOY_ROOT/releases` whose names look like release ids.
+Pruning only ever acts on immediate children of `$DEPLOY_ROOT/releases` and refuses to follow symlinks.
+Release ids are retained or removed by the retention policy.
+`.staging-*` crash leftovers are reclaimed unless they are this invocation's active staging directory or would touch the database.
+Every other entry is skipped.
 These properties are covered by tests under [test/notable/deploy/](../test/notable/deploy/), including one that traps a database inside a release directory and asserts the pruner protects it.
 
 Backups remain your responsibility; see [SQLite Notes](#sqlite-notes).

@@ -118,9 +118,11 @@ upload() {
 
 # Builds the `KEY=value ...` prefix the remote script runs with. Optional
 # settings are omitted rather than passed empty, so the remote script's own
-# defaults still apply. DEPLOY_PRIVILEGED_CMD is the exception: an explicitly
-# empty value is the documented root mode and must be forwarded so the remote
-# side does not fall back to `sudo -n`.
+# defaults still apply. DEPLOY_PRIVILEGED_CMD is the exception: it is a manual
+# ssh_deploy-only knob (not an Actions variable), and set-but-empty must be
+# distinguished from unset so an operator who clears the prefix still reaches
+# the VM instead of silently falling back to `sudo -n`. Documented root mode
+# is DEPLOY_SSH_USER=root with that default `sudo -n` prefix left in place.
 remote_env_prefix() {
   local prefix="" name value
   local names=(
