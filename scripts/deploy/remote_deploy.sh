@@ -242,13 +242,17 @@ current_release_id() {
 }
 
 # Release ids are minted as <UTC timestamp>-<short sha>, so a reverse
-# lexicographic sort is a reverse chronological sort.
+# lexicographic sort is a reverse chronological sort. Only real release
+# directories are emitted: crash leftovers like .staging-<id>.<pid> must never
+# enter rollback selection or the retention keep_list.
 release_ids_desc() {
   find "$RELEASES_DIR" -mindepth 1 -maxdepth 1 -print 2>/dev/null |
     while IFS= read -r entry; do
       [ -L "$entry" ] && continue
       [ -d "$entry" ] || continue
-      basename "$entry"
+      name=$(basename "$entry")
+      [[ $name =~ $RELEASE_ID_PATTERN ]] || continue
+      printf '%s\n' "$name"
     done |
     sort -r
 }
@@ -281,12 +285,15 @@ touches_database() {
 # Emits one verdict line per entry in the releases directory:
 #
 #   remove  <path>
+#   reclaim <path> staging-orphan
 #   keep    <path> <reason>
 #   protect <path> contains-database
 #   skip    <path> <reason>
 #
 # Both `prune-plan` and the destructive prune consume this exact output, so the
 # plan an operator inspects is by construction the plan that would run.
+# `reclaim` is reserved for crash leftovers (.staging-*), distinct from
+# `remove` of an expired real release.
 classify_releases() {
   local current retained keep_list=() entry name
 
@@ -317,6 +324,23 @@ classify_releases() {
 
     if [ -L "$entry" ]; then
       printf 'skip %s symlink\n' "$entry"
+      continue
+    fi
+
+    if [ -d "$entry" ] && [[ $name == .staging-* ]]; then
+      if [ -n "${ACTIVE_STAGING:-}" ] && [ "$entry" = "$ACTIVE_STAGING" ]; then
+        printf 'skip %s active-staging\n' "$entry"
+        continue
+      fi
+      if [ -n "$current" ] && [ "$name" = "$current" ]; then
+        printf 'keep %s retained\n' "$entry"
+        continue
+      fi
+      if touches_database "$(abs_path "$entry")"; then
+        printf 'protect %s contains-database\n' "$entry"
+        continue
+      fi
+      printf 'reclaim %s staging-orphan\n' "$entry"
       continue
     fi
 
@@ -357,6 +381,11 @@ prune_releases() {
         # already checked them; a second check here means a future refactor of
         # the classifier cannot quietly widen what gets deleted.
         remove_release_directory "$path" "pruning old release $(basename "$path")"
+        ;;
+      "reclaim "*)
+        path=${verdict#reclaim }
+        path=${path% staging-orphan}
+        remove_release_directory "$path" "removing staging leftover $(basename "$path")"
         ;;
       "skip "*) note "$verdict" ;;
       "protect "*) warn "$verdict" ;;
@@ -445,6 +474,9 @@ cmd_activate() {
 
   ACTIVATE_CREATED_RELEASE=
   local staging="$RELEASES_DIR/.staging-$release_id.$$"
+  # Defensive: prune_releases runs later in this same invocation and must never
+  # select the staging tree this activate still owns (no-op after a successful mv).
+  ACTIVE_STAGING=$staging
   # shellcheck disable=SC2064 # expand ids now; cleanup must see this attempt's values
   trap "activate_failure_cleanup $(printf '%q' "$release_id") $(printf '%q' "$archive") $(printf '%q' "$staging")" EXIT
 
@@ -459,6 +491,7 @@ cmd_activate() {
   fi
 
   mv "$staging" "$release_dir"
+  ACTIVE_STAGING=
   ACTIVATE_CREATED_RELEASE=$release_id
 
   if [ -n "$RELEASE_USER" ]; then

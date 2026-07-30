@@ -144,7 +144,7 @@ defmodule Notable.DeploySandbox do
 
     output
     |> String.split("\n", trim: true)
-    |> Enum.filter(&(&1 =~ ~r/^(remove|keep|protect|skip) /))
+    |> Enum.filter(&(&1 =~ ~r/^(remove|reclaim|keep|protect|skip) /))
   end
 
   @doc """

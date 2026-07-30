@@ -376,6 +376,42 @@ defmodule Notable.Deploy.RemoteDeployTest do
       assert "skip #{stray} not-a-release-directory" in plan
       assert File.exists?(stray)
     end
+
+    test "pruning reclaims a planted staging orphan from a crashed unpack" do
+      sandbox = DeploySandbox.new()
+      DeploySandbox.seed_releases(sandbox, [@r1, @r2], @r2)
+
+      staging = Path.join(sandbox.releases_dir, ".staging-#{@r3}.99999")
+      File.mkdir_p!(staging)
+      File.write!(Path.join(staging, "partial"), "crash leftover")
+
+      plan = DeploySandbox.prune_plan(sandbox, DEPLOY_KEEP_RELEASES: "2")
+
+      assert "reclaim #{staging} staging-orphan" in plan
+      refute Enum.any?(plan, &(&1 == "remove #{staging}"))
+      refute Enum.any?(plan, &(&1 =~ "skip #{staging}"))
+    end
+
+    test "pruning protects a staging orphan that contains the database" do
+      sandbox = DeploySandbox.new()
+      DeploySandbox.seed_releases(sandbox, [@r1, @r2], @r2)
+
+      staging = Path.join(sandbox.releases_dir, ".staging-#{@r3}.99999")
+      File.mkdir_p!(staging)
+      trapped = Path.join(staging, "notable.db")
+      File.write!(trapped, "precious")
+      DeploySandbox.put_env_database_path(sandbox, trapped)
+
+      plan =
+        DeploySandbox.prune_plan(sandbox,
+          DEPLOY_DATABASE_PATH: trapped,
+          DEPLOY_KEEP_RELEASES: "2"
+        )
+
+      assert "protect #{staging} contains-database" in plan
+      refute Enum.any?(plan, &(&1 =~ "reclaim #{staging}"))
+      assert File.read!(trapped) == "precious"
+    end
   end
 
   describe "prune retention boundary" do
@@ -481,6 +517,35 @@ defmodule Notable.Deploy.RemoteDeployTest do
     test "does not prune", %{sandbox: sandbox} do
       assert {_output, 0} = DeploySandbox.rollback(sandbox, [@r1], DEPLOY_KEEP_RELEASES: "2")
       assert DeploySandbox.releases(sandbox) == [@r1, @r2, @r3]
+    end
+
+    test "refuses when only a staging orphan exists beside current" do
+      sandbox = DeploySandbox.new()
+      assert {_output, 0} = DeploySandbox.activate(sandbox, @r1)
+
+      staging = Path.join(sandbox.releases_dir, ".staging-#{@r2}.4242")
+      File.mkdir_p!(staging)
+      File.write!(Path.join(staging, "partial"), "oom leftover")
+
+      assert {output, status} = DeploySandbox.rollback(sandbox)
+      assert status != 0
+      assert output =~ "no earlier release"
+      assert DeploySandbox.current_release(sandbox) == @r1
+      assert File.dir?(staging)
+    end
+
+    test "selects a real older release rather than a staging sibling" do
+      sandbox = DeploySandbox.new()
+      assert {_output, 0} = DeploySandbox.activate(sandbox, @r1)
+      assert {_output, 0} = DeploySandbox.activate(sandbox, @r2)
+
+      staging = Path.join(sandbox.releases_dir, ".staging-#{@r3}.4242")
+      File.mkdir_p!(staging)
+      File.write!(Path.join(staging, "partial"), "oom leftover")
+
+      assert {_output, 0} = DeploySandbox.rollback(sandbox)
+      assert DeploySandbox.current_release(sandbox) == @r1
+      assert File.dir?(staging)
     end
   end
 
