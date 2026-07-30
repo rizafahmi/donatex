@@ -75,29 +75,20 @@ The alternative - the deploy script sourcing `DEPLOY_ENV_FILE` - would pull live
 
 Instead the script passes `--property=EnvironmentFile=$DEPLOY_ENV_FILE` to `systemd-run` and lets systemd apply it, exactly as it does for the service.
 The secrets never enter the script's process.
-When the deploy user can read that file, the script also looks up the non-secret `DATABASE_PATH` line and aborts on disagreement with `DEPLOY_DATABASE_PATH`.
-Under the recommended permissions that read usually fails, so the cross-check is opportunistic rather than a guarantee.
-The guaranteed database guards need no env read: preflight refuses a database inside `DEPLOY_ROOT`, and the pruner refuses any candidate that contains or is contained by the database or its companions.
 
 The honest cost, written into `docs/OPERATIONS.md` rather than glossed: granting `systemd-run` via sudoers is root-equivalent, so the deploy key is a root credential on that box however the sudoers line is phrased.
 
-### Three independent guards on the database
+### Database guards
 
-The requirement was that pruning can never reach the SQLite file or its `-wal` / `-shm` companions. Layered, so no single refactor can defeat it:
+The requirement was that pruning can never reach the SQLite file or its `-wal` / `-shm` companions.
+Two guarantees hold; mechanism lives in `scripts/deploy/remote_deploy.sh`:
 
-1. Preflight refuses to `activate` or `rollback` at all when the database or either companion resolves inside `DEPLOY_ROOT`.
-2. `classify_releases` emits `protect … contains-database` for any candidate that contains, or is contained by, a guarded path, and never emits `remove` or `reclaim` for it.
-   Release ids are retained or removed by the retention policy.
-   `.staging-*` crash leftovers are `reclaim`ed unless they are this invocation's active staging directory.
-   Every other entry is `skip`ped.
-   `release_ids_desc` emits only names that match the release-id pattern, so rollback and the retention keep list cannot select a staging tree.
-3. Every `rm -rf` re-checks parent directory, symlink status, directory-ness, and the database guard immediately before running.
-   When `DEPLOY_RELEASE_USER` is set, those removals go through the privileged prefix so chowned release trees can actually be deleted.
+1. Preflight refuses to `activate` or `rollback` when the database or either companion resolves inside `DEPLOY_ROOT`.
+2. Pruning refuses any candidate that contains or is contained by the database or its companions, re-checked immediately before the single `rm`.
 
-`prune-plan` exists so guard (2) is directly assertable: it runs the same classifier the destructive prune consumes and prints one verdict per entry without deleting anything.
-Verdicts are `remove`, `reclaim`, `keep`, `protect`, and `skip`.
-It is also a genuinely useful operator command.
-A test traps a database inside a release directory and asserts the classifier protects it; another does the same with only the `-wal` companion present.
+Retention is bounded, with a floor of 2.
+`prune-plan` reports what pruning would do without deleting, and is how tests assert the pruning guard.
+A test traps a database inside a release directory and asserts the pruner protects it; another does the same with only the `-wal` companion present.
 
 ### Atomic symlink swap across two userlands
 

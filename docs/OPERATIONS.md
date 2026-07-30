@@ -159,24 +159,20 @@ The release is built by GitHub Actions and shipped to the VM over SSH, per [ADR-
 
 The automated flow below is the primary path.
 The [manual fallback](#manual-deployment-fallback) is retained for when GitHub Actions is unavailable.
+Mechanism lives in [scripts/deploy/remote_deploy.sh](../scripts/deploy/remote_deploy.sh); this section states intent, inputs, and the guarantees that hold.
 
 ### What A Deploy Does
 
-[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) builds the release on an `ubuntu-latest` runner, then hands it to [scripts/deploy/ssh_deploy.sh](../scripts/deploy/ssh_deploy.sh), which uploads it and invokes [scripts/deploy/remote_deploy.sh](../scripts/deploy/remote_deploy.sh) on the VM.
+[.github/workflows/deploy.yml](../.github/workflows/deploy.yml) builds the release on an `ubuntu-latest` runner, then [scripts/deploy/ssh_deploy.sh](../scripts/deploy/ssh_deploy.sh) uploads it and invokes [scripts/deploy/remote_deploy.sh](../scripts/deploy/remote_deploy.sh) on the VM.
 
-On the VM, in this order:
+Observable behaviour:
 
-1. Unpack the tarball into `$DEPLOY_ROOT/releases/<release-id>`, where the id is `<UTC timestamp>-<short sha>`.
-2. Run that new release's own `bin/migrate`, through `systemd-run` so systemd applies the environment file exactly as it does for the service.
-3. Swap the `$DEPLOY_ROOT/current` symlink to the new release, atomically, via `rename(2)`.
-4. Restart the systemd unit.
-5. Poll `systemctl is-active` until the unit comes up, and roll back automatically if it does not.
-6. Prune release directories beyond the retention bound.
+- Migrations run before the `current` symlink swaps to the new release.
+- The symlink swap precedes the systemd restart.
+- Retention is bounded, with a floor of 2.
+- If the unit does not come up after the restart, the deploy rolls itself back.
 
-The ordering is the point.
-Migrations run before the symlink moves, so a failed migration leaves the running release exactly where it was.
-The symlink moves before the restart, so the service never starts against the old release after a successful migration.
-Both orderings are pinned by tests in [test/notable/deploy/remote_deploy_test.exs](../test/notable/deploy/remote_deploy_test.exs).
+Those orderings and the database guards below are pinned by tests in [test/notable/deploy/](../test/notable/deploy/).
 
 ### Triggering A Deploy
 
@@ -218,7 +214,7 @@ Variables (visible in logs, and none of them are secret):
 | `DEPLOY_ROOT` | `/opt/notable` | Release root on the VM. Holds `releases/`, `incoming/`, `bin/`, and the `current` symlink. |
 | `DEPLOY_SYSTEMD_UNIT` | `notable.service` | The unit the deploy restarts. |
 | `DEPLOY_DATABASE_PATH` | `/var/lib/notable/notable.db` | Where SQLite lives. Must be outside `DEPLOY_ROOT`. |
-| `DEPLOY_ENV_FILE` | `/etc/notable/notable.env` | The runtime environment file. Owned by you. The deploy passes its path to systemd and, only when it can read the file, additionally looks up the non-secret `DATABASE_PATH` key. |
+| `DEPLOY_ENV_FILE` | `/etc/notable/notable.env` | The runtime environment file. Owned by you. The deploy passes its path to systemd and never writes, templates, or replaces it. |
 | `DEPLOY_RELEASE_USER` | `notable` | Optional. User the unpacked release is chowned to, and that migrations run as. |
 | `DEPLOY_KEEP_RELEASES` | `5` | Optional, default `5`, minimum `2`. How many release directories to retain. |
 | `DEPLOY_SSH_PORT` | `22` | Optional, default `22`. |
@@ -264,10 +260,8 @@ The deploy key is therefore a root credential on that box no matter how the sudo
 If you would rather SSH as root, set `DEPLOY_SSH_USER` to `root` and leave the default `sudo -n` prefix in place.
 That path assumes `sudo` is installed on the VM, so a missing `sudo` fails loudly instead of silently changing privilege behaviour.
 
-`systemd-run` is used for migrations specifically so that the secrets in `DEPLOY_ENV_FILE` are applied by systemd and never enter the deploy script's own process.
-When the deploy user can read that file, the deploy also looks up the non-secret `DATABASE_PATH` line and aborts if it disagrees with `DEPLOY_DATABASE_PATH`.
-Under the recommended permissions that file is usually unreadable to the deploy user, so this cross-check is opportunistic rather than a guarantee.
-The database location guards that do not need the env file are the ones that are guarantees: see [The Database Is Never Touched](#the-database-is-never-touched).
+Migrations run through `systemd-run` so the secrets in `DEPLOY_ENV_FILE` are applied by systemd and never enter the deploy script's own process.
+Database location guarantees that do not depend on reading that file are under [The Database Is Never Touched](#the-database-is-never-touched).
 
 ### Rolling Back
 
@@ -296,13 +290,10 @@ You do not need to race it.
 
 ### Retention And Pruning
 
-After a successful deploy, the VM keeps the newest `DEPLOY_KEEP_RELEASES` release directories, plus the release currently live, plus the release it would roll back to.
-Release-id directories outside that retention set are removed.
-Crash leftovers named `.staging-*` are reclaimed unless they are this invocation's active staging directory or would touch the database.
-Anything else under `$DEPLOY_ROOT/releases` (operator scratch files, stray symlinks, and so on) is skipped and left alone.
-`DEPLOY_KEEP_RELEASES` has a floor of 2, because retaining one release would delete the only thing rollback could ever point at.
+Retention is bounded, with a floor of 2 on `DEPLOY_KEEP_RELEASES`.
+How candidates are chosen and removed is owned by [scripts/deploy/remote_deploy.sh](../scripts/deploy/remote_deploy.sh).
 
-To see what pruning would do without deleting anything, run the same classification the deploy uses:
+To see what pruning would do without deleting anything:
 
 ```bash
 ssh deployer@<host> "DEPLOY_ROOT=/opt/notable \
@@ -310,23 +301,14 @@ ssh deployer@<host> "DEPLOY_ROOT=/opt/notable \
   bash /opt/notable/bin/remote_deploy.sh prune-plan"
 ```
 
-It prints one verdict per entry: `remove` (an expired release id), `reclaim` (a `.staging-*` crash leftover), `keep`, `protect` (the entry contains or sits inside the database), or `skip` (a symlink, this invocation's active staging directory, or any other non-release entry).
-
 ### The Database Is Never Touched
 
 The SQLite file lives at `DATABASE_PATH` outside the release directory, and nothing in the deploy path copies, moves, truncates, or deletes it or its `-wal` / `-shm` companions.
 
-Three independent things enforce that:
+Two guarantees hold:
 
-- Preflight refuses to deploy or roll back at all if `DEPLOY_DATABASE_PATH`, or either WAL companion, resolves to somewhere inside `DEPLOY_ROOT`.
-- The pruner classifies any directory that contains, or is contained by, the database or a companion as `protect` and never selects it for `remove` or `reclaim`.
-- Every `rm -rf` in the deploy re-checks every one of those guards immediately before running, so a future change to the classifier cannot silently widen what gets deleted.
-
-Pruning only ever acts on immediate children of `$DEPLOY_ROOT/releases` and refuses to follow symlinks.
-Release ids are retained or removed by the retention policy.
-`.staging-*` crash leftovers are reclaimed unless they are this invocation's active staging directory or would touch the database.
-Every other entry is skipped.
-These properties are covered by tests under [test/notable/deploy/](../test/notable/deploy/), including one that traps a database inside a release directory and asserts the pruner protects it.
+- Preflight refuses to deploy or roll back when the database, or a WAL companion, resolves inside `DEPLOY_ROOT`.
+- Pruning refuses any candidate that contains or is contained by the database or its companions, and re-checks that guard immediately before the single `rm`.
 
 Backups remain your responsibility; see [SQLite Notes](#sqlite-notes).
 

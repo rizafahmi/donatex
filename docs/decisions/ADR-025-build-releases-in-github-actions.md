@@ -50,11 +50,15 @@ Migrations run through `systemd-run` with `--property=EnvironmentFile=$DEPLOY_EN
 
 - systemd applies the environment file exactly as it does for the service, so migrations see the same configuration the app will.
 - The secrets in that file never enter the deploy script's process.
-- When the deploy user can read that file, the script also looks up the non-secret `DATABASE_PATH` line and aborts on disagreement with `DEPLOY_DATABASE_PATH`.
-- Under the recommended permissions that read usually fails, so the cross-check is opportunistic.
-- The guaranteed database guards need no env read: preflight refuses a database inside `DEPLOY_ROOT`, and the pruner refuses any candidate that contains or is contained by the database or its companions.
-- Pruning classifies each immediate child of `releases/`: release ids by the retention policy (`remove` / `keep`), `.staging-*` crash leftovers as `reclaim` unless they are this invocation's active staging directory or would touch the database, and everything else as `skip`.
-  `prune-plan` prints that same classification without deleting.
+
+Observable deploy behaviour (mechanism in `scripts/deploy/remote_deploy.sh`):
+
+- Migrations run before the symlink swap; the swap precedes the restart.
+- Bare rollback selects the newest release strictly older than the one live.
+- Retention is bounded, with a floor of 2.
+- Preflight refuses to activate or roll back when the database or a WAL companion resolves inside `DEPLOY_ROOT`.
+- Pruning refuses any candidate that contains or is contained by the database or its companions, re-checked immediately before the single `rm`.
+- `prune-plan` reports what pruning would do without deleting.
 
 ## Alternatives Considered
 
