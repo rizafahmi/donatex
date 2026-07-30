@@ -1,6 +1,7 @@
 # Project Progress
 
 ## Current State
+- Deployment is now automated from GitHub Actions for [#37](https://github.com/rizafahmi/notable/issues/37): `workflow_dispatch`-only `Deploy` and `Rollback` workflows build the release on the runner, ship it over SSH, migrate before swapping `current`, restart via systemd, and prune with bounded retention while keeping the SQLite file and WAL companions unreachable. Nothing has been run against the live VM; the captain must create the documented secrets and dispatch the first deploy. See [OPERATIONS.md](OPERATIONS.md#deployment), [Milestone 16 log](milestones/16-deployment-automation/milestone-log.md), and [ADR-025](decisions/ADR-025-build-releases-in-github-actions.md)
 - `/qr` and `/qr-overlay` now render an animated canvas QR (lightning-bolt data modules, colour-coded finders, data-flow wave, pathway pulses, multiply scanner sweep) for [#6](https://github.com/rizafahmi/notable/issues/6). This also fixed three live defects on `main`: both pages rendered a blank QR, and the PNG download was broken by CSP plus a 150px rasterisation. Scannability is enforced by a per-pixel luminance budget in `Notable.Qr` and verified with OpenCV; see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md)
 - Notable rename slice 3/4 ([#68](https://github.com/rizafahmi/donatex/issues/68)): `NOTABLE_BASE_URL` is canonical; `DONATEX_BASE_URL` remains a temporary alias in runtime/dev config, `.env.example`, and OPERATIONS. Slices 1–2 merged ([#66](https://github.com/rizafahmi/donatex/issues/66) / PR #70, [#67](https://github.com/rizafahmi/donatex/issues/67) / PR #71). Remaining: GitHub rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); parent [#2](https://github.com/rizafahmi/donatex/issues/2).
 - Tip → Mayar QRIS path is rate-limited per peer IP via `SubmissionLimiter` (`{:tip, ip}`) before `create_qr` (fixes [#27](https://github.com/rizafahmi/donatex/issues/27)); persist-failure remains fail-closed for the donor; see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md)
@@ -15,9 +16,10 @@
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Test status for the latest donor CTA change: 31 focused tests, 0 failures; format check and compile warnings-as-errors passed; mobile browser verification passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
-- Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
+- Release status: mobile donor and OBS-sized browser smoke checks passed; deploy automation is in-repo but still needs captain-owned secrets plus one watched dispatch before a live Mayar transaction smoke check
 
 ## Completed
+- [x] [#37](https://github.com/rizafahmi/notable/issues/37) Deployment automation - build-in-CI release, dispatchable deploy/rollback, atomic symlink swap, bounded retention, database-safe pruning - see [Milestone 16 log](milestones/16-deployment-automation/milestone-log.md).
 - [x] [#6](https://github.com/rizafahmi/notable/issues/6) Artistic animated `/qr` page with a decoder-verified scannability budget — see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md).
 - [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
 - [x] [#31](https://github.com/rizafahmi/donatex/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
@@ -89,7 +91,7 @@
 ## Next Steps
 1. Notable rename remaining slice: GitHub repo rename ([#69](https://github.com/rizafahmi/donatex/issues/69)); close parent [#2](https://github.com/rizafahmi/donatex/issues/2) after that lands. Keep `DONATEX_*` env aliases until the captain says drop them.
 2. Merge open hardening PRs still awaiting review (#26 amount-fallback) as they land.
-3. Configure the production environment and deploy using the documented release process.
+3. Create the deploy secrets and variables listed in [OPERATIONS.md](OPERATIONS.md#required-secrets-and-variables), then dispatch **Actions → Deploy** once and watch it. Nothing in the repo can reach the VM until those exist.
 4. Verify production DNS cluster membership and that donor Presence totals propagate across nodes before making cross-node count claims.
 5. Run one final low-value live Mayar QRIS transaction against the deployed callback URL.
 
@@ -108,6 +110,7 @@
 - Milestone 9 log: [docs/milestones/9-donor-visitor-presence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/9-donor-visitor-presence/milestone-log.md)
 - Milestone 10 log: [docs/milestones/10-audience-questions-board/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/10-audience-questions-board/milestone-log.md)
 - Milestone 12 log: [docs/milestones/12-toast-auto-hide/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/12-toast-auto-hide/milestone-log.md)
+- Milestone 16 log: [docs/milestones/16-deployment-automation/milestone-log.md](milestones/16-deployment-automation/milestone-log.md)
 - Milestone 13 log: [docs/milestones/13-overlay-alert-persistence/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-overlay-alert-persistence/milestone-log.md)
 - Milestone 14 log: [docs/milestones/14-tip-rate-limit/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/14-tip-rate-limit/milestone-log.md)
 - Milestone 13 log: [docs/milestones/13-webhook-ops-hardening/milestone-log.md](file:///Users/riza/code/donatex/docs/milestones/13-webhook-ops-hardening/milestone-log.md)
