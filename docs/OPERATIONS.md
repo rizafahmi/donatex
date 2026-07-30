@@ -26,7 +26,9 @@ With the default `.env.example` values, the local surfaces are:
 
 ## Environment Variables
 
-These values are expected to be provided via environment variables. In development, the intended workflow is `source .env` before starting the server. In production, set these variables in your process manager / container environment (do not rely on `.env` files).
+These values are expected to be provided via environment variables.
+In development, the intended workflow is `source .env` before starting the server.
+In production, set them in the systemd `EnvironmentFile` on the VM (see [Deployment](#deployment)); do not rely on a checked-in `.env` file, and do not have the deploy overwrite that file.
 
 ### Application URLs
 
@@ -96,7 +98,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD=replace_me_with_a_strong_password
 ```
 
-Keep this file readable only by root (or the app user if your process manager requires it).
+Keep this file readable only by root and the release user.
 
 ## Public URLs (What To Copy Into OBS / Mayar)
 

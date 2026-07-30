@@ -217,10 +217,7 @@ defmodule Notable.DeploySandbox do
         System.cmd(script, args, env: rest, stderr_to_stdout: true)
 
       _ ->
-        exports =
-          empty
-          |> Enum.map(fn {key, _} -> "#{key}=" end)
-          |> Enum.join(" ")
+        exports = Enum.map_join(empty, " ", fn {key, _} -> "#{key}=" end)
 
         System.cmd(
           "bash",

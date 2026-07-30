@@ -16,7 +16,7 @@
 - Milestone 7 (End-to-End Refinement and Release Check): complete — see [milestone-log](file:///Users/riza/code/donatex/docs/milestones/7-end-to-end-refinement-release-check/milestone-log.md)
 - Test status for the latest donor CTA change: 31 focused tests, 0 failures; format check and compile warnings-as-errors passed; mobile browser verification passed
 - Donor submission now uses one mode-aware button: appreciation off sends free feedback; appreciation on continues through tip validation and QRIS
-- Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
+- Release status: mobile donor and OBS-sized browser smoke checks passed; deploy automation is in-repo but still needs captain-owned secrets plus one watched dispatch before a live Mayar transaction smoke check
 
 ## Completed
 - [x] [#37](https://github.com/rizafahmi/notable/issues/37) Deployment automation - build-in-CI release, dispatchable deploy/rollback, atomic symlink swap, bounded retention, database-safe pruning - see [Milestone 16 log](milestones/16-deployment-automation/milestone-log.md).

@@ -117,7 +117,9 @@ defmodule Notable.Deploy.RemoteDeployTest do
       File.mkdir_p!(junk_dir)
       File.write!(Path.join(junk_dir, "NOT_A_RELEASE"), "nope")
       archive = Path.join(sandbox.incoming_dir, "#{@r2}.tar.gz")
-      {_out, 0} = System.cmd("tar", ["-czf", archive, "-C", junk_dir, "."], stderr_to_stdout: true)
+
+      {_out, 0} =
+        System.cmd("tar", ["-czf", archive, "-C", junk_dir, "."], stderr_to_stdout: true)
 
       assert {output, status} =
                DeploySandbox.run(sandbox, ["activate"],
