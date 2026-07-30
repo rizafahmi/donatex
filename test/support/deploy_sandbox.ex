@@ -369,6 +369,7 @@ defmodule Notable.DeploySandbox do
     # is exercised for real rather than short-circuited.
     write_executable(Path.join(sandbox.bin, "sudo"), """
     #!/bin/sh
+    printf 'sudo %s\\n' "$*" >> "$DEPLOY_SANDBOX_LOG"
     while [ $# -gt 0 ]; do
       case "$1" in
         --) shift; break ;;

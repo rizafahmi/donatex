@@ -19,7 +19,7 @@ Two questions had to be answered to automate it.
 
 **Where does the release get built?**
 `docs/OPERATIONS.md` previously told operators to run `MIX_ENV=prod mix release` from the app directory on the VM.
-That requires Erlang and Elixir installed on a free-tier instance, and it puts a compile — the most memory-hungry thing that will ever happen on that machine — on the same box that is currently serving donors.
+That requires Erlang and Elixir installed on a free-tier instance, and it puts a compile - the most memory-hungry thing that will ever happen on that machine - on the same box that is currently serving donors.
 A GCP free-tier `e2-micro` has 1 GB of RAM shared with the running BEAM, `esbuild`, and `tailwind`.
 Building there is unreliable at best, and when it fails it can take the live service down with it.
 
@@ -33,6 +33,8 @@ Build the release on an `ubuntu-latest` GitHub Actions runner and transfer the b
 - `MIX_ENV=prod mix assets.deploy` then `MIX_ENV=prod mix release`, on the same Elixir and OTP versions `.github/workflows/ci.yml` already pins.
 - The result is tarred, uploaded as a workflow artifact for 14 days, and `scp`ed to the VM.
 - Erlang and Elixir are no longer required on the VM at all: `mix release` bundles ERTS.
+- The build runner's OS and architecture must be compatible with the VM's (`ubuntu-latest` x86_64 targeting a same-or-newer Ubuntu x86_64 VM).
+  An arm64 VM or a VM older than the runner image needs either a matching runner or `include_erts` set to false with Erlang installed on the box.
 
 Deploys are `workflow_dispatch` only, not automatic on merge.
 
@@ -41,7 +43,7 @@ Deploys are `workflow_dispatch` only, not automatic on merge.
 
 The deploy logic lives in `scripts/deploy/remote_deploy.sh` and `scripts/deploy/ssh_deploy.sh`, not in workflow YAML.
 
-- Inline YAML cannot be unit tested, and the properties that matter here — migrate before symlink swap, swap before restart, rollback target selection, and above all that pruning can never reach the database — are exactly the properties that need tests.
+- Inline YAML cannot be unit tested, and the properties that matter here - migrate before symlink swap, swap before restart, rollback target selection, and above all that pruning can never reach the database - are exactly the properties that need tests.
 - Those tests live in `test/notable/deploy/` and run inside `mix ci` against a sandboxed filesystem with `sudo`, `systemctl`, and `systemd-run` stubbed.
 
 Migrations run through `systemd-run` with `--property=EnvironmentFile=$DEPLOY_ENV_FILE`.

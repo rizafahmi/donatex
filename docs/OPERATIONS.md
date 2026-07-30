@@ -216,11 +216,10 @@ Variables (visible in logs, and none of them are secret):
 | `DEPLOY_ROOT` | `/opt/notable` | Release root on the VM. Holds `releases/`, `incoming/`, `bin/`, and the `current` symlink. |
 | `DEPLOY_SYSTEMD_UNIT` | `notable.service` | The unit the deploy restarts. |
 | `DEPLOY_DATABASE_PATH` | `/var/lib/notable/notable.db` | Where SQLite lives. Must be outside `DEPLOY_ROOT`. |
-| `DEPLOY_ENV_FILE` | `/etc/notable/notable.env` | The runtime environment file. Owned by you; the deploy only ever passes its path to systemd. |
+| `DEPLOY_ENV_FILE` | `/etc/notable/notable.env` | The runtime environment file. Owned by you. The deploy passes its path to systemd and, only when it can read the file, additionally looks up the non-secret `DATABASE_PATH` key. |
 | `DEPLOY_RELEASE_USER` | `notable` | Optional. User the unpacked release is chowned to, and that migrations run as. |
 | `DEPLOY_KEEP_RELEASES` | `5` | Optional, default `5`, minimum `2`. How many release directories to retain. |
 | `DEPLOY_SSH_PORT` | `22` | Optional, default `22`. |
-| `DEPLOY_PRIVILEGED_CMD` | `sudo -n` | Optional, default `sudo -n`. Set to an empty string when the SSH user is already root. |
 
 The workflows also reference a `production` GitHub environment.
 It is created automatically on the first run.
@@ -228,10 +227,11 @@ Adding a required reviewer to it is the cheapest way to put a human approval in 
 
 ### One-Time VM Setup
 
-The deploy expects this layout, all of which it creates except the env file and the database:
+The deploy creates `releases/`, `incoming/`, `bin/`, and the `current` symlink under `DEPLOY_ROOT`.
+`DEPLOY_ROOT` itself, the env file, and the database must already exist:
 
 ```
-/opt/notable/                     # DEPLOY_ROOT
+/opt/notable/                     # DEPLOY_ROOT (must pre-exist)
   bin/remote_deploy.sh            # re-uploaded on every run
   incoming/                       # upload staging, cleared after each deploy
   releases/20260730T101500Z-a1b2c3d/
@@ -247,18 +247,20 @@ The deploy expects this layout, all of which it creates except the env file and 
 5. Install the systemd unit shown under [systemd (Example)](#systemd-example) and `sudo systemctl enable notable`.
 6. Grant the deploy user the privileges below.
 
-The deploy needs to restart the unit, query its state, run migrations through `systemd-run`, and chown the unpacked release:
+The deploy needs to restart the unit, query its state, run migrations through `systemd-run`, chown the unpacked release, and remove old release directories:
 
 ```
 deployer ALL=(root) NOPASSWD: /usr/bin/systemctl restart notable.service, \
                               /usr/bin/systemctl is-active *, \
                               /usr/bin/systemd-run *, \
-                              /usr/bin/chown -R notable /opt/notable/releases/*
+                              /usr/bin/chown -R notable /opt/notable/releases/*, \
+                              /usr/bin/rm -rf /opt/notable/releases/*
 ```
 
 Be clear-eyed about what that grants: `systemd-run *` can start a unit as any user with any command, so it is root-equivalent.
 The deploy key is therefore a root credential on that box no matter how the sudoers line is written, and it should be treated as one.
-If you would rather not pretend otherwise, set `DEPLOY_SSH_USER` to `root` and `DEPLOY_PRIVILEGED_CMD` to an empty string; the deploy behaves identically and the privilege is at least explicit.
+If you would rather SSH as root, set `DEPLOY_SSH_USER` to `root` and leave the default `sudo -n` prefix in place.
+That path assumes `sudo` is installed on the VM, so a missing `sudo` fails loudly instead of silently changing privilege behaviour.
 
 `systemd-run` is used for migrations specifically so that the secrets in `DEPLOY_ENV_FILE` are applied by systemd and never enter the deploy script's own process.
 When the deploy user can read that file, the deploy also looks up the non-secret `DATABASE_PATH` line and aborts if it disagrees with `DEPLOY_DATABASE_PATH`.
@@ -314,7 +316,7 @@ Three independent things enforce that:
 
 - Preflight refuses to deploy or roll back at all if `DEPLOY_DATABASE_PATH`, or either WAL companion, resolves to somewhere inside `DEPLOY_ROOT`.
 - The pruner classifies any directory that contains, or is contained by, the database or a companion as `protect` and never selects it.
-- The single `rm -rf` in the deploy re-checks every one of those guards immediately before running, so a future change to the classifier cannot silently widen what gets deleted.
+- Every `rm -rf` in the deploy re-checks every one of those guards immediately before running, so a future change to the classifier cannot silently widen what gets deleted.
 
 Pruning also refuses to follow symlinks and only ever considers immediate children of `$DEPLOY_ROOT/releases` whose names look like release ids.
 These properties are covered by tests under [test/notable/deploy/](../test/notable/deploy/), including one that traps a database inside a release directory and asserts the pruner protects it.
@@ -376,6 +378,15 @@ DEPLOY_RELEASE_USER=notable \
   scripts/deploy/ssh_deploy.sh activate
 ```
 
+These optional settings are `ssh_deploy.sh` / `remote_deploy.sh` knobs only.
+They are not GitHub Actions variables, and the workflows do not forward them:
+
+| Name | Default | What it is |
+| --- | --- | --- |
+| `DEPLOY_PRIVILEGED_CMD` | `sudo -n` | Command prefix for `systemctl`, `systemd-run`, `chown`, and release-directory `rm`. Set only when you need a non-default prefix for a manual run. |
+| `DEPLOY_HEALTH_RETRIES` | `15` | How many `systemctl is-active` polls to make after a restart before treating the unit as failed. |
+| `DEPLOY_HEALTH_INTERVAL` | `2` | Seconds between those polls. |
+
 Rollback by hand is the same script:
 
 ```bash
@@ -435,6 +446,8 @@ On GCP, use a persistent disk (the default boot disk is already persistent) and 
 
 Erlang and Elixir do **not** need to be installed on the VM.
 `mix release` bundles ERTS, and the release is built on the CI runner.
+The build runner's OS and architecture must be compatible with the VM's: `ubuntu-latest` x86_64 targeting a same-or-newer Ubuntu x86_64 VM.
+An arm64 VM, or a VM older than the runner image, needs either a matching runner or `include_erts` set to false with Erlang installed on the box.
 
 ## SQLite Notes
 

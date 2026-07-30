@@ -1,6 +1,6 @@
-# Milestone 16 — Deployment automation
+# Milestone 16 - Deployment automation
 
-Issue: [#37](https://github.com/rizafahmi/notable/issues/37) — set up better deployment automation.
+Issue: [#37](https://github.com/rizafahmi/notable/issues/37) - set up better deployment automation.
 
 ## Starting state (found, not assumed)
 
@@ -35,8 +35,8 @@ ERTS ships inside the release, so the VM no longer needs Erlang or Elixir at all
 Inline YAML cannot be unit tested, and the properties that matter here are precisely the ones that need tests.
 So the deploy is two bash scripts the workflows call in thin steps:
 
-- `scripts/deploy/remote_deploy.sh` — runs on the VM. Subcommands `activate`, `rollback`, `prune-plan`.
-- `scripts/deploy/ssh_deploy.sh` — runs on the runner. Uploads and invokes the above over SSH.
+- `scripts/deploy/remote_deploy.sh` - runs on the VM. Subcommands `activate`, `rollback`, `prune-plan`.
+- `scripts/deploy/ssh_deploy.sh` - runs on the runner. Uploads and invokes the above over SSH.
 
 ### Testing a deploy without a machine to deploy to
 
@@ -71,7 +71,7 @@ This makes the `<UTC timestamp>-<short sha>` release id format load-bearing rath
 
 ### Migrations run through `systemd-run`
 
-The alternative — the deploy script sourcing `DEPLOY_ENV_FILE` — would pull live secrets into the deploy process and require the deploy user to read a root-owned secrets file.
+The alternative - the deploy script sourcing `DEPLOY_ENV_FILE` - would pull live secrets into the deploy process and require the deploy user to read a root-owned secrets file.
 
 Instead the script passes `--property=EnvironmentFile=$DEPLOY_ENV_FILE` to `systemd-run` and lets systemd apply it, exactly as it does for the service.
 The secrets never enter the script's process.
@@ -87,7 +87,8 @@ The requirement was that pruning can never reach the SQLite file or its `-wal` /
 
 1. Preflight refuses to `activate` or `rollback` at all when the database or either companion resolves inside `DEPLOY_ROOT`.
 2. `classify_releases` emits `protect … contains-database` for any candidate that contains, or is contained by, a guarded path, and never emits `remove` for it.
-3. The single `rm -rf` re-checks parent directory, symlink status, directory-ness, and the database guard immediately before running.
+3. Every `rm -rf` re-checks parent directory, symlink status, directory-ness, and the database guard immediately before running.
+   When `DEPLOY_RELEASE_USER` is set, those removals go through the privileged prefix so chowned release trees can actually be deleted.
 
 `prune-plan` exists so guard (2) is directly assertable: it runs the same classifier the destructive prune consumes and prints one verdict per entry without deleting anything.
 It is also a genuinely useful operator command.
@@ -95,7 +96,7 @@ A test traps a database inside a release directory and asserts the classifier pr
 
 ### Atomic symlink swap across two userlands
 
-`ln -sfn` is not atomic — it unlinks then links.
+`ln -sfn` is not atomic - it unlinks then links.
 The atomic idiom is to create a temporary symlink and `rename(2)` it over the target, which needs an explicit "do not follow the destination symlink" flag: GNU spells it `mv -T`, BSD/macOS spells it `mv -h`.
 The script tries both and verifies the resulting `readlink`, so it behaves identically on the Ubuntu target and on the macOS machine the tests run on.
 
@@ -145,6 +146,6 @@ What is **not** verified, and cannot be from here:
 ## Next steps for the captain
 
 1. Create the four secrets and the repository variables listed in `docs/OPERATIONS.md` under [Required Secrets And Variables](../../OPERATIONS.md#required-secrets-and-variables).
-2. Grant the deploy user the sudoers entries in the same document, or switch to `DEPLOY_SSH_USER=root` with `DEPLOY_PRIVILEGED_CMD=""`.
+2. Grant the deploy user the sudoers entries in the same document, or set `DEPLOY_SSH_USER` to `root` and leave the default `sudo -n` prefix (which assumes `sudo` is installed on the VM).
 3. Dispatch **Actions → Deploy** once and watch it. The first run creates `releases/` and `current` from scratch, so there is no rollback target yet.
 4. Once satisfied, consider adding a required reviewer to the `production` environment, then make the deploy-on-merge edit.

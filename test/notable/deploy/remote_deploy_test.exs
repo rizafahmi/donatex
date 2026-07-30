@@ -103,8 +103,35 @@ defmodule Notable.Deploy.RemoteDeployTest do
       assert DeploySandbox.current_release(sandbox) == @r1
       assert DeploySandbox.releases(sandbox) == [@r1]
       refute File.exists?(Path.join(sandbox.incoming_dir, "#{@r2}.tar.gz"))
+      assert staging_dirs(sandbox) == []
       assert DeploySandbox.database_fingerprint(sandbox) == fingerprint
       refute Enum.any?(DeploySandbox.log(sandbox), &(&1 =~ "systemctl restart"))
+    end
+
+    test "clears a leftover staging directory when the archive is not a release" do
+      sandbox = DeploySandbox.new()
+      assert {_output, 0} = DeploySandbox.activate(sandbox, @r1)
+      fingerprint = DeploySandbox.database_fingerprint(sandbox)
+
+      junk_dir = Path.join(sandbox.root, "junk-release")
+      File.mkdir_p!(junk_dir)
+      File.write!(Path.join(junk_dir, "NOT_A_RELEASE"), "nope")
+      archive = Path.join(sandbox.incoming_dir, "#{@r2}.tar.gz")
+      {_out, 0} = System.cmd("tar", ["-czf", archive, "-C", junk_dir, "."], stderr_to_stdout: true)
+
+      assert {output, status} =
+               DeploySandbox.run(sandbox, ["activate"],
+                 DEPLOY_RELEASE_ID: @r2,
+                 DEPLOY_RELEASE_ARCHIVE: archive
+               )
+
+      assert status != 0
+      assert output =~ "does not look like a Notable release"
+      assert DeploySandbox.current_release(sandbox) == @r1
+      assert DeploySandbox.releases(sandbox) == [@r1]
+      refute File.exists?(archive)
+      assert staging_dirs(sandbox) == []
+      assert DeploySandbox.database_fingerprint(sandbox) == fingerprint
     end
 
     test "rolls back automatically when the unit does not come up" do
@@ -176,6 +203,27 @@ defmodule Notable.Deploy.RemoteDeployTest do
       end)
 
       assert DeploySandbox.releases(sandbox) == [@r2, @r3, @r4]
+    end
+
+    test "prunes old releases through the privileged prefix when a release user is set" do
+      sandbox = DeploySandbox.new()
+
+      Enum.each([@r1, @r2, @r3, @r4], fn id ->
+        assert {_output, 0} =
+                 DeploySandbox.activate(sandbox, id,
+                   DEPLOY_KEEP_RELEASES: "3",
+                   DEPLOY_RELEASE_USER: "notable"
+                 )
+      end)
+
+      assert DeploySandbox.releases(sandbox) == [@r2, @r3, @r4]
+
+      privileged_rms =
+        sandbox
+        |> DeploySandbox.log()
+        |> Enum.filter(&(&1 =~ ~r/^sudo / and &1 =~ ~r/\brm\b/))
+
+      assert Enum.any?(privileged_rms, &(&1 =~ @r1))
     end
   end
 
@@ -442,6 +490,13 @@ defmodule Notable.Deploy.RemoteDeployTest do
     plan
     |> Enum.filter(&String.starts_with?(&1, "remove " <> prefix))
     |> Enum.map(&String.replace_prefix(&1, "remove " <> prefix, ""))
+    |> Enum.sort()
+  end
+
+  defp staging_dirs(sandbox) do
+    sandbox.releases_dir
+    |> File.ls!()
+    |> Enum.filter(&String.starts_with?(&1, ".staging-"))
     |> Enum.sort()
   end
 end

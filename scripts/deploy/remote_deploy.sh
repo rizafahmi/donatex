@@ -22,7 +22,7 @@
 #     file): preflight refuses to mutate anything when the database resolves to
 #     somewhere inside DEPLOY_ROOT, and the pruner separately refuses any
 #     candidate whose path contains, or is contained by, the database or its
-#     companions, re-checked immediately before the single rm -rf.
+#     companions, re-checked immediately before every rm -rf.
 #   * The runtime environment file at DEPLOY_ENV_FILE belongs to the operator.
 #     This script hands its *path* to systemd. When the deploy user can read
 #     that file, it also does one read-only lookup of the non-secret
@@ -59,8 +59,8 @@
 #   DEPLOY_KEEP_RELEASES     how many releases to retain (default 5, minimum 2)
 #   DEPLOY_HEALTH_RETRIES    is-active polls after restart (default 15)
 #   DEPLOY_HEALTH_INTERVAL   seconds between polls (default 2)
-#   DEPLOY_PRIVILEGED_CMD    prefix for systemctl/systemd-run/chown
-#                            (default "sudo -n"; set to "" when already root)
+#   DEPLOY_PRIVILEGED_CMD    prefix for systemctl/systemd-run/chown/rm
+#                            (default "sudo -n"; set to "" to run with no prefix)
 
 set -euo pipefail
 
@@ -353,22 +353,36 @@ prune_releases() {
     case "$verdict" in
       "remove "*)
         path=${verdict#remove }
-        # Re-assert every guard immediately before the only rm in this script.
-        # classify_releases already checked them; a second check here means a
-        # future refactor of the classifier cannot quietly widen what gets
-        # deleted.
-        [ "$(dirname "$path")" = "$RELEASES_DIR" ] || die "refusing to remove $path: outside $RELEASES_DIR"
-        [ ! -L "$path" ] || die "refusing to remove $path: symlink"
-        [ -d "$path" ] || die "refusing to remove $path: not a directory"
-        ! touches_database "$(abs_path "$path")" || die "refusing to remove $path: it contains the database"
-
-        note "pruning old release $(basename "$path")"
-        rm -rf "$path"
+        # Re-assert every guard immediately before the rm. classify_releases
+        # already checked them; a second check here means a future refactor of
+        # the classifier cannot quietly widen what gets deleted.
+        remove_release_directory "$path" "pruning old release $(basename "$path")"
         ;;
       "skip "*) note "$verdict" ;;
       "protect "*) warn "$verdict" ;;
     esac
   done < <(classify_releases)
+}
+
+# Shared pre-rm gate for every release-directory deletion. When RELEASE_USER is
+# set, activate chowns those directories so the deploy user cannot unlink their
+# contents; only the rm itself then goes through run_privileged.
+remove_release_directory() {
+  local path=$1
+  local message=${2:-}
+
+  [ "$(dirname "$path")" = "$RELEASES_DIR" ] || die "refusing to remove $path: outside $RELEASES_DIR"
+  [ ! -L "$path" ] || die "refusing to remove $path: symlink"
+  [ -d "$path" ] || die "refusing to remove $path: not a directory"
+  ! touches_database "$(abs_path "$path")" || die "refusing to remove $path: it contains the database"
+
+  [ -z "$message" ] || note "$message"
+
+  if [ -n "${RELEASE_USER:-}" ]; then
+    run_privileged rm -rf "$path"
+  else
+    rm -rf "$path"
+  fi
 }
 
 # rename(2) is atomic, so a concurrent reader of `current` sees either the old
@@ -430,20 +444,17 @@ cmd_activate() {
   [ -f "$archive" ] || die "release archive not found: $archive"
 
   ACTIVATE_CREATED_RELEASE=
-  # shellcheck disable=SC2064 # expand ids now; cleanup must see this attempt's values
-  trap "activate_failure_cleanup $(printf '%q' "$release_id") $(printf '%q' "$archive")" EXIT
-
   local staging="$RELEASES_DIR/.staging-$release_id.$$"
+  # shellcheck disable=SC2064 # expand ids now; cleanup must see this attempt's values
+  trap "activate_failure_cleanup $(printf '%q' "$release_id") $(printf '%q' "$archive") $(printf '%q' "$staging")" EXIT
+
   mkdir "$staging"
   note "unpacking $release_id"
 
-  tar -xzf "$archive" -C "$staging" || {
-    rm -rf "$staging"
+  tar -xzf "$archive" -C "$staging" ||
     die "could not unpack $archive"
-  }
 
   if [ ! -x "$staging/bin/migrate" ] || [ ! -x "$staging/bin/server" ]; then
-    rm -rf "$staging"
     die "archive does not look like a Notable release: bin/migrate and bin/server are missing"
   fi
 
@@ -471,13 +482,14 @@ cmd_activate() {
   discard_upload "$archive"
 }
 
-# On a failed activate, clear the staged upload and any never-activated release
-# directory so repeated failures cannot fill a small disk. Success clears the
-# trap above and discards the upload itself.
+# On a failed activate, clear the staged upload, any leftover staging tree, and
+# any never-activated release directory so repeated failures cannot fill a small
+# disk. Success clears the trap above and discards the upload itself.
 activate_failure_cleanup() {
-  local release_id=$1 archive=$2
+  local release_id=$1 archive=$2 staging=${3:-}
   trap - EXIT
   discard_upload "$archive"
+  discard_staging_dir "$staging"
   if [ "${ACTIVATE_CREATED_RELEASE:-}" = "$release_id" ]; then
     discard_never_activated_release "$release_id"
   fi
@@ -502,6 +514,26 @@ discard_upload() {
   rm -f "$archive_abs"
 }
 
+# Removes a leftover .staging-* tree from a failed unpack. No-op after a
+# successful mv into the final release directory. Uses the same pre-rm checks
+# as the pruner.
+discard_staging_dir() {
+  local path=$1
+  local name current
+
+  [ -n "$path" ] || return 0
+  [ -e "$path" ] || return 0
+
+  name=$(basename -- "$path")
+  current=$(current_release_id 2>/dev/null || true)
+  if [ "$name" = "$current" ]; then
+    note "leaving $path in place: it is the current release"
+    return 0
+  fi
+
+  remove_release_directory "$path" "removing leftover staging directory $name"
+}
+
 # Removes a release directory created by this activate attempt that never became
 # (or no longer is) current. Uses the same pre-rm checks as the pruner.
 discard_never_activated_release() {
@@ -512,22 +544,13 @@ discard_never_activated_release() {
   [ -n "$release_id" ] || return 0
   [ -e "$path" ] || return 0
 
-  [ "$(dirname "$path")" = "$RELEASES_DIR" ] ||
-    die "refusing to remove $path: outside $RELEASES_DIR"
-  [ ! -L "$path" ] || die "refusing to remove $path: symlink"
-  [ -d "$path" ] || die "refusing to remove $path: not a directory"
-
   current=$(current_release_id 2>/dev/null || true)
   if [ "$release_id" = "$current" ]; then
     note "leaving $path in place: it is the current release"
     return 0
   fi
 
-  ! touches_database "$(abs_path "$path")" ||
-    die "refusing to remove $path: it contains the database"
-
-  note "removing never-activated release $release_id"
-  rm -rf "$path"
+  remove_release_directory "$path" "removing never-activated release $release_id"
 }
 
 # Migrations run through systemd rather than through this script so that the

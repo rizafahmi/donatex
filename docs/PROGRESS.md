@@ -19,7 +19,7 @@
 - Release status: mobile donor and OBS-sized browser smoke checks passed; ready for deployment configuration and a live Mayar transaction smoke check
 
 ## Completed
-- [x] [#37](https://github.com/rizafahmi/notable/issues/37) Deployment automation — build-in-CI release, dispatchable deploy/rollback, atomic symlink swap, bounded retention, database-safe pruning — see [Milestone 16 log](milestones/16-deployment-automation/milestone-log.md).
+- [x] [#37](https://github.com/rizafahmi/notable/issues/37) Deployment automation - build-in-CI release, dispatchable deploy/rollback, atomic symlink swap, bounded retention, database-safe pruning - see [Milestone 16 log](milestones/16-deployment-automation/milestone-log.md).
 - [x] [#6](https://github.com/rizafahmi/notable/issues/6) Artistic animated `/qr` page with a decoder-verified scannability budget — see [Milestone 15 log](milestones/15-animated-qr-page/milestone-log.md).
 - [x] [#27](https://github.com/rizafahmi/donatex/issues/27) Tip path rate-limit Mayar QR + orphan QRIS fail-closed — see [Milestone 14 log](milestones/14-tip-rate-limit/milestone-log.md).
 - [x] [#31](https://github.com/rizafahmi/donatex/issues/31) Webhook ops hardening — see [Milestone 13 log](milestones/13-webhook-ops-hardening/milestone-log.md).
